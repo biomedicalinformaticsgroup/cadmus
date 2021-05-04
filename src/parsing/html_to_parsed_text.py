@@ -1,4 +1,4 @@
-from clean_uoe_text_retrieval.src.parsing.get_attrs import get_attrs
+from cadmus.src.parsing.get_attrs import get_attrs
 
 def html_to_parsed_text(soup):
     
