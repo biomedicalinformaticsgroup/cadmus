@@ -1,0 +1,30 @@
+from cadmus.src.retrieval import get_base_url
+from cadmus.src.retrieval import html_link_from_meta
+from cadmus.src.retrieval import pdf_links_from_meta
+from cadmus.src.retrieval import explicit_pdf_links
+from cadmus.src.retrieval import links_from_a_tags
+import bs4
+from bs4 import BeautifulSoup
+import warnings
+warnings.filterwarnings("ignore")
+
+# now draw together all the parsing functions above and apply to any html response
+def complete_html_link_parser(response):
+        link_list = []
+    
+        soup = BeautifulSoup(response.text, 'html')
+
+        base_url = get_base_url(soup)
+        # parsing html links from the html meta tags
+        html_links = html_link_from_meta(soup)
+        if html_links != []:
+                link_list.extend(html_links)
+        
+        link_list.extend(pdf_links_from_meta(soup))
+        link_list.extend(explicit_pdf_links(soup, base_url))
+        link_list.extend(links_from_a_tags(soup, base_url))
+
+
+        link_list = list(set(link_list))
+        
+        return link_list
