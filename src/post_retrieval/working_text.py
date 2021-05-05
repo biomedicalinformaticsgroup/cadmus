@@ -45,6 +45,7 @@ def working_text(retrieval_df):
             if wcs[i] != None:
                 if wcs[i] > max_wcs:
                     max_wcs = wcs[i]
+        max_wcs = round(max_wcs * 0.7)
         #once we found the biggest wordcount, we want to use the format folowing the hierachical structure discribe nder the codition that its wordwount is at leat 70% of teh max wordcoung for all the format      max_wcs = round(max_wcs * 0.7)
         for i in range(len(texts)):
             if texts[i] != None:
