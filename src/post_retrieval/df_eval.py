@@ -17,13 +17,15 @@ def df_eval(df):
         or row['pdf'] ==1\
         or row['xml'] == 1\
         or row['plain'] == 1:
+            #we retrieved at least one format
             retrieved +=1
-            
+                       
         if (row['html'] == 1\
         or row['xml'] == 1)\
         and (row['pdf'] == 1):
+        #we got at least one tagged version with the pdf format
             criteria +=1
-        
+    #sum of each format retreived
     html_c = sum(df['html'] == 1)
     pdf_c = sum(df['pdf'] == 1)  
     xml_c = sum(df['xml'] == 1)
@@ -31,7 +33,7 @@ def df_eval(df):
     
     
     
-    
+    #printing the result
     print(f'Out of {len(df)} articles\nwe got at least one version for {retrieved} = {pc(retrieved, len(df))}\n')
     print(f'We got a pdf and tagged version for {criteria} artilces = {pc(criteria,len(df))}\n')
     print(f'{html_c} HTMLs were retrieved = {pc(html_c, len(df))}')

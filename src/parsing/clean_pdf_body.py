@@ -2,29 +2,31 @@ from cadmus.src.parsing.remove_link import remove_link
 import re
 
 def clean_pdf_body(p_text):
+    #check if the content is not none
     if p_text != None:
-        #txt_work_on = txt_work_on.lower()
+        #replace different type of characters by another characters (space or no space to reconstruct word)
         p_text = p_text.replace('\n',' ')
         p_text = p_text.replace('\t','')
         p_text = p_text.replace('- ','')
         p_text = p_text.replace(' -','')
         p_text = p_text.replace('�','')
+        #remove the link present in the text
         p_text = remove_link(p_text)
         p_text = p_text.replace('https://','')
         p_text = p_text.replace('http://','')
         p_text = p_text.replace('doi:','')
         p_text = p_text.replace('ftp:','')
-
+        # remove the email adresses of the text
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
             p_text = p_text.replace(result[i],'')
-        
+        # remove the reference citation i.e [1] from he text
         regex = re.compile("\[([^A-Za-z]+)\]")
         result = re.findall(regex, p_text)
         for i in range(len(result)):
             p_text = p_text.replace('['+result[i]+']','')
-
+        #remove the word if 7 words in a row are less than 4 characters. A reason for that was the result of tika when parsing a table
         p_text = p_text.split()
         list_to_remove = []
         for i in range(len(p_text) - 7):
@@ -54,6 +56,7 @@ def clean_pdf_body(p_text):
                     pass
             else:
                 pass
+        #remove the index of the words that fall into the previous comment 
         l1 = []
         for i in range(len(p_text)):
             l1.append(i)

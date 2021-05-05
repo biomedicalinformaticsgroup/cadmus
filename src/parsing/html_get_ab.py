@@ -1,7 +1,7 @@
 def html_get_ab(soup):
     # set the defaul abstract value to None. 
     ab = ''
-    
+    #Using the tags to identify the abstract from an html page
     h_tags = soup.find_all(['h2','h3'])
     for tag in h_tags:
         if tag.text.strip().lower() == 'abstract':
