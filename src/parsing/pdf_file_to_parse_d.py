@@ -5,6 +5,7 @@ from cadmus.src.evaluation.abstract_similarity_score import abstract_similarity_
 from cadmus.src.evaluation.body_unique_score import body_unique_score
 import os
 import tika
+#lauching the tika server
 os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/'+tika.__version__+'/tika-server-'+tika.__version__+'.jar'
 from tika import parser
 
@@ -70,8 +71,5 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
             retrieval_df.loc[index, 'abstract'] = ab
         else:
             pass
-
-        ####### TO ADD change the date if not the right format 
-    
     
     return parse_d

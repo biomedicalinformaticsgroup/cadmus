@@ -1,10 +1,11 @@
 from cadmus.src.parsing.clean_plain import clean_plain
 
 def unstructured_plain_text(p_text):
-    
+    # as we retreved txt files from our run, we identified two type of strutured when geting .txt
     if p_text.lower().count('##') > 2:
         lower = 0 
         upper = len(p_text.split()) - 1
+        # if the tag ## references is present two times, the content is teh text between the two tags
         if p_text.lower().count('## references') == 2:
             count = 0
             for i in range(len(p_text.split())):
@@ -23,11 +24,12 @@ def unstructured_plain_text(p_text):
             p_text = ' '.join(p_text.split()[lower:])
         else:
             p_text = p_text
-            
+    #letter to the editor, often a reply to an initial publication
     elif p_text.lower().count('to the editor') > 0:
         lower = 0
         upper = len(p_text.split()) - 1
         while upper > 0:
+            # the content is from the tothe editor to the references
             if p_text.split()[upper].lower() == 'references':
                 break
             upper -= 1
@@ -45,6 +47,7 @@ def unstructured_plain_text(p_text):
         lower = 0 
         upper = len(p_text.split()) - 1
         while upper > int(len(p_text.split())/2):
+            #in case we don't fina any sturture, we want to find teh upper limit to be the reference
             if p_text.split()[upper].lower() == 'references':
                 break
             upper -= 1
@@ -53,6 +56,7 @@ def unstructured_plain_text(p_text):
         p_text = ' '.join(p_text.split()[:upper])
         key_present = False
         for i in range(len(p_text.split())):
+            # keyords we want to find to start the content from
             if 'introduction' in p_text.lower().split()[i] or 'abstract' in p_text.lower().split()[i] or 'letters' in p_text.lower().split()[i] or 'correspondence' in p_text.lower().split()[i] or 'editorial' in p_text.lower().split()[i]:
                 lower = i
                 key_present = True

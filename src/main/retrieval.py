@@ -25,24 +25,30 @@ from multiprocessing import Process
 
 def retrieval(retrieval_df, http, base_url, headers, stage):
     # the input will be the master_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
+    #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
     for index, row in retrieval_df.iterrows():
         if counter == 0:
+            #cleaning the terminal windows
             clear()
+            #showing on top of the screen what to put in case of failure
             print(f'In case of faillure please put the parameters start="{stage}" (or "{stage}_only" if in only mode) and idx="{index}"') 
             saved_stage = stage
             saved_index = index   
             print('\n')   
         counter += 1
         if stage == 'crossref':
+            #printing the number of row remaining on the crossref step
             print('Downloading Crossref TDM links now...')
             print(f'tdm full link {counter} of {len(retrieval_df)}') 
             
         elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
             if retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+                #checking thet the PMCID is not nan, none or empty, PMICD is the key needed for epmc pmc
                 pmcid = row['pmcid']
                 print(f'Looking for {pmcid} which is record {counter} of {len(retrieval_df)}')
                 if stage == 'pmcxmls' or stage == 'pmcpdfs':
+                    #formating the value to the right format for these APIs
                     pmcid = pmcid.replace('PMC', '')
                 else:
                     pass
@@ -51,6 +57,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
         
         elif stage == 'doiorg':
             if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
+                #extracting the doi needed for doiorg
                 doi = row['doi']
                 print(f'DOI {counter} of {len(retrieval_df)}')
             else:
@@ -58,6 +65,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
         
         elif stage == 'pubmed':
             if retrieval_df.pmid.loc[index] == retrieval_df.pmid.loc[index]:
+                #extracting the pmid needed for the pubmed step
                 pmid = row['pmid']
                 print(f'working on pmid:{pmid}, record {counter} of {len(retrieval_df)}')
             else:
@@ -67,14 +75,18 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             pass
             
         if stage == 'crossref':
+            #collect all the crossref links available for text mining
             links = row['full_text_links'].get('cr_tdm')
             if links:                               
                 for link in links: 
+                    #trying to indentifying the format from the link in order to not request a document is already retreive for that format
                     if ('.pdf' in link and retrieval_df.pdf.loc[index] == 1) or  ('.xml' in link and retrieval_df.xml.loc[index] == 1) or ('plain' in link and retrieval_df.plain.loc[index] == 1):  
                         pass
-                    else:           
+                    else: 
+                        #printing the link we are trying to download from          
                         print(f'trying to download from: \n{link}')
                         try:
+                            #requesting the document by creatng the header and the request
                             response_d, response = get_request('', http, link, headers, 'crossref')
                         except:
                             pass
@@ -114,13 +126,17 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
 
                             print(f'Format:{format_type} found')
 
-
+                            #in case the link suggest that the link direct to a pdf format
                             if ('pdf' in format_type.lower()) or ('.pdf' in link):
+                                #looking if the pdf format was already retreived, if not we will try, if already retreived we go to the next record
                                 if retrieval_df.pdf.loc[index] != 1:
+                                    #looking if the docuemnt retreived is really a pdf
                                     if response_d['headers']['Content-Type'] == 'application/pdf':
                                         with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as file:
+                                            #saving the finle to the appropriate path
                                             file.write(response.content)
                                         try:
+                                            #looking at the content of the pdf, if the content showed evidence it's full text we modify the main df to update the information
                                             pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link)
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                                 retrieval_df.loc[index, 'pdf'] = 1                                    
@@ -174,7 +190,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                                         pass
                                 else:
                                     pass
-
+                            #doing the same as before for .txt file format
                             elif 'plain' in format_type.lower():
                                 if retrieval_df.plain.loc[index] != 1:
                                     with open(f'./output/formats/txts/{index}.txt', 'w') as file:
@@ -195,15 +211,19 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                 pass
             
         elif stage == 'epmcxml':
+            #if xml already retreived going to the next record
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
+                    #creating the header and the protocol to retreive the file from epmc API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'epmcxml')
                 except:
                     pass
+                #if the code status we get from the server is 429, we notifiy the user and stop the process to give some time to rest
                 if response_d['status_code'] == 429:
                     print('"Too many requests error [429]" received')
                     print('Risk of IP address block: stopping script')
                     exit()
+                #if status code is 200, it means everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
                     xml_d = xml_response_to_parse_d(retrieval_df, index, response)
@@ -222,34 +242,21 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                     print(f'{response_d["error"]}')
             else:
                 pass
-                
-            '''elif stage == 'epmcsupp':
-                response_d, response = get_request(pmcid, http, base_url, 'epmcsupp')
-                if response_d['status_code'] == 429:
-                    print('"Too many requests error [429]" received')
-                    print('Risk of IP address block: stopping script')
-                    break
-                elif response_d['status_code'] == 200:
-                    print('success, now writing zip to file')
-                    handle = open(f'./output/formats/zips/{index}.zip', "wb")
-                    for chunk in response.iter_content(chunk_size=2048):
-                        if chunk:  # filter out keep-alive new chunks
-                            handle.write(chunk)
-                    handle.close()
-                    retrieval_df.loc[index, 'supp'] = 1
-                else:
-                    response.close()'''
         
         elif stage == 'pmcxmls':
+            #if xml already retreived, going to next record
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
+                    #creating the header and protocol to retreive the document from PMC API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmcxmls')
                 except:
                     pass
+                #if the error code is 429 stoping the process to give time to rest
                 if response_d['status_code'] == 429:
                         print('"Too many requests error [429]" received')
                         print('Risk of IP address block: stopping script')
                         exit()
+                # code 200 everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
                     xml_d = xml_response_to_parse_d(retrieval_df, index, response)
@@ -262,38 +269,32 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                         retrieval_df.loc[index,'xml'] = 1
                         retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
                 else:
+                    # in case the status code is different than 200 or 429
                     print('error with request')
                     print(f'{response_d["error"]}')
             else:
                 pass
                 
         elif stage == 'pmcpdfs':
+            #looking if the pdf is already retreived for that row, if yes moving to the next record
             if retrieval_df.pdf.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
+                    #creating the header and the protocol to request the docuemnt from PMC API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmcpdfs')
                 except:
                     pass
+                #stop the process in case of 429 status code
                 if response_d['status_code'] == 429:
                     print('"Too many requests error [429]" received')
                     print('Risk of IP address block: stopping script')
                     exit()
+                #status code 200 means everything works perfectly
                 elif response_d['status_code'] == 200:
 
                     # The response for this API is an xml which provides links to the resource
                     # lets use beautiful soup to parse the xml
                     soup = BeautifulSoup(response.text)
                     for link in soup.find_all('link'):
-
-                        # the link could be to a tgz
-                        ''' if link.attrs['format'] == 'tgz':
-                            print('tar zip file available')
-                            ftp_link = link.get('href')
-                            # if it is a tgz then it'll probably need to be written in chunks 
-                            # **** ? server hangs at this point? **********
-                            with closing(request.urlopen(ftp_link)) as r:
-                                with open(f'./output/formats/tgzs/{index}.tgz', 'wb') as f:
-                                    shutil.copyfileobj(r, f)
-                                    retrieval_df.loc[index, 'pmc_zip'] = 1'''
 
                         # check for pdf format
                         if link.attrs['format'] == 'pdf':
@@ -328,13 +329,16 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
         elif stage == 'pmctgz':
             if retrieval_df.pmc_tgz.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
+                    #creating the header and protocol to request the tgz from PMC
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmctgz')
                 except:
                     pass
+                #stop the process in case of status code 429
                 if response_d['status_code'] == 429:
                     print('"Too many requests error [429]" received')
                     print('Risk of IP address block: stopping script')
                     exit()
+                #if status code 200 means we can process the document
                 elif response_d['status_code'] == 200:
 
                     # The response for this API is an xml which provides links to the resource
@@ -347,28 +351,34 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                             print('tar zip file available')
                             ftp_link = link.get('href')
                             # if it is a tgz then it'll probably need to be written in chunks 
-                            # **** ? server hangs at this point? **********
                             out_file = f'./output/formats/tgzs/{index}.tgz'
                             try:
+                                # we had previous experience where the code got stuck in the tgz, we set the time to maximun 300s before moving to the next records without changing the main df
                                 timeout_time = 300 
                                 start = time.time()
                                 worked = False
-
+                                #creating one process to kill it once the time is passed
                                 pnum = 1
                                 procs = []
                                 for i in range(pnum):
+                                    #downloading the tgz using the newly created process that will die at most 300s from the start
                                     p = Process(target=wget.download, args=(ftp_link, out_file), name = ('process_' + str(i+1)))
                                     procs.append(p)
                                     p.start()
+                                #as long as when we started is less than 300s continue to try
                                 while time.time() - start <= timeout_time:
+                                    #checing if it's already completed or not, if yes stop and moving to next record
                                     if not any([p.is_alive() for p in procs]):
                                         # All the processes are done, break now.
+                                        #Bolean to keep the fact that it worked
                                         worked = True
+                                        #altering the main df
                                         retrieval_df.loc[index, 'pmc_tgz'] = 1
+                                        #kill the process and merging the result
                                         p.terminate()
                                         p.join()
                                         break
-
+                                    #only check if it's over every one second
                                     time.sleep(1)  # Just to avoid hogging the CPU
                                 else:
                                     # We only enter this if we didn't 'break' above.
@@ -378,29 +388,15 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                                         p.join()
                             except:
                                 pass
-                            # run the function to unpack the tgz looking for pdfs and xmls
+                            # run the function to unpack the tgz looking for pdfs and xmls in case the tgz was sucessful
                             if worked == True:
                                 try:
+                                    #again using a timeout function to not get stuck in the tgz
                                     retrieval_df = timeout(300)(tgz_unpacking)(index, retrieval_df, f'./output/formats/tgzs/{index}.tgz', ftp_link)
                                 except:
                                     pass #handle errors                           
                         else:
                             pass
-
-                            
-                            
-                            
-#                                 with closing(request.urlopen(ftp_link)) as r:
-#                                     try:
-#                                         with open(, 'wb') as f:
-#                                             shutil.copyfileobj(r, f)
-#                                             retrieval_df.loc[index, 'pmc_tgz'] = 1
-#                                             # run the function to unpack the tgz looking for pdfs and xmls
-#                                             retrieval_df = tgz_unpacking(index, retrieval_df, f'./output/formats/tgzs/{index}.tgz')
-#                                     except:
-#                                         print('There seems to be an incomplete file download')
-
-                                    
 
                 # alternative error code, register the fail but keep going.     
                 else:
@@ -409,10 +405,12 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                     pass
             else:
                 pass
-                
+            
         elif stage == 'doiorg':
+            #cheking if the doi is not nan
             if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
                 try:
+                    #creating the header and the protocol
                     response_d, response = get_request(doi, http, base_url, headers, 'doiorg')
                 except:
                     pass
@@ -443,12 +441,14 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                             # execute if we have a set format
                             if 'pdf' in format_type.lower() and retrieval_df.pdf.loc[index] != 1:
                                 if response_d['headers'].get('Content-Type') != None: 
+                                    #the document retreived is the format we expected
                                     if response_d['headers']['Content-Type'] == 'application/pdf':
                                         with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as file:
                                             file.write(response_d['content'])
                                         try:
                                             pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', f'{base_url}{doi}')
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                                                #if the content retreived from the docuemnt followed the rule we implemented we are altering the main df
                                                 retrieval_df.loc[index, 'pdf'] = 1
                                                 retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
                                             else:
@@ -471,22 +471,6 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                                     retrieval_df.loc[index,'xml'] = 1
                                     retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
 
-                            ## TESTING FOR JAMIE, GET FALSE POSITIVE PART 1/2
-                            
-                            elif 'html'in format_type.lower() and retrieval_df.html.loc[index] == 1:
-                                # all the htmls should be checked for links regardless of whether they are FT or AB
-                                html_links = complete_html_link_parser(response)
-                                if len(html_links) != 0:
-                                    full_text_link_dict = retrieval_df.loc[index, 'full_text_links']
-                                    full_text_link_dict.update({'html_parse':html_links})
-                                    retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
-                                html_d = html_response_to_parse_d(retrieval_df, index, response)
-                                html_d = evaluation_funct(html_d)
-                                if html_d['evaluation'] == 'FP':
-                                        with open(f'./output/formats/testing/{index}.html', 'w') as file:
-                                            file.write(response_d['text'].encode('ascii', 'ignore').decode())
-
-                            ## FINISH TESTING PART 1/2
 
                             elif 'html' in format_type.lower() and retrieval_df.html.loc[index] != 1:
                                 # all the htmls should be checked for links regardless of whether they are FT or AB
@@ -505,12 +489,6 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                     retrieval_df.loc[index,'html'] = 1
                                     retrieval_df.loc[index,'html_parse_d'] = [html_d]
-
-                                ## TESTING FPs JAMIS PART 2/2
-                                if html_d['evaluation'] == 'FP':
-                                        with open(f'./output/formats/testing/{index}.html', 'w') as file:
-                                            file.write(response_d['text'].encode('ascii', 'ignore').decode())
-                                ##FINISH PART 2/2
                         
                             elif 'plain' in format_type.lower() and retrieval_df.plain.loc[index] != 1:
                                 with open(f'./output/formats/txts/{index}.txt', 'w') as file:
@@ -573,11 +551,15 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
         
         print('\nnext record\n')
         if counter%10 == 0 and not counter%100 == 0 and not counter == 0:
+            #clearing the terminal output every 10 records, showing on top of the terminal the information in case of failure 
+            #resting 2 seconds every 10 record to be polite 
             sleep(2)
             clear()
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n') 
         elif counter%100 == 0 and not counter == 0:
+            #saing the main df every 100 records, updating the information on the top in case of failure
+            #resting 2 seconds to be polite
             sleep(2)
             clear()
             saved_stage = stage
@@ -586,7 +568,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n')
 
-        
+    #When all the the rows have been completed saving the main df and the information of the current stage   
     print('process Complete')
     if stage == 'crossref':
         pickle.dump(retrieval_df, open('./output/master_df/crossref_download_df.p', 'wb'))

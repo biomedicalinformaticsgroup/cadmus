@@ -1,10 +1,11 @@
 import numpy as np
-
+#quick percentage function
 def percent(num, denom):
     result = np.round((num/denom)*100,1)
     return f'{result}%'
 
 def evaluation(df):
+    #initialize the variable to 0
     pdf_count = 0
     html_count = 0
     xml_count = 0
@@ -16,6 +17,7 @@ def evaluation(df):
     any_count = 0
     
     for index, row in df.iterrows():
+        #iterate the retrieva value for each format
         if row['pdf'] == 1:
             pdf_count += 1
         if row['xml'] == 1:
@@ -27,15 +29,19 @@ def evaluation(df):
         if row.working_text == '' or row.working_text == None or row.working_text != row.working_text:
             pass
         elif row.working_text[:4] == 'ABS:':
+            #keeping count of the time we did not retreive the full text but we found teh bastract
             abstract_count += 1
         else:
+            # computing the value of retreived docuemnt(any format)
             working_count += 1
             
         if row['xml'] == 1 or row['html'] == 1:
+        #number of docuemnt we have at least one taged version available            
             tag_count +=1
         if row['xml'] == 1 or row['html'] == 1 or row['pdf'] == 1 or row['plain'] == 1:
+            #number of document we have at least one format available
             any_count +=1
-            
+    #printing the result    
     print(f'Here is the performance thus far:')
     print(f'PDF:{pdf_count} = {percent(pdf_count, len(df))}')
     print(f'XML:{xml_count} = {percent(xml_count, len(df))}')

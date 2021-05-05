@@ -2,6 +2,7 @@ from threading import Thread
 import functools
 
 def timeout(seconds_before_timeout):
+    #this fonction make sure that the code do not get stuck, after the time is passed we just move on without saving the result of the current step
     def deco(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

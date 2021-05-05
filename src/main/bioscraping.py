@@ -196,70 +196,6 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 # we now have a master_df of metadata. 
                 # We can use the previous master_df index to exclude ones we have looked for already.
                 
-                
-                
-                
-                
-            
-    ######################################### STILL to DO --- Using PMC and DOI list - HOW TO MAKE MASTER_DF ####################################
-
-    # - identify list type = DONE
-    # - send id converter api - get back list of identifiers  = DONE
-    # - create list of available ids - PMID first then list of doi only
-    # - send PMIDs to entrez as normal creating hex uids as we go
-    # - for articles without a pmid, send DOIs to crossref and extract metadata from there creating UIDs as we go
-    # - merge dataframes into a single metadata df
-    # - will need to create the master_df first then add the doi only records after
-    # - need to check that we can get a minimum dataset for metadata from both metadata sources.
-    # - then the master_df will be complete - ready to go to normal full text retrieval options.
-    # - need to consider if some articles only have PMCID (would this happen?) maybe we could parse metadata from PMC APIs - not done this yet would need a new function
-    #######################################################################################################################################
-    #
-    #     # Now we'll write the function with the other type of list inputs.   
-    #     elif type(input_function) == list:
-    #         # check it is not an empty list
-    #         if len(input_function)== 0:
-    #             print('Your list is empty, please provide a python list of pmids, PMCids or DOIs')
-
-    #         else:
-    #             # make the output files if they dont already exist
-    #             output_files ()
-                    
-    #             if input_function[0][:3] == 'PMC':
-    #                 print('This looks like a list of PMCIDs')
-                    
-    #                 # now we need to run this through the id converter to get the corresponding PMIDs
-    #                 id_dict = ncbi_id_converter_single_list(input_function, email)
-                    
-                    
-    #                 from here we need to use the id_dict to get metadata and create a master_df
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-    #             else:
-    #                 dois, pmcids, pmid_doi = convert_DOI_PMID_PMCID(input_function, email, 'doi', True)
-    #                 input_list = dois
-            
-    #             http, base_url = HTTP_setup(email, click_through_api_key, 'base')
-    #             crossref_dict = Crossref_metadata(input_list, http, base_url)
-    #             cr_df = key_fields(crossref_dict, dois, pmid_doi, pmcids, True)
-
-    #             cr_df['tdm_links'] = cr_df['links'].apply(get_tdm_links)
-    #             avail = sum([tdm != None for tdm in cr_df["tdm_links"]])
-    #             print(f'We have {avail} articles with at least one full tdm link given\n = {np.round(avail/len(cr_df)*100,1)}%')
-    #             cr_df.fillna(value=np.nan, inplace=True)
-    #             master_df = cr_df    
-            
-            
-        
-    ####################### full text retrieval step ################################################################    
-        
-        
-        
                 # set up the crossref metadata http request ('base')
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'base')
 
@@ -292,30 +228,39 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # http is the session object
             # base URL is empty in this case
             # headers include a clickthrough api key
+
+            #this project is not trigered by a save
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                 # now use the http request set up to request for each of the master_df 
                 master_df = retrieval(master_df, http, base_url, headers, 'crossref')
+            #We skip all the previous step to start at the crossref step
             elif start == 'crossref' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                 # now use the http request set up to request for each of the master_df 
                 master_df = retrieval(master_df, http, base_url, headers, 'crossref')
                 start = None
+            #we run the code only on crossref
             elif start == 'crossref_only':
                 try:
+                    # we load the previous result to re-run a step
                     master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
                     if update:
+                        #if in update mode keep only the row we are interested in
                         master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
                 except:
                     master_df2 = master_df
                 if idx != None:
                     try:
+                        # restart from the last index it was saved at
                         divide_at = master_df2.index.get_loc(idx)
                     except:
                         print(f"The idx you enter was not found in the master_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
+                        # all the row that have already been done
                         finish = master_df2[divide_at:]
+                        # row that have not been done yet
                         done = master_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                         # now use the http request set up to request for each of the master_df 
@@ -330,6 +275,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                     # now use the http request set up to request for each of the master_df 
                     master_df2 = retrieval(master_df2, http, base_url, headers, 'crossref')
+            # we start at the crossref step and at a specific index, could be related to a previous failled attempt
             elif start == 'crossref' and idx != None:
                 try:
                     divide_at = master_df.index.get_loc(idx)
@@ -343,6 +289,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     # now use the http request set up to request for each of the master_df 
                     finish = retrieval(finish, http, base_url, headers, 'crossref')
                     master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    #change the start and the idx to none to complete all the next step with all the row
                     start = None
                     idx = None
                 else:
@@ -353,7 +300,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            # After crossref, we are going on doi.org
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
                 # now use the http request set up to request for each of the master_df 
@@ -415,7 +362,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            #we continue by epmc, xml format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
                 # now use the http request set up to request for each of the master_df 
@@ -477,7 +424,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass  
-
+            #pmc, xml format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
                 # now use the http request set up to request for each of the master_df 
@@ -539,7 +486,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-            
+            #pmc tgz, contain pdf and xml
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
                 # now use the http request set up to request for each of the master_df 
@@ -601,7 +548,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            #pmc, pdf format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
                 # now use the http request set up to request for each of the master_df 
@@ -663,7 +610,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            # we are scraping PubMed to identify candidate link
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
                 # now use the http request set up to request for each of the master_df 
@@ -725,16 +672,21 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            #checking if the start is different than master2
             if start == None:
+                #select the best text candidate out of all the format available
                 master_df = working_text(master_df)
+                #changing the date format to yyyy-mm-dd
                 master_df = correct_date_format(master_df)
+                #keeping the current result before looking at the candidate links
                 eval_master_df = master_df[['pdf', 'html', 'plain', 'xml', 'working_text']]
+                #saving the retrieved df before the candidate links
                 pickle.dump(master_df, open(f'./output/master_df/master_df.p', 'wb'))
             else:
                 eval_master_df = master_df[['pdf', 'html', 'plain', 'xml', 'working_text']]
 
             if start == None and idx == None:
+                #updating the retreived df with the candidate links
                 master_df2 = parse_link_retrieval(master_df, email, click_through_api_key)
             elif start == 'master2' and idx == None:
                 master_df2 = parse_link_retrieval(master_df, email, click_through_api_key)
@@ -781,8 +733,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-
+            #selecting the best new text available among all the format available
             master_df2 = working_text(master_df2)
+            #chaging the date format to yyyy-mm-dd
             master_df2 = correct_date_format(master_df2)
             
             # finally if this is an update then we need to concatenate the original df and the new working df
@@ -796,11 +749,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             clear()
             if start == None:
                 print(f'Result for master_df : ') 
+                #printing the retrieval result before the candidate links
                 evaluation(eval_master_df)
                 print('\n')
             print(f'Result for master_df2 : ')
+            #printing the retrieval result once all the steps have been completed
             evaluation(master_df2)
-            
+            #saving the final result
             pickle.dump(master_df2, open(f'./output/master_df/master_df2.p', 'wb'))        
     else:
+        #in case the input format type is incorect
         print('Your input is not handle by the function please enter Pubmed search terms or a list of single type(dois, pmids, pmcids), without header')
