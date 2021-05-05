@@ -22,5 +22,5 @@ def output_files ():
             os.mkdir(path)
             print(f'Now creating {path}')
         except:
-            #if teh directory already exist just pass
+            #if the directory already exist just pass
             pass
