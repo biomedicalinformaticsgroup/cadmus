@@ -11,7 +11,7 @@ def evaluation(df):
     xml_count = 0
     plain_count = 0
     abstract_count = 0
-    working_count = 0
+    content_count = 0
     
     tag_count = 0
     any_count = 0
