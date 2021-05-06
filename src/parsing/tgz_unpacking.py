@@ -114,7 +114,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link):
                             soup = clean_soup(soup)
                             # try parse the text
                             p_text = xml_body_p_parse(soup)
-                            # check for abstract in master_df
+                            # check for abstract in retrieved_df
                             if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
                                 ab = retrieval_df.loc[index, 'abstract']
                             else:    
@@ -149,7 +149,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link):
                                 print('XML found = writing to file')
                                 xml.rename(to_file)
                                 
-                                # then record success on the master_df
+                                # then record success on the retrieved_df
                                 retrieval_df.loc[index,'xml'] = 1
                                 retrieval_df.loc[index,'xml_parse_d'] = [parse_d]
                                 condition = True

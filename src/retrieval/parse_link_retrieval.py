@@ -20,7 +20,7 @@ import pickle
 # we will now go through the dataframe and sequentially try the untried links in the full_text_links dictionary.
 def parse_link_retrieval(retrieval_df, email, click_through_api_key):
     counter = -0
-    stage = 'master2'
+    stage = 'retrieved2'
     for index, row in retrieval_df.iterrows():
         if counter == 0:
             clear()
@@ -204,10 +204,10 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key):
             clear()
             saved_stage = stage
             saved_index = index
-            pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n') 
             
     print('process Complete')
-    pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+    pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     return retrieval_df

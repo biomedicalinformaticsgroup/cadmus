@@ -3,7 +3,7 @@ from cadmus.src import search_terms_to_pmid_list
 from cadmus.src import pmids_to_medline_file
 from cadmus.src import get_medline_doi
 from cadmus.src import pdat_to_datetime
-from cadmus.src import creation_master_df
+from cadmus.src import creation_retrieved_df
 from cadmus.src import ncbi_id_converter_batch
 from cadmus.src import HTTP_setup
 from cadmus.src import get_request
@@ -40,7 +40,7 @@ from cadmus.src import tgz_unpacking
 from cadmus.src import pubmed_linkout_parse
 from cadmus.src import retrieval
 from cadmus.src import parse_link_retrieval
-from cadmus.src import check_for_master_df
+from cadmus.src import check_for_retrieved_df
 from cadmus.src import clear
 from cadmus.src import is_ipython
 from cadmus.src import bioscraping
@@ -48,7 +48,7 @@ from cadmus.src import get_date_xml
 from cadmus.src import correct_date_format
 from cadmus.src import df_eval
 from cadmus.src import evaluation
-from cadmus.src import working_text
+from cadmus.src import content_text
 from cadmus.src import clean_plain
 from cadmus.src import get_abstract_txt
 from cadmus.src import structured_plain_text

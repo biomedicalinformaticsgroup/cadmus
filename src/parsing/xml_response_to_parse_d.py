@@ -16,7 +16,7 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response):
     soup = clean_soup(soup)
     # try parse the text
     p_text = xml_body_p_parse(soup)
-    # check for abstract in master_df
+    # check for abstract in retrieved_df
     if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] == retrieval_df.loc[index, 'abstract']:
         ab = retrieval_df.loc[index, 'abstract']
     else:    
