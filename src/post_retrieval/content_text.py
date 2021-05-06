@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def working_text(retrieval_df):
+def content_text(retrieval_df):
     #this function is to dertmine among all the format retreived what is the best option available
     #from experience and quality of parsing we prefer xml html plain pdf
     for index, row in retrieval_df.iterrows():
@@ -57,6 +57,6 @@ def working_text(retrieval_df):
             if (best_text == None) or (len(best_text.split()) < len(str(row['abstract']).split()) and len(row['abstract'].split()) < 1000):
                 best_text = str('ABS: ' + row['abstract'])
         #seting the value
-        retrieval_df.loc[index, 'working_text'] = best_text
+        retrieval_df.loc[index, 'content_text'] = best_text
 
     return retrieval_df

@@ -5,13 +5,13 @@ from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3.util.retry import Retry
 import json
 
-def ncbi_id_converter_batch(master_df, email):
+def ncbi_id_converter_batch(retrieved_df, email):
 
     # we only need one type of id per article to check the NCBI API
     # the pmid should be the first choice rather than doi
     
     # we are going to be resetting the index several times so lets create a new column to hold the current index
-    master_df['index'] = master_df.index 
+    retrieved_df['index'] = retrieved_df.index 
     
     
     # get the pmid_list
@@ -20,7 +20,7 @@ def ncbi_id_converter_batch(master_df, email):
     pmcid_list = []
     
     # lets get one uid for each record 
-    for index, row in master_df.iterrows():
+    for index, row in retrieved_df.iterrows():
         if type(row['pmid']) == str:
             pmid_list.append(row['pmid'])
         elif type(row['doi']) == str:
@@ -43,7 +43,7 @@ def ncbi_id_converter_batch(master_df, email):
         # set the appropriate column as the index
         col = str(input_list).replace('_list', '')
         print(f'Working on the {col} List...')
-        master_df.set_index(col, drop=False, inplace = True)
+        retrieved_df.set_index(col, drop=False, inplace = True)
         
         # each process starts at record 0 and retrieves in batches up to a max of 200 per batch.
         start = 0
@@ -90,8 +90,8 @@ def ncbi_id_converter_batch(master_df, email):
                             i = record.get(col)
                             # loop through each key value pair and insert the value if missing
                             for key, value in record.items():
-                                if type(master_df.at[i,key]) == float:
-                                    master_df.at[i,key] = value
+                                if type(retrieved_df.at[i,key]) == float:
+                                    retrieved_df.at[i,key] = value
                                  
                         
                         
@@ -100,7 +100,7 @@ def ncbi_id_converter_batch(master_df, email):
                     pass
             # iterate the batch size for our request    
             start += batch_size
-    # now lets reset the master_df index back to the original index
-    master_df.set_index('index', drop =True, inplace = True)
+    # now lets reset the retrieved_df index back to the original index
+    retrieved_df.set_index('index', drop =True, inplace = True)
 
-    return master_df
+    return retrieved_df

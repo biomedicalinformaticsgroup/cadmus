@@ -3,13 +3,13 @@ from cadmus.src.retrieval import get_tdm_links
 import json
 import pickle
 
-# use this function when we already have a master_df with indexes and all available ids
-def get_crossref_links_and_licenses(master_df, http, base_url, headers):
+# use this function when we already have a retrieved_df with indexes and all available ids
+def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
     
     # we send the doi to the crossref API server as a GET request using the function defined above
-    # lets simplify the master_df to only have rows with dois available
-    condition = [(type(doi) != float) for doi in master_df.doi]
-    cr_df = master_df[condition]
+    # lets simplify the retrieved_df to only have rows with dois available
+    condition = [(type(doi) != float) for doi in retrieved_df.doi]
+    cr_df = retrieved_df[condition]
     
     count = 0
     for index, row in cr_df.iterrows():
@@ -25,7 +25,7 @@ def get_crossref_links_and_licenses(master_df, http, base_url, headers):
             
             # dump a pickle of the response saved as the index
             pickle.dump(response_json, open(f'./output/crossref/p/{index}.p', 'wb'))
-            master_df.loc[index, 'crossref'] = 1
+            retrieved_df.loc[index, 'crossref'] = 1
             
             message = response_json['message']
             
@@ -35,15 +35,15 @@ def get_crossref_links_and_licenses(master_df, http, base_url, headers):
             link_list = message.get('link')
             links = get_tdm_links(link_list)
             if links is not None:
-                # set the tdm links into the master_df fulltext links dict
-                full_text_links_dict = master_df.loc[index, 'full_text_links']
+                # set the tdm links into the retrieved_df fulltext links dict
+                full_text_links_dict = retrieved_df.loc[index, 'full_text_links']
                 full_text_links_dict.update({'cr_tdm':links})
-                master_df.at[index, 'full_text_links'] = full_text_links_dict
+                retrieved_df.at[index, 'full_text_links'] = full_text_links_dict
             else:
                 print('crossref record found but no TDM links supplied')
                 pass
-            # set the licenses into the master_df as well
-            master_df.at[index, 'licenses'] = licenses
+            # set the licenses into the retrieved_df as well
+            retrieved_df.at[index, 'licenses'] = licenses
             
             
         else:
@@ -56,9 +56,9 @@ def get_crossref_links_and_licenses(master_df, http, base_url, headers):
     
     # run a quick evaluation of the tdm link haul
     count = 0
-    for index, row in master_df.iterrows():
+    for index, row in retrieved_df.iterrows():
         if row['full_text_links'].get('cr_tdm') != []:
             count+=1
-    print(f'Out of the {len(cr_df)} articles with a doi, {sum(master_df.crossref ==1)} were found in crossref')
+    print(f'Out of the {len(cr_df)} articles with a doi, {sum(retrieved_df.crossref ==1)} were found in crossref')
     print(f'We have found {count} crossref records with at least one TDM link available')
-    return master_df
+    return retrieved_df

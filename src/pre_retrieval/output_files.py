@@ -3,7 +3,7 @@ import os
 def output_files ():
     #creating the directories we are planning on using the save the result of the system
     for path in ['output',
-                'output/master_df',
+                'output/retrieved_df',
                 'output/esearch_results',
                 'output/medline',
                 'output/medline/txts',

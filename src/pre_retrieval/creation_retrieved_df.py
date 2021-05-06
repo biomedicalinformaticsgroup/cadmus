@@ -10,19 +10,19 @@ from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3.util.retry import Retry
 import urllib.request as requests
 
-def creation_master_df(medline_file_name):
+def creation_retrieved_df(medline_file_name):
     # as input we provide the name of the medline file for parsing out all the individual records
     # now lets run the parser for all the new records 
     # as each record is parsed, we give it a unique index (hexidecimal string)
     # each medline record is then written to file(named the same as the unique index)so that we can find the metadata easily if we want to parse out other fields
-    # the medline records are then added to a dictionary which will become the basic master_df.
+    # the medline records are then added to a dictionary which will become the basic retrieved_df.
     
     # set the input file
     in_file = medline_file_name
-    # each record will be saved as a pickle file (using the unique index as the name) so we can re-parse medline records retrospectively for our master_df
+    # each record will be saved as a pickle file (using the unique index as the name) so we can re-parse medline records retrospectively for our retrieved_df
     medline_ouptut_path = f'./output/medline/p/'
     
-    # our main output will be a dictionary ready to be converted into a master df
+    # our main output will be a dictionary ready to be converted into a retrieved df
     parse_d = {}
 
     #  read in the text file using Medline Parser from biopython

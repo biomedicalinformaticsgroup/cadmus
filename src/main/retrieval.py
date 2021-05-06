@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 from multiprocessing import Process
 
 def retrieval(retrieval_df, http, base_url, headers, stage):
-    # the input will be the master_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
+    # the input will be the retrieved_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
     for index, row in retrieval_df.iterrows():
@@ -516,7 +516,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
 ######################################### Pubmed PMID request and link extraction ####################################
 #########################################  ####################################
         # This stage sends a get request using a pmid to PUBMED to try and get the Full text links from the html page 'linkout' section
-        # we don't need to save the page, just parse the request.text and save the links to the master df
+        # we don't need to save the page, just parse the request.text and save the links to the retrieved df
         elif stage == 'pubmed':
             # firstly check that there is a PMID to use (np.nan == np.nan == False)
             if retrieval_df.pmid.loc[index] == retrieval_df.pmid.loc[index]:
@@ -564,33 +564,33 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             clear()
             saved_stage = stage
             saved_index = index
-            pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n')
 
     #When all the the rows have been completed saving the main df and the information of the current stage   
     print('process Complete')
     if stage == 'crossref':
-        pickle.dump(retrieval_df, open('./output/master_df/crossref_download_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/crossref_download_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'epmcxml':
-        pickle.dump(retrieval_df, open('./output/master_df/pmcid_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/pmcid_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'epmcsupp':
-        pickle.dump(retrieval_df, open('./output/master_df/epmc_supp_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/epmc_supp_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pmcxmls':
-        pickle.dump(retrieval_df, open('./output/master_df/pmc_oai_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/pmc_oai_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pmcpdfs':
-        pickle.dump(retrieval_df, open('./output/master_df/pmc_oai_pdf_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/pmc_oai_pdf_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'doiorg':
-        pickle.dump(retrieval_df, open('./output/master_df/doi_org.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/doi_org.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pubmed':
-        pickle.dump(retrieval_df, open('./output/master_df/pubmed_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/master_df/master_df.p', 'wb'))
+        pickle.dump(retrieval_df, open('./output/retrieved_df/pubmed_df.p', 'wb'))
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     else:
         pass   
 

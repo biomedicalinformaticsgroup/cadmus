@@ -43,7 +43,7 @@ from cadmus.src.retrieval import search_terms_to_pmid_list
 from cadmus.src.pre_retrieval import pmids_to_medline_file
 from cadmus.src.parsing import get_medline_doi
 from cadmus.src.pre_retrieval import pdat_to_datetime
-from cadmus.src.pre_retrieval import creation_master_df
+from cadmus.src.pre_retrieval import creation_retrieved_df
 from cadmus.src.pre_retrieval import ncbi_id_converter_batch
 from cadmus.src.retrieval import HTTP_setup
 from cadmus.src.retrieval import get_request
@@ -80,9 +80,9 @@ from cadmus.src.parsing import tgz_unpacking
 from cadmus.src.retrieval import pubmed_linkout_parse
 from cadmus.src.main import retrieval
 from cadmus.src.retrieval.parse_link_retrieval import parse_link_retrieval
-from cadmus.src.pre_retrieval import check_for_master_df
+from cadmus.src.pre_retrieval import check_for_retrieved_df
 from cadmus.src.retrieval import clear
-from cadmus.src.post_retrieval import working_text
+from cadmus.src.post_retrieval import content_text
 from cadmus.src.retrieval import is_ipython
 from cadmus.src.post_retrieval import evaluation
 from cadmus.src.post_retrieval import correct_date_format
@@ -90,12 +90,12 @@ from cadmus.src.post_retrieval import correct_date_format
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None):
     
     # lets check whether this is an update of a previous search or a new search.
-    update = check_for_master_df()
+    update = check_for_retrieved_df()
     
     if update:
-        print('There is already a Master Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
+        print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
         # save the original df to use downstream.
-        original_df = pickle.load(open('./output/master_df/master_df2.p', 'rb'))
+        original_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
         # we need to save all the find all the pmids where already a PDF and (HTML or XML)
         # these pmids will then be removed from the the search df
         original_pmids = []
@@ -105,9 +105,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             print('We are not updating the previous search(es) of the DataFrame, only looking for new lines')
             original_pmids = (np.array(original_df.pmid))
         if full_search == 'light':
-            print('We are doing a light search, from the previous search we are only going to take a look at the missing working_text')
+            print('We are doing a light search, from the previous search we are only going to take a look at the missing content_text')
             for index, row in original_df.iterrows():
-                if row.working_text == '' or row.working_text == None or row.working_text != row.working_text or row.working_text[:4] == 'ABS:':
+                if row.content_text == '' or row.content_text == None or row.content_text != row.content_text or row.content_text[:4] == 'ABS:':
                     drop_lines.append(index)
                 else:
                     original_pmids.append(row['pmid'])
@@ -172,56 +172,56 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
 
             if start != None:
                 try:
-                    master_df = pickle.load(open(f'./output/master_df/master_df.p','rb'))
+                    retrieved_df = pickle.load(open(f'./output/retrieved_df/retrieved_df.p','rb'))
                     if update:
-                        master_df = master_df[master_df.pmid.isin(new_pmids)]
+                        retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
                 except:
-                    print(f"You don't have any previous master_df we changed your parameters start and idx to None")
+                    print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
                     start = None
                     idx = None
             
             if start == None:
                 # make a medline records text file for a given list of pmids
                 medline_file_name = pmids_to_medline_file(results_d['date'], results_d['pmids'], email, api_key)
-                # parse the medline file and create a master_df with unique indexes for each record
-                master_df = pd.DataFrame(creation_master_df(medline_file_name))
+                # parse the medline file and create a retrieved_df with unique indexes for each record
+                retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
                 
-                # standardise the empty values and ensure there are no duplicates of pmids or dois in our master_df
-                master_df.fillna(value=np.nan, inplace=True)
-                master_df = master_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
+                # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
+                retrieved_df.fillna(value=np.nan, inplace=True)
+                retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
                 
                 # use the NCBI id converter API to get any missing IDs known to the NCBI databases
-                master_df = ncbi_id_converter_batch(master_df, email)     
+                retrieved_df = ncbi_id_converter_batch(retrieved_df, email)     
                 
-                # we now have a master_df of metadata. 
-                # We can use the previous master_df index to exclude ones we have looked for already.
+                # we now have a retrieved_df of metadata. 
+                # We can use the previous retrieved_df index to exclude ones we have looked for already.
                 
                 # set up the crossref metadata http request ('base')
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'base')
 
                 #create a new column to note whether there is a crossref metadata record available - default - 0 (NO).
-                master_df['crossref'] = 0
-                # we're going to start collection full text links now. so lets make a new column on the master_df to hold a dictionary of links
-                master_df['full_text_links'] = [{'cr_tdm':[],'html_parse':[], 'pubmed_links':[]} for value in master_df.index]
-                master_df['licenses'] = [{} for val in master_df.index]
+                retrieved_df['crossref'] = 0
+                # we're going to start collection full text links now. so lets make a new column on the retrieved_df to hold a dictionary of links
+                retrieved_df['full_text_links'] = [{'cr_tdm':[],'html_parse':[], 'pubmed_links':[]} for value in retrieved_df.index]
+                retrieved_df['licenses'] = [{} for val in retrieved_df.index]
 
-                # work through the master_df for every available doi and query crossref for full text links
-                master_df = get_crossref_links_and_licenses(master_df, http, base_url, headers)
+                # work through the retrieved_df for every available doi and query crossref for full text links
+                retrieved_df = get_crossref_links_and_licenses(retrieved_df, http, base_url, headers)
 
 
                 # now time to download some fulltexts, will need to create some new columns to show success or failure for each format and the actual parse dictionary
 
-                master_df['pdf'] = 0
-                master_df['xml'] = 0
-                master_df['html'] = 0
-                master_df['plain'] = 0
-                master_df['pmc_tgz'] = 0
-                master_df['xml_parse_d'] = [{} for index in master_df.index]
-                master_df['html_parse_d'] = [{} for index in master_df.index]
-                master_df['pdf_parse_d'] = [{} for index in master_df.index]
-                master_df['plain_parse_d'] = [{} for index in master_df.index]
+                retrieved_df['pdf'] = 0
+                retrieved_df['xml'] = 0
+                retrieved_df['html'] = 0
+                retrieved_df['plain'] = 0
+                retrieved_df['pmc_tgz'] = 0
+                retrieved_df['xml_parse_d'] = [{} for index in retrieved_df.index]
+                retrieved_df['html_parse_d'] = [{} for index in retrieved_df.index]
+                retrieved_df['pdf_parse_d'] = [{} for index in retrieved_df.index]
+                retrieved_df['plain_parse_d'] = [{} for index in retrieved_df.index]
 
-                pickle.dump(master_df, open(f'./output/master_df/master_df.p', 'wb'))
+                pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:
                 pass    
             # set up the http session for crossref requests
@@ -232,70 +232,70 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #this project is not trigered by a save
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'crossref')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref')
             #We skip all the previous step to start at the crossref step
             elif start == 'crossref' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'crossref')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref')
                 start = None
             #we run the code only on crossref
             elif start == 'crossref_only':
                 try:
                     # we load the previous result to re-run a step
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
                         #if in update mode keep only the row we are interested in
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
                         # restart from the last index it was saved at
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
                         # all the row that have already been done
-                        finish = master_df2[divide_at:]
+                        finish = retrieved_df2[divide_at:]
                         # row that have not been done yet
-                        done = master_df2[:divide_at]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'crossref')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'crossref')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'crossref')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref')
             # we start at the crossref step and at a specific index, could be related to a previous failled attempt
             elif start == 'crossref' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'crossref')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     #change the start and the idx to none to complete all the next step with all the row
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'crossref')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref')
                     start = None
                     idx = None
             else:
@@ -303,61 +303,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # After crossref, we are going on doi.org
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'doiorg')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg')
             elif start == 'doiorg' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'doiorg')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg')
                 start = None
             elif start == 'doiorg_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'doiorg')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'doiorg')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'doiorg')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg')
             elif start == 'doiorg' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'doiorg')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'doiorg')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg')
                     start = None
                     idx = None
             else:
@@ -365,61 +365,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #we continue by epmc, xml format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'epmcxml')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml')
             elif start == 'epmcxml' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'epmcxml')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml')
                 start = None
             elif start == 'epmcxml_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'epmcxml')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'epmcxml')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'epmcxml')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml')
             elif start == 'epmcxml' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'epmcxml')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'epmcxml')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml')
                     start = None
                     idx = None
             else:
@@ -427,61 +427,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #pmc, xml format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pmcxmls')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls')
             elif start == 'pmcxmls' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pmcxmls')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls')
                 start = None
             elif start == 'pmcxmls_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'pmcxmls')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'pmcxmls')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'pmcxmls')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls')
             elif start == 'pmcxmls' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'pmcxmls')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'pmcxmls')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls')
                     start = None
                     idx = None
             else:
@@ -489,61 +489,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #pmc tgz, contain pdf and xml
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pmctgz')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz')
             elif start == 'pmctgz' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pmctgz')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz')
                 start = None
             elif start == 'pmctgz_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'pmctgz')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'pmctgz')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'pmctgz')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz')
             elif start == 'pmctgz' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'pmctgz')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'pmctgz')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz')
                     start = None
                     idx = None
             else:
@@ -551,61 +551,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #pmc, pdf format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, '', 'pmcpdfs')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs')
             elif start == 'pmcpdfs' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, '', 'pmcpdfs')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs')
                 start = None
             elif start == 'pmcpdfs_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, '', 'pmcpdfs')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, '', 'pmcpdfs')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, '', 'pmcpdfs')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs')
             elif start == 'pmcpdfs' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, '', 'pmcpdfs')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, '', 'pmcpdfs')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs')
                     start = None
                     idx = None
             else:
@@ -613,150 +613,150 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # we are scraping PubMed to identify candidate link
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pubmed')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed')
             elif start == 'pubmed' and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                # now use the http request set up to request for each of the master_df 
-                master_df = retrieval(master_df, http, base_url, headers, 'pubmed')
+                # now use the http request set up to request for each of the retrieved_df 
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed')
                 start = None
             elif start == 'pubmed_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                        # now use the http request set up to request for each of the master_df 
+                        # now use the http request set up to request for each of the retrieved_df 
                         finish = retrieval(finish, http, base_url, headers, 'pubmed')
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                        # now use the http request set up to request for each of the master_df 
-                        master_df2 = retrieval(master_df2, http, base_url, headers, 'pubmed')
+                        # now use the http request set up to request for each of the retrieved_df 
+                        retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed')
 
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df2 = retrieval(master_df2, http, base_url, headers, 'pubmed')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed')
             elif start == 'pubmed' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                    # now use the http request set up to request for each of the master_df 
+                    # now use the http request set up to request for each of the retrieved_df 
                     finish = retrieval(finish, http, base_url, headers, 'pubmed')
-                    master_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
-                    # now use the http request set up to request for each of the master_df 
-                    master_df = retrieval(master_df, http, base_url, headers, 'pubmed')
+                    # now use the http request set up to request for each of the retrieved_df 
+                    retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed')
                     start = None
                     idx = None
             else:
                 pass
-            #checking if the start is different than master2
+            #checking if the start is different than retrieved2
             if start == None:
                 #select the best text candidate out of all the format available
-                master_df = working_text(master_df)
+                retrieved_df = content_text(retrieved_df)
                 #changing the date format to yyyy-mm-dd
-                master_df = correct_date_format(master_df)
+                retrieved_df = correct_date_format(retrieved_df)
                 #keeping the current result before looking at the candidate links
-                eval_master_df = master_df[['pdf', 'html', 'plain', 'xml', 'working_text']]
+                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
                 #saving the retrieved df before the candidate links
-                pickle.dump(master_df, open(f'./output/master_df/master_df.p', 'wb'))
+                pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:
-                eval_master_df = master_df[['pdf', 'html', 'plain', 'xml', 'working_text']]
+                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
 
             if start == None and idx == None:
                 #updating the retreived df with the candidate links
-                master_df2 = parse_link_retrieval(master_df, email, click_through_api_key)
-            elif start == 'master2' and idx == None:
-                master_df2 = parse_link_retrieval(master_df, email, click_through_api_key)
+                retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key)
+            elif start == 'retrieved2' and idx == None:
+                retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key)
                 start = None
-            elif start == 'master2_only':
+            elif start == 'retrieved2_only':
                 try:
-                    master_df2 = pickle.load(open(f'./output/master_df/master_df2.p', 'rb'))
+                    retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
                     if update:
-                        master_df2 = master_df2[master_df2.pmid.isin(new_pmids)]
+                        retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
                 except:
-                    master_df2 = master_df
+                    retrieved_df2 = retrieved_df
                 if idx != None:
                     try:
-                        divide_at = master_df2.index.get_loc(idx)
+                        divide_at = retrieved_df2.index.get_loc(idx)
                     except:
-                        print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                        print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                         exit()
                     if divide_at != 0:
-                        finish = master_df2[divide_at:]
-                        done = master_df2[:divide_at]                       
+                        finish = retrieved_df2[divide_at:]
+                        done = retrieved_df2[:divide_at]                       
                         finish = parse_link_retrieval(finish, email, click_through_api_key)
-                        master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                        retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
-                        master_df2 = parse_link_retrieval(master_df2, email, click_through_api_key)
+                        retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key)
 
                 else:
-                    master_df2 = parse_link_retrieval(master_df2, email, click_through_api_key)
-            elif start == 'master2' and idx != None:
+                    retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key)
+            elif start == 'retrieved2' and idx != None:
                 try:
-                    divide_at = master_df.index.get_loc(idx)
+                    divide_at = retrieved_df.index.get_loc(idx)
                 except:
-                    print(f"The idx you enter was not found in the master_df, please enter a correct index")
+                    print(f"The idx you enter was not found in the retrieved_df, please enter a correct index")
                     exit()
                 if divide_at != 0:
-                    finish = master_df[divide_at:]
-                    done = master_df[:divide_at]
+                    finish = retrieved_df[divide_at:]
+                    done = retrieved_df[:divide_at]
                     finish = parse_link_retrieval(finish, email, click_through_api_key)
-                    master_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
+                    retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
                 else:
-                    master_df2 = parse_link_retrieval(master_df, email, click_through_api_key)
+                    retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key)
                     start = None
                     idx = None
             else:
                 pass
             #selecting the best new text available among all the format available
-            master_df2 = working_text(master_df2)
+            retrieved_df2 = content_text(retrieved_df2)
             #chaging the date format to yyyy-mm-dd
-            master_df2 = correct_date_format(master_df2)
+            retrieved_df2 = correct_date_format(retrieved_df2)
             
-            # finally if this is an update then we need to concatenate the original df and the new working df
+            # finally if this is an update then we need to concatenate the original df and the new content df
             if update:
                 original_df = original_df.drop(drop_lines)
-                master_df2 = pd.concat([original_df, master_df2], axis=0, join='outer', ignore_index=False, copy=True)
+                retrieved_df2 = pd.concat([original_df, retrieved_df2], axis=0, join='outer', ignore_index=False, copy=True)
             else:
                 # no merge to perform
                 pass
             
             clear()
             if start == None:
-                print(f'Result for master_df : ') 
+                print(f'Result for retrieved_df : ') 
                 #printing the retrieval result before the candidate links
-                evaluation(eval_master_df)
+                evaluation(eval_retrieved_df)
                 print('\n')
-            print(f'Result for master_df2 : ')
+            print(f'Result for retrieved_df2 : ')
             #printing the retrieval result once all the steps have been completed
-            evaluation(master_df2)
+            evaluation(retrieved_df2)
             #saving the final result
-            pickle.dump(master_df2, open(f'./output/master_df/master_df2.p', 'wb'))        
+            pickle.dump(retrieved_df2, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))        
     else:
         #in case the input format type is incorect
         print('Your input is not handle by the function please enter Pubmed search terms or a list of single type(dois, pmids, pmcids), without header')

@@ -29,7 +29,7 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
             p_text = clean_pdf_body(p_text)
             p_text = limit_body(p_text)
 
-        # check for abstract in master_df
+        # check for abstract in retrieved_df
         if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] == retrieval_df.loc[index, 'abstract']:
             ab = retrieval_df.loc[index, 'abstract']
 

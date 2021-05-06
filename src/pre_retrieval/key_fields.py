@@ -82,6 +82,6 @@ def key_fields(crossref_dict, doi_list, pmid_doi, pmcid, is_list):
                                        'licenses': licenses,
                                        'links':links}})
 
-    # finally we'll store the parse dictionary as our crossref metadata master dataframe
+    # finally we'll store the parse dictionary as our crossref metadata retrieved dataframe
     cr_df = pd.DataFrame.from_dict(parse_d, orient = 'index')
     return cr_df
