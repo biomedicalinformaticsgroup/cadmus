@@ -7,8 +7,6 @@ In order to run the code, you will need a few things:
 
 You need to have Java 7+.
 
-To install the project to the directory you want to save your result.
-
 An API key from NCBI (you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
 An API key from Crossref (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the folowing two licenses:
@@ -18,7 +16,8 @@ An API key from Crossref (you can find more information [here](https://apps.cros
 
 ## Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment
-    !pip install git+https://github.com/biomedicalinformaticsgroup/cadmus.git
+
+    `!pip install git+https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
 ## Get started
 
@@ -46,12 +45,13 @@ Finally, in case you want to check if a document became available since the last
 2. 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
 3. 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieved a tagged version (i.e. html or xml).
 
-    bioscraping(
+    ```bioscraping(
     INPUT,
     EMAIL,
     NCBI_APY_KEY,
     CROSSREF_API_KEY
     )
+    ```
 
 ## Important
  Published literature is subject to copyright andrestrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derivedproducts are presented and shared.
