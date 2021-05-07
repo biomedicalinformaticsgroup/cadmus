@@ -7,6 +7,8 @@ In order to run the code, you will need a few things:
 
 You need to have Java 7+.
 
+To git clone the project to the directory you want to save your result.
+
 An API key from NCBI (you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
 An API key from Crossref (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the folowing two licenses:
@@ -17,7 +19,9 @@ An API key from Crossref (you can find more information [here](https://apps.cros
 ## Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment
 
-`!pip install git+https://github.com/biomedicalinformaticsgroup/cadmus.git`
+`git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
+
+`pip install -e ./cadmus`
 
 ## Get started
 
@@ -45,13 +49,16 @@ Finally, in case you want to check if a document became available since the last
 2. 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
 3. 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieved a tagged version (i.e. html or xml).
 
-    ```bioscraping(
+
+```python
+from cadmus import bioscraping
+bioscraping(
     INPUT,
     EMAIL,
     NCBI_APY_KEY,
     CROSSREF_API_KEY
     )
-    ```
+```
 
 ## Important
  Published literature is subject to copyright andrestrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derivedproducts are presented and shared.
@@ -88,3 +95,7 @@ Q:What's the difference between retrieved_df and retrieved_df2?
 
 A:retrieved_df is a 'moving state' dataframe. Each time the system will run, it will store the information into retrieved_df to reduce to the row of interest.
 retrieved_df2 is here to keep the information forever, once the system finished, retrieved_df2 will collect the new line from retrieved_df to group them with previous run.
+
+Q:How can I remove Cadmus?
+
+A: rm -rf cadmus
