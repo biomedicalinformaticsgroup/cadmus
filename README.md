@@ -17,7 +17,7 @@ An API key from Crossref (you can find more information [here](https://apps.cros
 ## Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment
 
-    `!pip install git+https://github.com/biomedicalinformaticsgroup/cadmus.git`
+`!pip install git+https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
 ## Get started
 
@@ -82,7 +82,7 @@ A:The system is taking advantage of subscriptions. Maybe you do not have the sam
 
 Q:Can I redistribute the data?
 
-A:Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared
+A:Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
 
 Q:What's the difference between retrieved_df and retrieved_df2?
 
