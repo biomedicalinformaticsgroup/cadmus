@@ -99,3 +99,7 @@ retrieved_df2 is here to keep the information forever, once the system finished,
 Q:How can I remove Cadmus?
 
 A: rm -rf cadmus
+
+Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
+
+A: It seems that you are on a shared computer, you need to identfy who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read writte and execute tika.log as well. One way to do that is using the command 'chmod'.
