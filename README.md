@@ -21,7 +21,7 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
-`pip install -e ./cadmus`
+`pip install ./cadmus`
 
 ## Get started
 
