@@ -27,7 +27,34 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
     # the input will be the retrieved_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
-    for index, row in retrieval_df.iterrows():
+
+    #subset the original df to the lines with an identifier only
+    if stage == 'crossref':
+        condition = []
+        for i in range(len(retrieval_df)):
+            if len(retrieval_df.iloc[i]['full_text_links'].get('cr_tdm')) > 0:
+                condition.append(True)
+            else:
+                condition.append(False)
+        cr_df = retrieval_df[condition]
+
+    elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
+        condition = [(type(pmcid) != float) for pmcid in retrieval_df.pmcid]
+        cr_df = retrieval_df[condition]
+        cr_df
+    elif stage == 'doiorg':
+        condition = [(type(doi) != float) for doi in retrieval_df.doi]
+        cr_df = retrieval_df[condition]
+        cr_df
+    elif stage == 'pubmed':
+        condition = [(type(pmid) != float) for pmid in retrieval_df.pmid]
+        cr_df = retrieval_df[condition]
+        cr_df
+    else:
+        print('There is an error in the stage idendification please fill a bug repport')
+        exit()
+
+    for index, row in cr_df.iterrows():
         if counter == 0:
             #cleaning the terminal windows
             clear()
@@ -40,13 +67,13 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
         if stage == 'crossref':
             #printing the number of row remaining on the crossref step
             print('Downloading Crossref TDM links now...')
-            print(f'tdm full link {counter} of {len(retrieval_df)}') 
+            print(f'tdm full link {counter} of {len(cr_df)}') 
             
         elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
             if retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 #checking thet the PMCID is not nan, none or empty, PMICD is the key needed for epmc pmc
                 pmcid = row['pmcid']
-                print(f'Looking for {pmcid} which is record {counter} of {len(retrieval_df)}')
+                print(f'Looking for {pmcid} which is record {counter} of {len(cr_df)}')
                 if stage == 'pmcxmls' or stage == 'pmcpdfs':
                     #formating the value to the right format for these APIs
                     pmcid = pmcid.replace('PMC', '')
@@ -59,7 +86,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
                 #extracting the doi needed for doiorg
                 doi = row['doi']
-                print(f'DOI {counter} of {len(retrieval_df)}')
+                print(f'DOI {counter} of {len(cr_df)}')
             else:
                 pass
         
@@ -67,7 +94,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             if retrieval_df.pmid.loc[index] == retrieval_df.pmid.loc[index]:
                 #extracting the pmid needed for the pubmed step
                 pmid = row['pmid']
-                print(f'working on pmid:{pmid}, record {counter} of {len(retrieval_df)}')
+                print(f'working on pmid:{pmid}, record {counter} of {len(cr_df)}')
             else:
                 pass
         
