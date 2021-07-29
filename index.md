@@ -1,6 +1,8 @@
 ## Welcome to Cadmus
 
-This projects is to build full text retrieval system setup for generation of large biomedical corpora from published literature.
+Cadmus is an open-source system, developed in Python to generate biomedical text corpora from published literature. The difficulty of obtaining such datasets has been a major impediment to methodological developments in biomedical-NLP and has hindered the extraction of invaluable biomedical knowledge from the published literature. 
+
+The system collects the meta-data, retreives and parses the biomedical publications (open-access and non open-access publications where the user has permission to access the publication, usually through an institution) and finally merges the result into a single Pandas DataFrame in a Pickle format.
 
 ## Requirements
 
@@ -10,15 +12,15 @@ You need to have Java 7+.
 
 To git clone the project to the directory you want to save your result.
 
-An API key from NCBI (you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
+An API key from NCBI (you can find out more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
-An API key from Crossref (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the folowing two licenses:
+An API key from Crossref (you can find out more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the folowing two licenses:
 
 1. Wiley Text and Data Mining License v1.1
 2. Elsevier Text and Data Mining Service Agreement)
 
 ## Installation
-Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment
+Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment.
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
@@ -26,7 +28,7 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 ## Get started
 
-The format we are using for the search terms are the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search terms on PubMed and use it as input for bioscraping.
+The format we are using for the search terms are the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search terms on PubMed and use it as an input for bioscraping.
 
 In order to create your corpora you are going to use the function called 'bioscraping'. The function is taking the following required parameters:
 
@@ -37,11 +39,11 @@ In order to create your corpora you are going to use the function called 'bioscr
    
 The function can also receive optional parameters.
 
-When running, on top of the live output, you can see when your result was last save in case of failure.
+When running, at the top of the live output, you can see when your result was last saved in case of failure.
 
 
 1. The start parameter tells the function at which service we were at before failure
-2. The idx parameter tells the function what is the last saved processed row
+2. The idx parameter tells the function what is the last row saved
 
 
 Finally, in case you want to check if a document became available since the last time you tried. The function takes a last optional parameter called full_search. full_search has three predifined values:
@@ -61,15 +63,41 @@ bioscraping(
     )
 ```
 
-## Important
- Published literature is subject to copyright andrestrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derivedproducts are presented and shared.
+## Load the result
 
-## Extra ressources
-You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
+The output from Cadmus is a Pickle object. In order to open the result use the following two lines of code.
+
+```python
+import pickle
+retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+```
+
+## Important
+
+ Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
+
+## Extra resources
+
+We are commited to add Colab Notebooks and resources here of examples on how to use Cadmus and its result. 
+
+**In the following weeks, new notebooks and resources will be added**
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/15h9MjpD6oc90ehaQfm64k-bdHthBuHPW?usp=sharing) to get you started.
 
+## People
+
+- Jamie Campbell 
+- T. Ian Simpson
+- David R FitzPatrick
+- Antoine Lain
+
+Contact us using the following email <big.edinburgh@gmail.com>
+
 ## FAQ
+
+Q: What influence the performance of Cadmus? 
+
+A: There are two factors that influence the performance of Cadmus. The first one that highly influence the retrieval rate is one's subscriptions to journals. The second one is the date range. Usually, Cadmus performs better on newer publications. 
 
 Q:Tika failed three times in a row, I can not parsed PDF format. What can I do ?
 
