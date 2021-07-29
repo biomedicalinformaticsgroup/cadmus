@@ -1,5 +1,5 @@
 # Cadmus
-This projects is to build full text retrieval system setup for generation of large biomedical corpora from published literature.
+This project is to build a full text retrieval system setup for generation of large biomedical corpora from published literature.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 ## Get started
 
-The format we are using for the search terms are the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search terms on PubMed and use it as input for bioscraping.
+The format we are using for the search terms is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search terms on PubMed and use it as input for bioscraping.
 
 In order to create your corpora you are going to use the function called 'bioscraping'. The function is taking the following required parameters:
 
@@ -61,14 +61,17 @@ bioscraping(
 ```
 
 ## Important
- Published literature is subject to copyright andrestrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derivedproducts are presented and shared.
+ Published literature is subject to copyright and restrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
 
-## Extra ressources
+## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/15h9MjpD6oc90ehaQfm64k-bdHthBuHPW?usp=sharing) to get you started.
 
 ## FAQ
+Q: What influence the performance of Cadmus?
+
+A: There are two factors that influence the performance of Cadmus. The first one that highly influence the retrieval rate is one’s subscriptions to journals. The second one is the date range. Usually, Cadmus performs better on newer publications.
 
 Q:Tika failed three times in a row, I can not parsed PDF format. What can I do ?
 
