@@ -84,6 +84,10 @@ We are commited to add Colab Notebooks and resources here of examples on how to 
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/15h9MjpD6oc90ehaQfm64k-bdHthBuHPW?usp=sharing) to get you started.
 
+## Collaboration and Feedback
+
+If you have any feedback, suggestion, bug, question or if you want to take part on developing Cadmus feel free to contact us by sending us an email at <big.edinburgh@gmail.com>
+
 ## People
 
 - Jamie Campbell 
