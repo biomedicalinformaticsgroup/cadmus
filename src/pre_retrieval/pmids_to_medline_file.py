@@ -16,9 +16,9 @@ def pmids_to_medline_file(date_name, pmid_list, email, api_key):
     # to do this we need to record the webenv and query_key to use in out e-fetch request
     # remove all duplicate pmids
     new_pmids = list(set(pmid_list))
-    search_results = Entrez.read(Entrez.epost(db=“pubmed”, id=“,”.join(new_pmids)))
-    web_env = search_results[‘WebEnv’]
-    query_key = search_results[‘QueryKey’]
+    search_results = Entrez.read(Entrez.epost(db='pubmed', id=','.join(new_pmids)))
+    web_env = search_results['WebEnv']
+    query_key = search_results['QueryKey']
     # if the total count is greated than the max retieval then we will need to retrieve in batches.
     t_count = len(new_pmids)
     # 500 is the max batch size
@@ -29,20 +29,20 @@ def pmids_to_medline_file(date_name, pmid_list, email, api_key):
         # set the end number of retieval to be the smallest out of the total or start plus batch number of
         end = min(t_count, start+batch_size)
         # give some feedback on the process
-        print(f”Going to download record {start+1} to {end} out of {t_count} for search: {date_name}“)
+        print(f'Going to download record {start+1} to {end} out of {t_count} for search: {date_name}')
         # occasional server errors should be expected, this try:except block will allow 3 attempts to download each batch
         attempt = 0
         while attempt <= 5:
             attempt += 1
             try:
                 # send a request to efetch pubmed db in the medline format, setting the start and end record, according to the pmid post on the history server
-                fetch_handle = Entrez.efetch(db=“pubmed”,rettype=“medline”,
-                                             retmode=“text”,retstart=start,
+                fetch_handle = Entrez.efetch(db='pubmed',rettype= 'medline',
+                                             retmode='text',retstart=start,
                                              retmax=batch_size,
                                              webenv=web_env,
                                              query_key=query_key)
                 # set the file name to store the medline records, i am using the date searched but you can change the name variable above to whatever you like
-                with open(f”./output/medline/txts/{date_name}.txt”, “a+“) as out_handle:
+                with open(f'./output/medline/txts/{date_name}.txt', 'a+') as out_handle:
                     data = fetch_handle.read()
                     fetch_handle.close()
                     out_handle.write(data)
@@ -52,4 +52,4 @@ def pmids_to_medline_file(date_name, pmid_list, email, api_key):
                 time.sleep(2)
                 pass
         # the data read in from the respons is then written to the outhandle until the loop is complete and the handle is then closed.
-    return f”./output/medline/txts/{date_name}.txt”
+    return f'./output/medline/txts/{date_name}.txt'
