@@ -8,7 +8,7 @@ def pmids_to_medline_file(date_name, pmid_list, email, api_key):
     # other wise, the PMID list has be provided from another source and we can need to make a new date_name
     # set the entrez variable set up for the group/project
     Entrez.email = email
-    Entrez.tool = “cadmus”
+    Entrez.tool = 'cadmus'
     Entrez.api_key = api_key
     # post a joined list of the new pmids to the NCBI history server and save the search results.
     # NCBI’s history server allows you to post once and then iteratively retrieve records without reposting
