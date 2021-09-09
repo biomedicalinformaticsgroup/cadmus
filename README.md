@@ -1,5 +1,5 @@
 # Cadmus
-This project is to build full text retrieval system setup for generation of large biomedical corpora from published literature.
+This project is to build a full text retrieval system setup for generation of large biomedical corpora from published literature.
 
 ## Requirements
 
