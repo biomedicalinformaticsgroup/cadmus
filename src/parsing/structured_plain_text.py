@@ -9,8 +9,12 @@ def structured_plain_text(p_text, abs_text):
     #trying to identify if the bastract is present in the content to remove it
     for i in range(int(len(p_text.split())/2)): 
         if p_text.split()[i] == abs_text.split()[0]:
-            if p_text.split()[(i+len(abs_text.split()))-1] == abs_text.split()[-1]:
-                lower = i+len(abs_text.split())
+            try:
+                if ((i+len(abs_text.split()))-1) < len(p_text.split()):
+                    if p_text.split()[(i+len(abs_text.split()))-1] == abs_text.split()[-1]:
+                        lower = i+len(abs_text.split())
+            except:
+                pass
     #remove the abstract from the tag ## abstract
     if p_text.lower().count('## abstract') == 1:
         count = 0
