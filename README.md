@@ -25,7 +25,7 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 ## Get started
 
-The format we are using for the search terms are the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search terms on PubMed and use it as input for bioscraping.
+The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and use the same search term(s) as input for bioscraping.
 
 In order to create your corpora you are going to use the function called 'bioscraping'. The function is taking the following required parameters:
 
@@ -36,7 +36,7 @@ In order to create your corpora you are going to use the function called 'bioscr
    
 The function can also receive optional parameters.
 
-When running, on top of the live output, you can see when your result was last saved in case of failure.
+When running, on the top of the live output, you can see when your result was last saved in case of failure.
 
 
 1. The start parameter tells the function at which service we were at before failure
@@ -61,7 +61,7 @@ bioscraping(
 ```
 
 ## Important
- Published literature is subject to copyright and restrictions on redistribution.  Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
+ Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
 
 ## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
