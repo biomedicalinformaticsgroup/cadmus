@@ -66,7 +66,7 @@ bioscraping(
 ## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
-You can find a [Colab Notebook](https://colab.research.google.com/drive/15h9MjpD6oc90ehaQfm64k-bdHthBuHPW?usp=sharing) to get you started.
+You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
 
 ## FAQ
 
