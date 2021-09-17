@@ -17,7 +17,7 @@ An API key from Crossref (you can find more information [here](https://apps.cros
 2. Elsevier Text and Data Mining Service Agreement)
 
 ## Installation
-Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment
+Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment.
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
@@ -39,13 +39,13 @@ The function can also receive optional parameters.
 When running, on the top of the live output, you can see when your result was last saved in case of failure.
 
 
-1. The start parameter tells the function at which service we were at before failure
-2. The idx parameter tells the function what is the last saved processed row
+1. The start parameter tells the function at which service we were at before failure.
+2. The idx parameter tells the function what is the last saved processed row.
 
 
 Finally, in case you want to check if a document became available since the last time you tried. The function takes a last optional parameter called full_search. full_search has three predefined values:
 
-1. The default Value None, the function only looks for the new articles since the last run
+1. The default Value None, the function only looks for the new articles since the last run.
 2. 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
 3. 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve a tagged version (i.e. html or xml).
 
@@ -60,6 +60,15 @@ bioscraping(
     )
 ```
 
+## Load the result
+
+The output from Cadmus is a Pickle object. In order to open the result use the following two lines of code.
+
+```python
+import pickle
+retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+```
+
 ## Important
  Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
 
@@ -69,6 +78,10 @@ You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/c
 You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
 
 ## FAQ
+
+Q: What influences the performance of Cadmus?
+
+A: There are two factors that influence the performance of Cadmus. The first one that highly influences the retrieval rate is one’s subscriptions to journals. The second one is the date range. Usually, Cadmus performs better on newer publications.
 
 Q:Tika failed three times in a row, I can not parse PDF format. What can I do ?
 
