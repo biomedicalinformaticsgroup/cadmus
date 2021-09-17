@@ -264,7 +264,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'crossref')
+                        finish = retrieval(finish, http, base_url, headers, 'crossref', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
@@ -287,7 +287,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'crossref')
+                    finish = retrieval(finish, http, base_url, headers, 'crossref', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     #change the start and the idx to none to complete all the next step with all the row
                     start = None
@@ -328,7 +328,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'doiorg')
+                        finish = retrieval(finish, http, base_url, headers, 'doiorg', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
@@ -350,7 +350,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'doiorg')
+                    finish = retrieval(finish, http, base_url, headers, 'doiorg', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -390,7 +390,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'epmcxml')
+                        finish = retrieval(finish, http, base_url, headers, 'epmcxml', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
@@ -412,7 +412,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'epmcxml')
+                    finish = retrieval(finish, http, base_url, headers, 'epmcxml', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -452,7 +452,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'pmcxmls')
+                        finish = retrieval(finish, http, base_url, headers, 'pmcxmls', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
@@ -474,7 +474,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pmcxmls')
+                    finish = retrieval(finish, http, base_url, headers, 'pmcxmls', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -514,7 +514,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'pmctgz')
+                        finish = retrieval(finish, http, base_url, headers, 'pmctgz', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
@@ -536,7 +536,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pmctgz')
+                    finish = retrieval(finish, http, base_url, headers, 'pmctgz', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -576,7 +576,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, '', 'pmcpdfs')
+                        finish = retrieval(finish, http, base_url, '', 'pmcpdfs', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
@@ -598,7 +598,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, '', 'pmcpdfs')
+                    finish = retrieval(finish, http, base_url, '', 'pmcpdfs', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -638,7 +638,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                         done = retrieved_df2[:divide_at]
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
                         # now use the http request set up to request for each of the retrieved_df 
-                        finish = retrieval(finish, http, base_url, headers, 'pubmed')
+                        finish = retrieval(finish, http, base_url, headers, 'pubmed', done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
@@ -660,7 +660,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     done = retrieved_df[:divide_at]
                     http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pubmed')
+                    finish = retrieval(finish, http, base_url, headers, 'pubmed', done = done)
                     retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
@@ -707,7 +707,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     if divide_at != 0:
                         finish = retrieved_df2[divide_at:]
                         done = retrieved_df2[:divide_at]                       
-                        finish = parse_link_retrieval(finish, email, click_through_api_key)
+                        finish = parse_link_retrieval(finish, email, click_through_api_key, done = done)
                         retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     else:
                         retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key)
@@ -723,7 +723,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 if divide_at != 0:
                     finish = retrieved_df[divide_at:]
                     done = retrieved_df[:divide_at]
-                    finish = parse_link_retrieval(finish, email, click_through_api_key)
+                    finish = parse_link_retrieval(finish, email, click_through_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                     start = None
                     idx = None
