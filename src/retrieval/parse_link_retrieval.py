@@ -205,7 +205,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
             clear()
             saved_stage = stage
             saved_index = index
-            if done == None:
+            if done is None:
                 pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:
                 saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
@@ -214,7 +214,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
             print('\n') 
             
     print('process Complete')
-    if done == None:
+    if done is None:
         pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     else:
         saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
