@@ -22,8 +22,9 @@ from time import sleep
 import warnings
 warnings.filterwarnings("ignore")
 from multiprocessing import Process
+import pandas as pd
 
-def retrieval(retrieval_df, http, base_url, headers, stage):
+def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
     # the input will be the retrieved_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
@@ -591,33 +592,58 @@ def retrieval(retrieval_df, http, base_url, headers, stage):
             clear()
             saved_stage = stage
             saved_index = index
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            if done == None:
+                pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            else:
+                saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+                pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n')
 
     #When all the the rows have been completed saving the main df and the information of the current stage   
     print('process Complete')
     if stage == 'crossref':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/crossref_download_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'epmcxml':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/pmcid_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else: 
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'epmcsupp':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/epmc_supp_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pmcxmls':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/pmc_oai_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pmcpdfs':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/pmc_oai_pdf_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'doiorg':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/doi_org.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     elif stage == 'pubmed':
-        pickle.dump(retrieval_df, open('./output/retrieved_df/pubmed_df.p', 'wb'))
-        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        if done == None:
+            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+        else:
+            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     else:
         pass   
 

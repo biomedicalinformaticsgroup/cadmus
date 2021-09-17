@@ -14,11 +14,12 @@ import warnings
 warnings.filterwarnings("ignore")
 from time import sleep
 import pickle
+import pandas as pd
 
 # once we get to this stage we have tried quite a few approaches to get a full text document for each article.
 # we can pull out the records that do not have a tagged version and a pdf version to keep trying for.
 # we will now go through the dataframe and sequentially try the untried links in the full_text_links dictionary.
-def parse_link_retrieval(retrieval_df, email, click_through_api_key):
+def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None):
     counter = -0
     stage = 'retrieved2'
     for index, row in retrieval_df.iterrows():
@@ -204,10 +205,18 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key):
             clear()
             saved_stage = stage
             saved_index = index
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            if done == None:
+                pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            else:
+                saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+                pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n') 
             
     print('process Complete')
-    pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+    if done == None:
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+    else:
+        saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+        pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     return retrieval_df
