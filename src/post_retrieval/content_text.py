@@ -40,6 +40,46 @@ def content_text(retrieval_df):
         texts = [xml_d, html_d, plain_d, pdf_d]
         wcs = [xml_wc, html_wc, plain_wc, pdf_wc]
         max_wcs = 0 
+
+        '''choice_count = 0
+        for i in range (len(texts)):
+            if texts[i] != None:
+                choice_count += 1
+
+        if choice_count == 1:
+            for i in range(len(texts)):
+                if texts[i] != None:
+                    best_text = texts[i]
+                    break
+        
+        numerator = 0 
+        denominator = 0
+        if choice_count > 1:
+            for i in range(len(wcs)):
+                if wcs[i] != None:
+                    numerator += wcs[i]
+                    denominator += 1
+
+        if choice_count > 1:
+            mean_wcs = int(float(numerator) / float(denominator))
+
+        default_text = False
+        default_format = 0
+        text_found = False
+        if choice_count > 1:
+            for i in range(len(texts)):
+                if texts[i] != None:
+                    if int(wcs[i]) > int(round(mean_wcs * 0.8)) and int(wcs[i]) < int(round(mean_wcs * 2.5)) and text_found == False:
+                        best_text = texts[i]
+                        text_found = True
+                        break   
+                    if  default_text == False:
+                        default_format = i
+                        default_text = True
+
+        if best_text == None:
+            best_text = texts[default_format]'''
+
         #we tried to find among all the format the format with the biggest word count
         for i in range(len(wcs)):
             if wcs[i] != None:
