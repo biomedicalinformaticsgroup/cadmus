@@ -15,8 +15,5 @@ def get_attrs(tag):
             flat_vals.extend([element.lower() for element in val])
         else:
             flat_vals.append(val.lower())
-    # when the list is empty then lets return a none value
-    if flat_vals == []:
-        flat_vals = None
     
     return flat_vals
