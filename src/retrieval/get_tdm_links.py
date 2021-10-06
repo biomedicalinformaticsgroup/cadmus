@@ -14,4 +14,6 @@ def get_tdm_links(link_list):
                 tdm_links.append(link_dict.get('URL'))
     if tdm_links == []:
         tdm_links = None
+    else:
+        tdm_links = list(set(tdm_links))
     return tdm_links
