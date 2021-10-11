@@ -1,13 +1,25 @@
 def xml_body_p_parse(soup):
+    # we'll save each paragraph to a holding list then join at the end
+    p_text = []
     # search the soup object for body tag
     body = soup.find('body')
-    # if a body tag is found then get a list of all the 'paragraph' tags
+    # if a body tag is found then find the main article tags
     if body:
-        ps = body.find_all('p')
-        # for every p tag, extract the plain text, stripping the whitespace and making one long string
-        p_text = ' '.join([p.text.strip() for p in ps])
+        main = body.find_all(['article','component','main', 'abstract'])
+        if main:
+            # work though each of these tags if present and look for p tags
+            for tag in main:
+                ps = tag.find_all('p')
+                if ps:
+                    # for every p tag, extract the plain text, stripping the whitespace and making one long string
+                    p_text.extend([p.text.strip() for p in ps if p.text.strip() not in p_text])
+            # join each p element with a space 
+            p_text = ' '.join(p_text)
     else:
         # when there is no body tag then the XML is not useful.
         print('No Body, looks like a False Positive XML or Abstract Only')
-        p_text = None
+        p_text = ''
+    # ensure the p_text is a simplified string format even if the parsing fails    
+    if p_text == [] or p_text == ' ':
+        p_text = ''
     return p_text
