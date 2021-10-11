@@ -1,19 +1,17 @@
-from cadmus.src.parsing import clean_soup
+from cadmus.src.parsing import xml_clean_soup
 from cadmus.src.parsing import xml_body_p_parse
 from cadmus.src.parsing import get_ab
 from cadmus.src.evaluation import abstract_similarity_score
 from cadmus.src.evaluation import body_unique_score
-import bs4
 from bs4 import BeautifulSoup
-import lxml
 import warnings
 warnings.filterwarnings("ignore")
 
 def xml_response_to_parse_d(retrieval_df, index, xml_response):
     parse_d = {}
-    soup = BeautifulSoup(xml_response.text, 'lxml')
+    soup = BeautifulSoup(xml_response.text, features = 'lxml')
     # remove unwanted tags
-    soup = clean_soup(soup)
+    soup = xml_clean_soup(soup)
     # try parse the text
     p_text = xml_body_p_parse(soup)
     # check for abstract in retrieved_df
