@@ -1,10 +1,10 @@
-from cadmus.src.parsing import clean_soup
-from cadmus.src.parsing import xml_body_p_parse
-from cadmus.src.parsing import pdf_file_to_parse_d
-from cadmus.src.parsing import get_ab
-from cadmus.src.evaluation import abstract_similarity_score
-from cadmus.src.evaluation import body_unique_score
-from cadmus.src.evaluation import evaluation_funct
+from cadmus.src.parsing.clean_soup import clean_soup
+from cadmus.src.parsing.xml_body_p_parse import xml_body_p_parse
+from cadmus.src.parsing.pdf_file_to_parse_d import pdf_file_to_parse_d
+from cadmus.src.parsing.get_ab import get_ab
+from cadmus.src.evaluation.abstract_similarity_score import abstract_similarity_score
+from cadmus.src.evaluation.body_unique_score import body_unique_score
+from cadmus.src.evaluation.evaluation_funct import evaluation_funct
 import os
 import tarfile
 from pathlib import Path

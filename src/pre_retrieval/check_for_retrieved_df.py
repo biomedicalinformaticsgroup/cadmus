@@ -1,5 +1,5 @@
 # Here is a function to check for the existance of the retrieved df and ensure it is not empty.
-from cadmus.src.pre_retrieval import output_files
+from cadmus.src.pre_retrieval.output_files import output_files
 from pathlib import Path
 import os
 
