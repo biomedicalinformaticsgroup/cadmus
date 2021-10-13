@@ -21,3 +21,4 @@ from cadmus.src.parsing.get_abstract_txt import get_abstract_txt
 from cadmus.src.parsing.structured_plain_text import structured_plain_text
 from cadmus.src.parsing.unstructured_plain_text import unstructured_plain_text
 from cadmus.src.parsing.plain_file_to_parse_d import plain_file_to_parse_d
+from cadmus.src.parsing.xml_clean_soup import xml_clean_soup

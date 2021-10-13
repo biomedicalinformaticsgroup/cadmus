@@ -55,3 +55,4 @@ from cadmus.src import structured_plain_text
 from cadmus.src import unstructured_plain_text
 from cadmus.src import plain_file_to_parse_d
 from cadmus.src import timeout
+from cadmus.src import xml_clean_soup
