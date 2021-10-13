@@ -1,9 +1,9 @@
-from cadmus.src.parsing import clean_soup
-from cadmus.src.parsing import html_get_ab
+from cadmus.src.parsing.clean_soup import clean_soup
+from cadmus.src.parsing.html_get_ab import html_get_ab
 from cadmus.src.parsing.html_to_parsed_text import html_to_parsed_text
 from cadmus.src.evaluation.abstract_similarity_score import abstract_similarity_score
 from cadmus.src.evaluation.body_unique_score import body_unique_score
-from cadmus.src.retrieval import redirect_check
+from cadmus.src.retrieval.redirect_check import redirect_check
 import bs4
 from bs4 import BeautifulSoup
 

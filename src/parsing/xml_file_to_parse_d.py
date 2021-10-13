@@ -1,8 +1,8 @@
-from cadmus.src.parsing import xml_clean_soup
-from cadmus.src.parsing import xml_body_p_parse
-from cadmus.src.parsing import get_ab
-from cadmus.src.evaluation import abstract_similarity_score
-from cadmus.src.evaluation import body_unique_score
+from cadmus.src.parsing.xml_clean_soup import xml_clean_soup
+from cadmus.src.parsing.xml_body_p_parse import xml_body_p_parse
+from cadmus.src.parsing.get_ab import get_ab
+from cadmus.src.evaluation.abstract_similarity_score import abstract_similarity_score
+from cadmus.src.evaluation.body_unique_score import body_unique_score
 import bs4
 from bs4 import BeautifulSoup
 

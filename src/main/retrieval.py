@@ -1,15 +1,15 @@
-from cadmus.src.retrieval import get_request
-from cadmus.src.parsing import xml_response_to_parse_d
-from cadmus.src.parsing import doctype
-from cadmus.src.evaluation import evaluation_funct
-from cadmus.src.retrieval import complete_html_link_parser
+from cadmus.src.retrieval.get_request import get_request
+from cadmus.src.parsing.xml_response_to_parse_d import xml_response_to_parse_d
+from cadmus.src.parsing.doctype import doctype
+from cadmus.src.evaluation.evaluation_funct import evaluation_funct
+from cadmus.src.retrieval.complete_html_link_parser import complete_html_link_parser
 from cadmus.src.parsing.html_response_to_parse_d import html_response_to_parse_d
-from cadmus.src.parsing import pdf_file_to_parse_d
-from cadmus.src.parsing import plain_file_to_parse_d
-from cadmus.src.parsing import tgz_unpacking
-from cadmus.src.retrieval import pubmed_linkout_parse
-from cadmus.src.retrieval import clear
-from cadmus.src.retrieval import timeout
+from cadmus.src.parsing.pdf_file_to_parse_d import pdf_file_to_parse_d
+from cadmus.src.parsing.plain_file_to_parse_d import plain_file_to_parse_d
+from cadmus.src.parsing.tgz_unpacking import tgz_unpacking
+from cadmus.src.retrieval.pubmed_linkout_parse import pubmed_linkout_parse
+from cadmus.src.retrieval.clear import clear
+from cadmus.src.retrieval.timeout import timeout
 import bs4
 from bs4 import BeautifulSoup
 import pickle

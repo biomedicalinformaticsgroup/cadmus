@@ -1,5 +1,5 @@
-from cadmus.src.retrieval import get_request
-from cadmus.src.retrieval import get_tdm_links
+from cadmus.src.retrieval.get_request import get_request
+from cadmus.src.retrieval.get_tdm_links import get_tdm_links
 import json
 import pickle
 

@@ -1,8 +1,8 @@
-from cadmus.src.retrieval import get_base_url
-from cadmus.src.retrieval import html_link_from_meta
-from cadmus.src.retrieval import pdf_links_from_meta
-from cadmus.src.retrieval import explicit_pdf_links
-from cadmus.src.retrieval import links_from_a_tags
+from cadmus.src.retrieval.get_base_url import get_base_url
+from cadmus.src.retrieval.html_link_from_meta import html_link_from_meta
+from cadmus.src.retrieval.pdf_links_from_meta import pdf_links_from_meta
+from cadmus.src.retrieval.explicit_pdf_links import explicit_pdf_links
+from cadmus.src.retrieval.links_from_a_tags import links_from_a_tags
 import bs4
 from bs4 import BeautifulSoup
 import warnings

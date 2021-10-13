@@ -1,5 +1,5 @@
-from cadmus.src.pre_retrieval import pdat_to_datetime
-from cadmus.src.parsing import get_medline_doi
+from cadmus.src.pre_retrieval.pdat_to_datetime import pdat_to_datetime
+from cadmus.src.parsing.get_medline_doi import get_medline_doi
 from Bio import Entrez, Medline
 import uuid
 import pickle
