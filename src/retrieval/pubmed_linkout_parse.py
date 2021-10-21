@@ -51,7 +51,11 @@ def pubmed_linkout_parse(index, retrieval_df, response):
         
     # now remove any duplicate links
     link_list = list(set(link_list))
-    
+
+    for i in range(len(link_list)):
+        if len(link_list[i].split()) > 1:
+            link_list[i] = link_list[i].split()[0]
+
     # now lets add the link list to our dictionary of full text links for the appropriate article.
     full_text_link_d = retrieval_df.loc[index, 'full_text_links']
     full_text_link_d.update({'pubmed_links':link_list})
