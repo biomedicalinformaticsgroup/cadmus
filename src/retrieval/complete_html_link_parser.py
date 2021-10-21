@@ -26,5 +26,9 @@ def complete_html_link_parser(response):
 
 
         link_list = list(set(link_list))
+
+        for i in range(len(link_list)):
+                if len(link_list[i].split()) > 1:
+                        link_list[i] = link_list[i].split()[0]
         
         return link_list
