@@ -31,4 +31,12 @@ def complete_html_link_parser(response):
                 if len(link_list[i].split()) > 1:
                         link_list[i] = link_list[i].split()[0]
         
+        for i in link_list[:]:
+                if 'http' not in i:
+                        link_list.remove(i)
+                        
+        for i in link_list[:]:
+                if 'f6publishing' in i:
+                        link_list.remove(i)
+        
         return link_list
