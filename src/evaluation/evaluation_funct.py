@@ -1,4 +1,3 @@
-'''
 def evaluation_funct(parse_dict):
     result = None
     
@@ -29,7 +28,7 @@ def evaluation_funct(parse_dict):
             result = 'TP'
     
     # now we can use the body unique and abstract similarity score to classify the rest
-    if bu_score >= 0.6:
+    if bu_score >= 0.6 and ab_score != 0.0:
         result = 'TP'
         
     elif (abstract != abstract and (wc > 100)) or (abstract == None and (wc > 100)) or (abstract == '' and (wc > 100)):
@@ -47,8 +46,8 @@ def evaluation_funct(parse_dict):
     parse_dict.update({'evaluation':result}) 
     
     return parse_dict
+    
 '''
-
 def evaluation_funct(parse_dict):
     result = None
     
@@ -91,4 +90,5 @@ def evaluation_funct(parse_dict):
     
     parse_dict.update({'evaluation':result}) 
     
-    return parse_dict
+    return 
+'''

@@ -41,7 +41,7 @@ def content_text(retrieval_df):
         wcs = [xml_wc, html_wc, plain_wc, pdf_wc]
         max_wcs = 0 
 
-        '''choice_count = 0
+        choice_count = 0
         for i in range (len(texts)):
             if texts[i] != None:
                 choice_count += 1
@@ -78,8 +78,9 @@ def content_text(retrieval_df):
                         default_text = True
 
         if best_text == None:
-            best_text = texts[default_format]'''
-
+            best_text = texts[default_format]
+        
+        '''
         #we tried to find among all the format the format with the biggest word count
         for i in range(len(wcs)):
             if wcs[i] != None:
@@ -92,6 +93,7 @@ def content_text(retrieval_df):
                 if wcs[i] > max_wcs:
                     best_text = texts[i]
                     break
+                '''
         #in case we have no text or the text is smaller than the abstract thenusing the abstract as content
         if row['abstract'] == row['abstract'] and row['abstract'] != None and row['abstract'] != '':
             if (best_text == None) or (len(best_text.split()) < len(str(row['abstract']).split()) and len(row['abstract'].split()) < 1000):
