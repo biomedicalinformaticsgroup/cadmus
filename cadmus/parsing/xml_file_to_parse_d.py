@@ -11,14 +11,16 @@ def xml_file_to_parse_d(retrieval_df, index, xml_response):
     soup = BeautifulSoup(xml_response.text, features = 'lxml')
     # remove unwanted tags
     soup = xml_clean_soup(soup)
-    # try parse the text
-    p_text = xml_body_p_parse(soup)
+    
     # check for abstract in retrieved_df
     if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] == retrieval_df.loc[index, 'abstract']:
         ab = retrieval_df.loc[index, 'abstract']
     else:    
         # try parse the abstract
         ab = get_ab(soup)
+    
+    # try parse the text
+    p_text = xml_body_p_parse(soup, ab)
     # get the file_size
     size = len(xml_response.content)
     # get the word_count

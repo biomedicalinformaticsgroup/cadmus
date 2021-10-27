@@ -1,6 +1,7 @@
-def xml_body_p_parse(soup):
+def xml_body_p_parse(soup, abstract):
     # we'll save each paragraph to a holding list then join at the end
     p_text = []
+    p_text.append(abstract)
     # search the soup object for body tag
     body = soup.find('body')
     # if a body tag is found then find the main article tags
