@@ -2,7 +2,7 @@ import setuptools
    
 setuptools.setup(
     name="cadmus",
-    version="0.2.0",
+    version="0.2.1",
     author="Jamie Campbell, Ian Simpson, Antoine Lain",
     author_email="Jamie.campbell@igmm.ed.ac.uk, Ian.Simpson@ed.ac.uk, Antoine.Lain@ed.ac.uk",
     description="This projects is to build full text retrieval system setup for generation of large biomedical corpora from published literature.",
@@ -13,7 +13,8 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=['pandas',
+    install_requires=[
+'pandas',
 'numpy',
 'requests',
 'bs4',
@@ -23,6 +24,7 @@ setuptools.setup(
 'biopython',
 'python-dateutil',
 'lxml',
-'IPython'],
+'IPython'
+],
     python_requires='>=3.6'
 )
