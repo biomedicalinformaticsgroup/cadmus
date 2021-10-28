@@ -1,12 +1,13 @@
 def xml_body_p_parse(soup, abstract):
     # we'll save each paragraph to a holding list then join at the end
     p_text = []
-    p_text.append(abstract)
+    if abstract != '' and abstract != None and abstract == abstract:
+        p_text.append(abstract)
     # search the soup object for body tag
     body = soup.find('body')
     # if a body tag is found then find the main article tags
     if body:
-        main = body.find_all(['article','component','main', 'abstract'])
+        main = body.find_all(['article','component','main'])
         if main:
             # work though each of these tags if present and look for p tags
             for tag in main:

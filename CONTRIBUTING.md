@@ -40,13 +40,13 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up `ParallelPyMetaMap` for local development.
+Ready to contribute? Here's how to set up `cadmus` for local development.
 
-1. Download a copy of `ParallelPyMetaMap` locally.
-2. Install `ParallelPyMetaMap` using `pip`:
+1. Download a copy of `cadmus` locally.
+2. Install `cadmus` using `pip`:
 
     ```console
-    $ pip install ParallelPyMetaMap
+    $ pip install ./cadmus
     ```
 
 ## Pull Request Guidelines
@@ -59,5 +59,5 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Code of Conduct
 
-Please note that the `ParallelPyMetaMap` project is released with a 
+Please note that the `cadmus` project is released with a 
 Code of Conduct. By contributing to this project you agree to abide by its terms.
