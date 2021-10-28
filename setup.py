@@ -2,7 +2,7 @@ import setuptools
    
 setuptools.setup(
     name="cadmus",
-    version="0.2.2",
+    version="0.2.3",
     author="Jamie Campbell, Ian Simpson, Antoine Lain",
     author_email="Jamie.campbell@igmm.ed.ac.uk, Ian.Simpson@ed.ac.uk, Antoine.Lain@ed.ac.uk",
     description="This projects is to build full text retrieval system setup for generation of large biomedical corpora from published literature.",
