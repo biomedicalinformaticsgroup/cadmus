@@ -143,6 +143,6 @@ def html_to_parsed_text(soup):
     # finally we want to check remove the [, , , ] from stripping out references etc
     text = re.sub('\[[, ]*\]', '', text)
     # remove any of the unicode characeters and \n chars
-    text = unicodedata.normalize("NFKD", text).replace('\n', '')
+    text = unicodedata.normalize("NFKD", text).replace('\n', ' ')
 
     return text
