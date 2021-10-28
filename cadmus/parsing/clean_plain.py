@@ -1,9 +1,11 @@
 from cadmus.parsing.remove_link import remove_link
 import re
+import unicodedata
 
 def clean_plain(p_text):  
     #checking that the text is not none 
     if p_text != None:
+        p_text = unicodedata.normalize("NFKD", p_text)
         #replacing characters by space or none
         p_text = p_text.replace('\n',' ')
         p_text = p_text.replace('\t','')
@@ -11,8 +13,17 @@ def clean_plain(p_text):
         p_text = p_text.replace(' -','')
         p_text = p_text.replace('�','')
         p_text = p_text.replace('*','')
-        p_text = p_text.replace('  ',' ')
         p_text = p_text.replace('##',' ')
+        p_text = p_text.replace('å','')
+        p_text = p_text.replace('┸','')
+        p_text = p_text.replace('❒','')
+        p_text = p_text.replace('┻','')
+        p_text = p_text.replace('►','')
+        p_text = p_text.replace('❖','')
+        p_text = p_text.replace('et al.','')
+        p_text = p_text.replace('et al','')
+        p_text = p_text.replace('▀','')
+        p_text = p_text.replace('file:///','')
         p_text = remove_link(p_text)
         p_text = p_text.replace('https://','')
         p_text = p_text.replace('http://','')
@@ -54,5 +65,7 @@ def clean_plain(p_text):
 
     else:
         pass
+
+    p_text = p_text.replace('  ',' ')
             
     return p_text
