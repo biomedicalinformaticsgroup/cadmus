@@ -140,9 +140,4 @@ def html_to_parsed_text(soup):
                     if p.get_text(" ", strip = True) not in text:
                         text = text + " " + p.get_text(" ", strip = True)
 
-    # finally we want to check remove the [, , , ] from stripping out references etc
-    text = re.sub('\[[, ]*\]', '', text)
-    # remove any of the unicode characeters and \n chars
-    text = unicodedata.normalize("NFKD", text).replace('\n', ' ')
-
     return text
