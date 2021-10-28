@@ -1,8 +1,5 @@
 from cadmus.parsing.get_attrs import get_attrs
 
-import re
-import unicodedata
-
 def html_to_parsed_text(soup):
     # i want to save the text portions to a holding list, adding new sections each time we think its useful or new.
     text = ''
@@ -41,8 +38,8 @@ def html_to_parsed_text(soup):
                     or 'mb0' in attrs \
                     or 'article-section-content' in attrs \
                     or 'articleparagraph' in attrs:
-                        if p.get_text(" ", strip = True) not in text:
-                            text += p.get_text(" ", strip = True)
+                        if p.get_text(" ") not in text:
+                            text = text + " " + p.get_text(" ", strip = True)
             return text
             
             
@@ -106,7 +103,7 @@ def html_to_parsed_text(soup):
                                 or 'article-section-content' in attrs \
                                 or 'articleparagraph' in attrs:
                                     if p.get_text(" ", strip = True) not in text:
-                                        text += p.get_text(" ", strip = True)
+                                        text = text + " " + p.get_text(" ", strip = True)
         if text != '':
             return text
                 
@@ -141,7 +138,7 @@ def html_to_parsed_text(soup):
                 or 'article-section-content' in attrs \
                 or 'articleparagraph' in attrs:
                     if p.get_text(" ", strip = True) not in text:
-                        text += p.get_text(" ", strip = True)
+                        text = text + " " + p.get_text(" ", strip = True)
 
     # finally we want to check remove the [, , , ] from stripping out references etc
     text = re.sub('\[[, ]*\]', '', text)
