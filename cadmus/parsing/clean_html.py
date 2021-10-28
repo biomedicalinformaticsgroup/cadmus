@@ -2,8 +2,6 @@ from cadmus.parsing.remove_link import remove_link
 import re
 import unicodedata
 
-
-
 def clean_html(p_text):
     #check if the content is not none
     if p_text != None:
