@@ -56,3 +56,5 @@ from cadmus.parsing.unstructured_plain_text import unstructured_plain_text
 from cadmus.parsing.plain_file_to_parse_d import plain_file_to_parse_d
 from cadmus.retrieval.timeout import timeout
 from cadmus.parsing.xml_clean_soup import xml_clean_soup
+from cadmus.parsing.clean_xml import clean_xml
+from cadmus.parsing.clean_html import clean_html
