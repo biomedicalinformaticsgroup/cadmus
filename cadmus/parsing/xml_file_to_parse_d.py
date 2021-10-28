@@ -3,6 +3,7 @@ from cadmus.parsing.xml_body_p_parse import xml_body_p_parse
 from cadmus.parsing.get_ab import get_ab
 from cadmus.evaluation.abstract_similarity_score import abstract_similarity_score
 from cadmus.evaluation.body_unique_score import body_unique_score
+from cadmus.parsing.clean_xml import clean_xml
 import bs4
 from bs4 import BeautifulSoup
 
@@ -21,6 +22,7 @@ def xml_file_to_parse_d(retrieval_df, index, xml_response):
     
     # try parse the text
     p_text = xml_body_p_parse(soup, ab)
+    p_text = clean_xml(p_text)
     # get the file_size
     size = len(xml_response.content)
     # get the word_count

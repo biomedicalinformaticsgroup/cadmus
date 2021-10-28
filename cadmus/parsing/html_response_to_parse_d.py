@@ -4,6 +4,7 @@ from cadmus.parsing.html_to_parsed_text import html_to_parsed_text
 from cadmus.evaluation.abstract_similarity_score import abstract_similarity_score
 from cadmus.evaluation.body_unique_score import body_unique_score
 from cadmus.retrieval.redirect_check import redirect_check
+from cadmus.parsing.clean_html import clean_html
 import bs4
 from bs4 import BeautifulSoup
 
@@ -37,6 +38,7 @@ def html_response_to_parse_d(retrieval_df, index, response):
        
         # parse out the body text 
         text = html_to_parsed_text(soup)
+        text = clean_html(text)
         
         # get the file_size
         size = len(response.content)
