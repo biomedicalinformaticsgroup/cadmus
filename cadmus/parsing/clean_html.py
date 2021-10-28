@@ -7,11 +7,11 @@ def clean_html(p_text):
     if p_text != None:
         
         # we want to check remove the [, , , ] that were made when we stripping out references etc
-        p_text = re.sub('\[[, ]*\]', ' ', text)
-        p_text = re.sub('\[(, )*\]', ' ', text)
+        p_text = re.sub('\[[, ]*\]', ' ', p_text)
+        p_text = re.sub('\[(, )*\]', ' ', p_text)
         
         # remove any of the unicode characeters and \n chars
-        p_text = unicodedata.normalize("NFKD", text)
+        p_text = unicodedata.normalize("NFKD", p_text)
         
         p_text = remove_link(p_text)
         p_text = p_text.replace('https://','')
