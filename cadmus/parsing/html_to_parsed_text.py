@@ -1,4 +1,6 @@
 from cadmus.parsing.get_attrs import get_attrs
+import re
+import unicodedata
 
 def html_to_parsed_text(soup):
     # i want to save the text portions to a holding list, adding new sections each time we think its useful or new.
