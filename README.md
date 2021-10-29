@@ -1,4 +1,4 @@
-# Cadmus ![](https://zenodo.org/badge/doi/10.5281/zenodo.819735.svg)
+# Cadmus [![DOI](https://zenodo.org/badge/364367629.svg)](https://zenodo.org/badge/latestdoi/364367629)
 This project is to build a full text retrieval system setup for generation of large biomedical corpora from published literature.
 
 ## Requirements
