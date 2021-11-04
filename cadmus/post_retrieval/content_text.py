@@ -10,10 +10,10 @@ def content_text(retrieval_df):
         html_d = None
         pdf_d = None
         plain_d = None
-        html_wc = 0
-        xml_wc = 0
-        pdf_wc = 0
-        plain_wc = 0
+        html_wc = None
+        xml_wc = None
+        pdf_wc = None
+        plain_wc = None
         #for each format we take the wordcount and the content
         if 'text' in row['html_parse_d'].keys():
             html_d = str(row['html_parse_d']['text'])
@@ -35,7 +35,7 @@ def content_text(retrieval_df):
             plain_wc = row['plain_parse_d']['wc']
         else:
             None
-        #we set the best text to none fonr now
+        #we set the best text to none for now
         best_text = None
         texts = [xml_d, html_d, plain_d, pdf_d]
         wcs = [xml_wc, html_wc, plain_wc, pdf_wc]
