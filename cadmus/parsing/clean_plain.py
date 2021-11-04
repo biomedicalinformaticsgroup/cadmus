@@ -14,15 +14,24 @@ def clean_plain(p_text):
         p_text = p_text.replace('�','')
         p_text = p_text.replace('*','')
         p_text = p_text.replace('##',' ')
-        p_text = p_text.replace('å','')
-        p_text = p_text.replace('┸','')
-        p_text = p_text.replace('❒','')
-        p_text = p_text.replace('┻','')
-        p_text = p_text.replace('►','')
-        p_text = p_text.replace('❖','')
         p_text = p_text.replace('et al.','')
         p_text = p_text.replace('et al','')
-        p_text = p_text.replace('▀','')
+        p_text = p_text.replace('<mrow>','')
+        p_text = p_text.replace('</mrow>','')
+        p_text = p_text.replace('<mml>','')
+        p_text = p_text.replace('</mml>','')
+        p_text = p_text.replace('<mi>','')
+        p_text = p_text.replace('</mi>','')
+        p_text = p_text.replace('IMAGE-HIGH-RES','')
+        p_text = p_text.replace('IMAGE-WEB-PDF','')
+        p_text = p_text.replace('<mo>','')
+        p_text = p_text.replace('</mo>','')
+        p_text = p_text.replace('IMAGE-THUMBNAIL','')
+        p_text = p_text.replace('IMAGE-DOWNSAMPLED','')
+        p_text = p_text.replace('<msub>','')
+        p_text = p_text.replace('</msub>','')
+        p_text = p_text.replace('AAM-PDF','')
+        p_text = p_text.replace('InterviewRevised','Interview Revised')
         p_text = p_text.replace('file:///','')
         p_text = remove_link(p_text)
         p_text = p_text.replace('https://','')
@@ -31,6 +40,11 @@ def clean_plain(p_text):
         p_text = p_text.replace('ftp:','')
         #remove the emails from the text
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
+        result = re.findall(email_detection, p_text)
+        for i in range(len(result)):
+            p_text = p_text.replace(result[i],'')
+        #remove the emails from the text
+        email_detection = re.compile('\w+@\w+\.[a-z]{2}')
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
             p_text = p_text.replace(result[i],'')
@@ -66,6 +80,8 @@ def clean_plain(p_text):
     else:
         pass
 
+    p_text = re.sub('\[[, ]*\]', ' ', p_text)
+    p_text = re.sub('\[(, )*\]', ' ', p_text)
     p_text = p_text.replace('  ',' ')
             
     return p_text

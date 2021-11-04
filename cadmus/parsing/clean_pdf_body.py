@@ -12,7 +12,6 @@ def clean_pdf_body(p_text):
         p_text = p_text.replace('- ','')
         p_text = p_text.replace(' -','')
         p_text = p_text.replace('�','')
-        p_text = p_text.replace('å','')
         p_text = p_text.replace('┸','')
         p_text = p_text.replace('❒','')
         p_text = p_text.replace('┻','')
@@ -21,6 +20,24 @@ def clean_pdf_body(p_text):
         p_text = p_text.replace('et al.','')
         p_text = p_text.replace('et al','')
         p_text = p_text.replace('▀','')
+        p_text = p_text.replace('©','')
+        p_text = p_text.replace('●','')
+        p_text = p_text.replace('•','')
+        p_text = p_text.replace('°','')
+        p_text = p_text.replace('®','')
+        p_text = p_text.replace('×','')
+        p_text = p_text.replace('¼','1/4')
+        p_text = p_text.replace('nloaded','')
+        p_text = p_text.replace('niversity','')
+        p_text = p_text.replace('//doi','')
+        p_text = p_text.replace('mailto','')
+        p_text = p_text.replace('//.','')
+        p_text = p_text.replace('org/.','')
+        p_text = p_text.replace('↓','')
+        p_text = p_text.replace('Dovepress','')
+        p_text = p_text.replace('↑','')
+        p_text = p_text.replace('™','')
+        p_text = p_text.replace('PLOSONE','')
         p_text = p_text.replace('file:///','')
         #remove the link present in the text
         p_text = remove_link(p_text)
@@ -30,6 +47,11 @@ def clean_pdf_body(p_text):
         p_text = p_text.replace('ftp:','')
         # remove the email adresses of the text
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
+        result = re.findall(email_detection, p_text)
+        for i in range(len(result)):
+            p_text = p_text.replace(result[i],'')
+        #remove the emails from the text
+        email_detection = re.compile('\w+@\w+\.[a-z]{2}')
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
             p_text = p_text.replace(result[i],'')
@@ -82,6 +104,8 @@ def clean_pdf_body(p_text):
     else:
         pass
 
+    p_text = re.sub('\[[, ]*\]', ' ', p_text)
+    p_text = re.sub('\[(, )*\]', ' ', p_text)
     p_text = p_text.replace('  ',' ')
             
     return p_text
