@@ -21,6 +21,8 @@ def clean_xml(p_text):
         p_text = p_text.replace('±',' +/-')
         p_text = p_text.replace('\n', '')
         p_text = p_text.replace('\t', '')
+        p_text = p_text.replace('et al.','')
+        p_text = p_text.replace('et al','')
         # remove the email adresses of the text
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
         result = re.findall(email_detection, p_text)
