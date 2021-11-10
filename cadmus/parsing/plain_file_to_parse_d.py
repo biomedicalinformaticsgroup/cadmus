@@ -5,7 +5,7 @@ from cadmus.evaluation.abstract_similarity_score import abstract_similarity_scor
 from cadmus.evaluation.body_unique_score import body_unique_score
 import os
 
-def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
+def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstract):
     parse_d = {}
     with open(f'./output/formats/txts/{index}.txt', 'r') as text:
         p_text = text.read()
@@ -17,9 +17,9 @@ def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
         ab = get_abstract_txt(p_text)
     
     if ab != '':
-        p_text = structured_plain_text(p_text, ab)
+        p_text = structured_plain_text(p_text, ab, keep_abstract)
     else:
-        p_text = unstructured_plain_text(p_text)
+        p_text = unstructured_plain_text(p_text, keep_abstract)
 
     # get the file_size
     size = os.stat(path_document).st_size
@@ -41,9 +41,9 @@ def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
 
-    if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
+    '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
         retrieval_df.loc[index, 'abstract'] = ab
     else:
-        pass    
+        pass'''    
     
     return parse_d

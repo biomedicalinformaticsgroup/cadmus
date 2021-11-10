@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 from multiprocessing import Process
 import pandas as pd
 
-def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
+def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done = None):
     # the input will be the retrieved_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
@@ -165,7 +165,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                             file.write(response.content)
                                         try:
                                             #looking at the content of the pdf, if the content showed evidence it's full text we modify the main df to update the information
-                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link)
+                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                                 retrieval_df.loc[index, 'pdf'] = 1                                    
                                                 retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
@@ -181,7 +181,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                             elif ('xml' in format_type.lower()) or ('.xml' in link):
                                 if retrieval_df.xml.loc[index] != 1:
                                     # perform xml parsing and FP detection
-                                    xml_d = xml_response_to_parse_d(retrieval_df, index, response)
+                                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     xml_d = evaluation_funct(xml_d)
                                     #print(xml_d['evaluation'])
                                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
@@ -205,7 +205,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                         retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
                                     
                                     # perform html parsing and FP detection
-                                    html_d = html_response_to_parse_d(retrieval_df, index, response)
+                                    html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     html_d = evaluation_funct(html_d)
                                     #print(html_d['evaluation'])
                                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
@@ -223,7 +223,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                 if retrieval_df.plain.loc[index] != 1:
                                     with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                                             file.write(response.text.encode('ascii', 'ignore').decode())
-                                    plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link)
+                                    plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
                                     if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
                                         retrieval_df.loc[index, 'plain_parse_d'] = [plain_d]
                                         retrieval_df.loc[index,'plain'] = 1
@@ -254,7 +254,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                 #if status code is 200, it means everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
-                    xml_d = xml_response_to_parse_d(retrieval_df, index, response)
+                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                     xml_d = evaluation_funct(xml_d)
                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                     if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
@@ -287,7 +287,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                 # code 200 everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
-                    xml_d = xml_response_to_parse_d(retrieval_df, index, response)
+                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                     xml_d = evaluation_funct(xml_d)
                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                     if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
@@ -335,7 +335,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                     with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as f:
                                         shutil.copyfileobj(r, f)
                                     try:
-                                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link)           
+                                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
                                         if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                             retrieval_df.loc[index, 'pdf'] = 1
                                             retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
@@ -420,7 +420,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                             if worked == True:
                                 try:
                                     #again using a timeout function to not get stuck in the tgz
-                                    retrieval_df = timeout(300)(tgz_unpacking)(index, retrieval_df, f'./output/formats/tgzs/{index}.tgz', ftp_link)
+                                    retrieval_df = timeout(300)(tgz_unpacking)(index, retrieval_df, f'./output/formats/tgzs/{index}.tgz', ftp_link, keep_abstract)
                                 except:
                                     pass #handle errors                           
                         else:
@@ -474,7 +474,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                         with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as file:
                                             file.write(response_d['content'])
                                         try:
-                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', f'{base_url}{doi}')
+                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', f'{base_url}{doi}', keep_abstract)
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                                 #if the content retreived from the docuemnt followed the rule we implemented we are altering the main df
                                                 retrieval_df.loc[index, 'pdf'] = 1
@@ -490,7 +490,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                             
                             elif 'xml' in format_type.lower() and retrieval_df.xml.loc[index] != 1:
                                 # perform xml parsing and FP detection
-                                xml_d = xml_response_to_parse_d(retrieval_df, index, response)
+                                xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 xml_d = evaluation_funct(xml_d)
                                 # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                                 if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
@@ -509,7 +509,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                                     retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
                             
                                 # perform html parsing and FP detection
-                                html_d = html_response_to_parse_d(retrieval_df, index, response)
+                                html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 html_d = evaluation_funct(html_d)
                                 # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                                 if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
@@ -521,7 +521,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
                             elif 'plain' in format_type.lower() and retrieval_df.plain.loc[index] != 1:
                                 with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                                     file.write(response_d['text'].encode('ascii', 'ignore').decode())
-                                plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', f'{base_url}{doi}')
+                                plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', f'{base_url}{doi}', keep_abstract)
                                 if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
                                     retrieval_df.loc[index, 'plain_parse_d'] = [plain_d]
                                     retrieval_df.loc[index,'plain'] = 1 
@@ -602,49 +602,10 @@ def retrieval(retrieval_df, http, base_url, headers, stage, done = None):
 
     #When all the the rows have been completed saving the main df and the information of the current stage   
     print('process Complete')
-    if stage == 'crossref':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'epmcxml':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else: 
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'epmcsupp':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'pmcxmls':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'pmcpdfs':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'doiorg':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-    elif stage == 'pubmed':
-        if done is None:
-            pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-        else:
-            saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
-            pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+    if done is None:
+        pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
     else:
-        pass   
+        saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
+        pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
 
     return retrieval_df

@@ -8,7 +8,7 @@ from cadmus.parsing.clean_html import clean_html
 import bs4
 from bs4 import BeautifulSoup
 
-def html_response_to_parse_d(retrieval_df, index, response):
+def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
     parse_d = {}
     # read the file in as a soup object
     abstract = ''
@@ -37,7 +37,7 @@ def html_response_to_parse_d(retrieval_df, index, response):
             abstract = html_get_ab(soup)
        
         # parse out the body text 
-        text = html_to_parsed_text(soup)
+        text = html_to_parsed_text(soup, keep_abstract)
         text = clean_html(text)
         
         # get the file_size
@@ -61,9 +61,10 @@ def html_response_to_parse_d(retrieval_df, index, response):
                     'url':response.url,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
-    if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
+
+    '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
         retrieval_df.loc[index, 'abstract'] = abstract
     else:
-        pass
+        pass'''
     
     return parse_d

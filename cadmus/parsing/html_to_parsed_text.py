@@ -1,6 +1,6 @@
 from cadmus.parsing.get_attrs import get_attrs
 
-def html_to_parsed_text(soup):
+def html_to_parsed_text(soup, keep_abstract):
     # i want to save the text portions to a holding list, adding new sections each time we think its useful or new.
     text = ''
     # first we search the body for each division  or article tage and save it as a list of tag object

@@ -19,7 +19,7 @@ import pandas as pd
 # once we get to this stage we have tried quite a few approaches to get a full text document for each article.
 # we can pull out the records that do not have a tagged version and a pdf version to keep trying for.
 # we will now go through the dataframe and sequentially try the untried links in the full_text_links dictionary.
-def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None):
+def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstract, done = None):
     counter = -0
     stage = 'retrieved2'
     for index, row in retrieval_df.iterrows():
@@ -113,7 +113,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
                         with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as file:
                                 file.write(response_d['content'])
                         try:
-                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link)
+                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                 retrieval_df.loc[index,'pdf'] = 1
                                 retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
@@ -127,7 +127,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
 
                     elif 'xml' in format_type and retrieval_df.xml.loc[index] != 1:
                         # perform xml parsing and FP detection
-                        xml_d = xml_response_to_parse_d(retrieval_df, index, response)
+                        xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                         xml_d = evaluation_funct(xml_d)
                         # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                         if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
@@ -150,7 +150,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
                                 link_list.extend([link for link in html_links if link not in link_list])
 
                         # perform html parsing and FP detection
-                        html_d = html_response_to_parse_d(retrieval_df, index, response)
+                        html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                         html_d = evaluation_funct(html_d)
                         # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                         if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
@@ -163,7 +163,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, done = None
                     elif 'plain' in format_type and retrieval_df.plain.loc[index] != 1:
                         with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
-                        plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link)
+                        plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
                         if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
                             retrieval_df.loc[index, 'plain_parse_d'] = [plain_d]
                             retrieval_df.loc[index,'plain'] = 1
