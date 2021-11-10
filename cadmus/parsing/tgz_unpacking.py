@@ -14,7 +14,7 @@ import lxml
 import shutil
 import time
 
-def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link):
+def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
 
     condition = False
     start = time.time()
@@ -74,7 +74,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link):
                     print(' Main PDF found = writing to file')
                     pdf_path.rename(to_file)
                     try:
-                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link)
+                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)
                         if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                             retrieval_df.loc[index, 'pdf'] = 1
                             retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
@@ -112,14 +112,14 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link):
                             soup = BeautifulSoup(xml_file, 'lxml')
                             # remove unwanted tags
                             soup = clean_soup(soup)
-                            # try parse the text
-                            p_text = xml_body_p_parse(soup)
                             # check for abstract in retrieved_df
                             if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
                                 ab = retrieval_df.loc[index, 'abstract']
                             else:    
                                 # try parse the abstract
                                 ab = get_ab(soup)
+                            # try parse the text
+                            p_text = xml_body_p_parse(soup, ab, keep_abstract)
                             # get the file_size
                             size = xml.stat().st_size
                             # get the word_count

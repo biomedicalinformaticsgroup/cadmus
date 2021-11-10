@@ -9,7 +9,7 @@ import tika
 os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/'+tika.__version__+'/tika-server-'+tika.__version__+'.jar'
 from tika import parser
 
-def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
+def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstract):
     parse_d = {}
     # load pdf into tika 
     soup = parser.from_file(path_document)
@@ -27,7 +27,7 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
             parse_d.update({'Content_type':Content_type})
         else: 
             p_text = clean_pdf_body(p_text)
-            p_text = limit_body(p_text)
+            p_text = limit_body(p_text, keep_abstract)
 
         # check for abstract in retrieved_df
         if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] == retrieval_df.loc[index, 'abstract']:
@@ -67,9 +67,9 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link):
                         'body_unique_score':bu_score,
                         'ab_sim_score':as_score})
 
-        if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
+        '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
             retrieval_df.loc[index, 'abstract'] = ab
         else:
-            pass
+            pass'''
     
     return parse_d

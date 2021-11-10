@@ -7,7 +7,7 @@ from cadmus.parsing.clean_xml import clean_xml
 import bs4
 from bs4 import BeautifulSoup
 
-def xml_file_to_parse_d(retrieval_df, index, xml_response):
+def xml_file_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     parse_d = {}
     soup = BeautifulSoup(xml_response.text, features = 'lxml')
     # remove unwanted tags
@@ -21,7 +21,7 @@ def xml_file_to_parse_d(retrieval_df, index, xml_response):
         ab = get_ab(soup)
     
     # try parse the text
-    p_text = xml_body_p_parse(soup, ab)
+    p_text = xml_body_p_parse(soup, ab, keep_abstract)
     p_text = clean_xml(p_text)
     # get the file_size
     size = len(xml_response.content)
@@ -42,9 +42,9 @@ def xml_file_to_parse_d(retrieval_df, index, xml_response):
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
     
-    if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
+    '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
         retrieval_df.loc[index, 'abstract'] = ab
     else:
-        pass
+        pass'''
     
     return parse_d
