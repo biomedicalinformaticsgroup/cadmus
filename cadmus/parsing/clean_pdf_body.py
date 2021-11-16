@@ -3,10 +3,12 @@ import re
 import unicodedata
 
 def clean_pdf_body(p_text):
-    #check if the content is not none
+    # check if the content is not none i.e. there is text to clean
     if p_text != None:
+        # remove unicode from the text
         p_text = unicodedata.normalize("NFKD", p_text)
-        #replace different type of characters by another characters (space or no space to reconstruct word)
+        # replace different type of characters by another characters (space or no space to reconstruct word)
+        # we built these changes from an OOv study of previous corpus
         p_text = p_text.replace('\n',' ')
         p_text = p_text.replace('\t','')
         p_text = p_text.replace('- ','')
@@ -39,7 +41,7 @@ def clean_pdf_body(p_text):
         p_text = p_text.replace('™','')
         p_text = p_text.replace('PLOSONE','')
         p_text = p_text.replace('file:///','')
-        #remove the link present in the text
+        # remove the link present in the text
         p_text = remove_link(p_text)
         p_text = p_text.replace('https://','')
         p_text = p_text.replace('http://','')
@@ -103,7 +105,7 @@ def clean_pdf_body(p_text):
 
     else:
         pass
-
+    # remove citing artefact and double space
     p_text = re.sub('\[[, ]*\]', ' ', p_text)
     p_text = re.sub('\[(, )*\]', ' ', p_text)
     p_text = p_text.replace('  ',' ')

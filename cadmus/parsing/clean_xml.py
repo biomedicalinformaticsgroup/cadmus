@@ -3,10 +3,13 @@ import re
 import unicodedata
 
 def clean_xml(p_text):
-    #check if the content is not none
+    #check if the content is not none i.e there is text to clean
     if p_text != None:
+        # removing unicodes from text
         p_text = unicodedata.normalize("NFKD", p_text)
+        # removing links from text
         p_text = remove_link(p_text)
+        # removing the most common OOV from previous search
         p_text = p_text.replace('https://','')
         p_text = p_text.replace('http://','')
         p_text = p_text.replace('doi:','')
@@ -28,7 +31,7 @@ def clean_xml(p_text):
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
             p_text = p_text.replace(result[i],'')
-
+        # removing the double space
         p_text = p_text.replace('  ',' ')
 
     return p_text

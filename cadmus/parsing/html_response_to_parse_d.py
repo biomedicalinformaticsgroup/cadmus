@@ -61,10 +61,5 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
                     'url':response.url,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
-
-    '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
-        retrieval_df.loc[index, 'abstract'] = abstract
-    else:
-        pass'''
     
     return parse_d

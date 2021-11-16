@@ -18,6 +18,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
 
     condition = False
     start = time.time()
+    # creating a condition to not exceed 5 minutes, usually that's when the machine is stuck in a tgz file
     while time.time() - start <= 300 and condition == False:
         try:
             try:
@@ -80,12 +81,15 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                             retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
                             condition = True
                         else:
+                            # no need to spend more time in the tgz the function could not identify the file we are looking for
                             condition = True
                             pass
                     except:
+                        # no need to spend more time in the tgz the function could not identify the file we are looking for
                         condition = True
                         pass
                 else:
+                    # no need to spend more time in the tgz the function could not identify the file we are looking for
                     condition = True
             else:
                 # no pdf required, move on to the xml extraction
@@ -154,16 +158,14 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 retrieval_df.loc[index,'xml_parse_d'] = [parse_d]
                                 condition = True
                             else:
+                                # no need to spend more time in the tgz the function could not identify the file we are looking for
                                 condition = True
 
-                            #  Add an abstract if not presnsent in the dataframe
-                            if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
-                                retrieval_df.loc[index, 'abstract'] = ab
-                            else:
-                                pass
                     else:
+                        # no need to spend more time in the tgz the function could not identify the file we are looking for
                         condition = True
             else:
+                # no need to spend more time in the tgz the function could not identify the file we are looking for
                 condition = True
                                                         
             # delete the temp dir

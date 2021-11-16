@@ -7,7 +7,7 @@ def get_tdm_links(link_list):
     else:
         # otherwise work through each dictionary
         for link_dict in link_list:
-            # check the intendeed application
+            # check the intendeed application, if the intendeed application allow it, we extend our list
             if (link_dict.get('intended-application') == 'text-mining')\
             or (link_dict.get('intended-application') == 'syndication')\
             or (link_dict.get('intended-application') == 'unspecified'):

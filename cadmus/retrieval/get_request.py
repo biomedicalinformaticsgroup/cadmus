@@ -19,7 +19,7 @@ def get_request(input_id, http, base_url, headers, stage):
     while attempt <3:
         # we're going to set up a try except system so that we deal with the most common errors
         try:
-            # send the request
+            # send the request to the different APIs website
             if stage == 'base' or stage == 'doiorg' or stage == 'pubmed':
                 r = http.get(url = f'{base_url}{input_id}', headers=headers, timeout = (20,120))
             elif stage == 'crossref':

@@ -1,7 +1,7 @@
 def xml_body_p_parse(soup, abstract, keep_abstract):
     # we'll save each paragraph to a holding list then join at the end
     p_text = []
-
+    # keeping the abstract at the begining depending on the input
     if keep_abstract == True:
         if abstract != '' and abstract != None and abstract == abstract:
             p_text.append(abstract)

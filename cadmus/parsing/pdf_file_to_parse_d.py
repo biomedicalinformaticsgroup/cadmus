@@ -26,6 +26,7 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
             Content_type = 'error'
             parse_d.update({'Content_type':Content_type})
         else: 
+            #cleaning and limiting the text
             p_text = clean_pdf_body(p_text)
             p_text = limit_body(p_text, keep_abstract)
 
@@ -43,19 +44,19 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
         # get the word_count
         wc = len(p_text.split())
         Content_type = 'pdf'
-
+        #extracting the date
         if 'Creation-Date' in soup['metadata'].keys():
             date = soup['metadata']['Creation-Date']
         elif 'date' in soup['metadata'].keys():
             date = soup['metadata']['date']
         else:
             date = None
-
+        # computhe the abs_similarity and the body_unique_score
         bu_score = body_unique_score(p_text, ab)
         as_score = abstract_similarity_score(p_text, ab)
 
 
-        # use the output from each function to build a output dictionary to use for our evaluation
+        # use the output from each function to build a output dictionary to use for our evaluation and saving the information in case it's TP
         parse_d.update({'file_path':f'./output/formats/pdfs/{index}.pdf',
                         'text':p_text,
                         'abstract':ab,
@@ -66,10 +67,5 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
                         'url': ftp_link,
                         'body_unique_score':bu_score,
                         'ab_sim_score':as_score})
-
-        '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
-            retrieval_df.loc[index, 'abstract'] = ab
-        else:
-            pass'''
     
     return parse_d

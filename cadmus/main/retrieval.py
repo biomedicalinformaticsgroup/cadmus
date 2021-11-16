@@ -29,7 +29,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
 
-    #subset the original df to the lines with an identifier only
+    #subset the original df to the lines with an identifier only (PMCID, PMID, DOI), the function is doing that to minimise the time to spent
     if stage == 'crossref':
         condition = []
         for i in range(len(retrieval_df)):
@@ -61,6 +61,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             clear()
             #showing on top of the screen what to put in case of failure
             print(f'In case of faillure please put the parameters start="{stage}" (or "{stage}_only" if in only mode) and idx="{index}"') 
+            # save the last stage and index where we saved the df
             saved_stage = stage
             saved_index = index   
             print('\n')   
@@ -71,8 +72,8 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             print(f'tdm full link {counter} of {len(cr_df)}') 
             
         elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
+            #checking that the PMCID is not nan, PMICD is the key needed for epmc pmc
             if retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
-                #checking thet the PMCID is not nan, none or empty, PMICD is the key needed for epmc pmc
                 pmcid = row['pmcid']
                 print(f'Looking for {pmcid} which is record {counter} of {len(cr_df)}')
                 if stage == 'pmcxmls' or stage == 'pmcpdfs':
@@ -84,6 +85,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 pass
         
         elif stage == 'doiorg':
+            # checking the DOI is not nan
             if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
                 #extracting the doi needed for doiorg
                 doi = row['doi']
@@ -92,6 +94,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 pass
         
         elif stage == 'pubmed':
+            # checking the pmid is not nan
             if retrieval_df.pmid.loc[index] == retrieval_df.pmid.loc[index]:
                 #extracting the pmid needed for the pubmed step
                 pmid = row['pmid']
@@ -107,7 +110,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             links = row['full_text_links'].get('cr_tdm')
             if links:                               
                 for link in links: 
-                    #trying to indentifying the format from the link in order to not request a document is already retreive for that format
+                    #trying to indentifying the format from the link in order to not request a document if it is already retreive for that format
                     if ('.pdf' in link and retrieval_df.pdf.loc[index] == 1) or  ('.xml' in link and retrieval_df.xml.loc[index] == 1) or ('plain' in link and retrieval_df.plain.loc[index] == 1):  
                         pass
                     else: 
@@ -164,9 +167,10 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             #saving the finle to the appropriate path
                                             file.write(response.content)
                                         try:
-                                            #looking at the content of the pdf, if the content showed evidence it's full text we modify the main df to update the information
+                                            #looking at the content of the pdf, if the content showed evidence it is the full text we modify the df to update with the new information
                                             pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                                                # we change the value to 1 in order to not look for that format again
                                                 retrieval_df.loc[index, 'pdf'] = 1                                    
                                                 retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
                                             else:
@@ -177,17 +181,19 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                         pass
                                 else:
                                     pass
-
+                            # trying to indentify if the link will provide the algorithm with a xml format
                             elif ('xml' in format_type.lower()) or ('.xml' in link):
+                                # the algorithm will spend time on the following only if it has not retrieved it already
                                 if retrieval_df.xml.loc[index] != 1:
                                     # perform xml parsing and FP detection
                                     xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     xml_d = evaluation_funct(xml_d)
-                                    #print(xml_d['evaluation'])
-                                    # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                                    # now we have the xml_d we can evaluate to decide if it is a TP, FP or AB
                                     if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
                                         with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
+                                                # saving the  file to a pre-defines directory as we identified it as TP
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
+                                        # changing the value to one for future references
                                         retrieval_df.loc[index,'xml'] = 1
                                         retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
                                     else:
@@ -196,10 +202,13 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     pass
 
                             elif 'html' in format_type.lower():
+                                # the function will spend time to the following only if no html were saved before
                                 if retrieval_df.html.loc[index] != 1:
-                                    # all the htmls should be checked for links regardless of whether they are FT or AB
+                                    # all the htmls should be checked for candidate link(s) regardless of whether they are FP or AB
                                     html_links = complete_html_link_parser(response)
+                                    # list of potential candidate links
                                     if len(html_links) != 0:
+                                        # the dictionary that contains the list is updated as we try new pages
                                         full_text_link_dict = retrieval_df.loc[index, 'full_text_links']
                                         full_text_link_dict.update({'html_parse':html_links})
                                         retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
@@ -207,10 +216,10 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     # perform html parsing and FP detection
                                     html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     html_d = evaluation_funct(html_d)
-                                    #print(html_d['evaluation'])
-                                    # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                                    # now we have the html_d we can evaluate to decide if it is a TP, FP or AB
                                     if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
                                         with open(f'./output/formats/htmls/{index}.html', 'w') as file:
+                                                # since the file as been identified as TP we save it to a pre-defined structure
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
                                         retrieval_df.loc[index,'html'] = 1
                                         retrieval_df.loc[index,'html_parse_d'] = [html_d]
@@ -239,7 +248,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 pass
             
         elif stage == 'epmcxml':
-            #if xml already retreived going to the next record
+            #if xml already retrieved or if the identifier is mising going to the next record
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
                     #creating the header and the protocol to retreive the file from epmc API
@@ -259,10 +268,10 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
                     if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
                         print('success, now writing to file')
-                        # if status code == 200 then write the response text to file as an xml
+                        # the file as been classified as TP, saving the file
                         with open(f'./output/formats/xmls/{index}.xml', 'w+') as file:
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
-                            # we can keep track of the sucesses as we go by saving 1 to xml column
+                        # we can keep track of the sucesses as we go by saving 1 to xml column and avoid trying again
                         retrieval_df.loc[index,'xml'] = 1
                         retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
                 else:
@@ -272,7 +281,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 pass
         
         elif stage == 'pmcxmls':
-            #if xml already retreived, going to next record
+            #if xml already retreived, or identifier missing going to next record
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
                     #creating the header and protocol to retreive the document from PMC API
@@ -289,10 +298,11 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                     # perform xml parsing and FP detection
                     xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                     xml_d = evaluation_funct(xml_d)
-                    # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                    # now we have the xml_d we can decide if it is a TP, FP or AB class
                     if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
                         print('success, now writing to file')
                         with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
+                            # saving the file as it has been evaluated as TP
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                         retrieval_df.loc[index,'xml'] = 1
                         retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
@@ -304,7 +314,8 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 pass
                 
         elif stage == 'pmcpdfs':
-            #looking if the pdf is already retreived for that row, if yes moving to the next record
+            # looking if the pdf is already retreived for that row, if yes moving to the next record
+            # the condition alse check if an identifier is present
             if retrieval_df.pdf.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
                 try:
                     #creating the header and the protocol to request the docuemnt from PMC API
@@ -385,7 +396,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 timeout_time = 300 
                                 start = time.time()
                                 worked = False
-                                #creating one process to kill it once the time is passed
+                                #creating one process to kill it once the time is passed or when it's completed
                                 pnum = 1
                                 procs = []
                                 for i in range(pnum):
@@ -395,7 +406,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     p.start()
                                 #as long as when we started is less than 300s continue to try
                                 while time.time() - start <= timeout_time:
-                                    #checing if it's already completed or not, if yes stop and moving to next record
+                                    #checking if it's already completed or not, if yes stop and moving to next record
                                     if not any([p.is_alive() for p in procs]):
                                         # All the processes are done, break now.
                                         #Bolean to keep the fact that it worked
@@ -407,7 +418,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                         p.join()
                                         break
                                     #only check if it's over every one second
-                                    time.sleep(1)  # Just to avoid hogging the CPU
+                                    time.sleep(1)  # just to avoid bothering the CPU
                                 else:
                                     # We only enter this if we didn't 'break' above.
                                     print("timed out, killing all processes")
@@ -466,7 +477,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                         if format_type != None:
                             print(f'Format:{format_type} found')
 
-                            # execute if we have a set format
+                            # execute if we have identify pdf as a format
                             if 'pdf' in format_type.lower() and retrieval_df.pdf.loc[index] != 1:
                                 if response_d['headers'].get('Content-Type') != None: 
                                     #the document retreived is the format we expected
@@ -492,7 +503,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 # perform xml parsing and FP detection
                                 xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 xml_d = evaluation_funct(xml_d)
-                                # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                                # now that we have the xml_d we can decide if it is a TP, FP or AB 
                                 if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
                                     with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
@@ -501,7 +512,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
 
 
                             elif 'html' in format_type.lower() and retrieval_df.html.loc[index] != 1:
-                                # all the htmls should be checked for links regardless of whether they are FT or AB
+                                # all the htmls should be checked for links regardless of whether they are FP or AB
                                 html_links = complete_html_link_parser(response)
                                 if len(html_links) != 0:
                                     full_text_link_dict = retrieval_df.loc[index, 'full_text_links']
@@ -511,7 +522,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 # perform html parsing and FP detection
                                 html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 html_d = evaluation_funct(html_d)
-                                # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                                # now we have the html_d we can compare to decide if it is a TP, FP or AB 
                                 if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
                                     with open(f'./output/formats/htmls/{index}.html', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
@@ -545,8 +556,9 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
 #########################################  ####################################
         # This stage sends a get request using a pmid to PUBMED to try and get the Full text links from the html page 'linkout' section
         # we don't need to save the page, just parse the request.text and save the links to the retrieved df
+        # no html page are saved at this stage only candidate links
         elif stage == 'pubmed':
-            # firstly check that there is a PMID to use (np.nan == np.nan == False)
+            # firstly check that there is a PMID to use (is equal to itself)
             if retrieval_df.pmid.loc[index] == retrieval_df.pmid.loc[index]:
                 # set the conditions for when to try (No Tagged version (HTML or XML) or no PDF)           
                 if ((retrieval_df.html.loc[index] == 0) and (retrieval_df.xml.loc[index] == 0)) or (retrieval_df.pdf.loc[index]) == 0:
@@ -580,13 +592,13 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
         print('\nnext record\n')
         if counter%10 == 0 and not counter%100 == 0 and not counter == 0:
             #clearing the terminal output every 10 records, showing on top of the terminal the information in case of failure 
-            #resting 2 seconds every 10 record to be polite 
+            #resting 2 seconds every 10 records to be polite 
             sleep(2)
             clear()
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n') 
         elif counter%100 == 0 and not counter == 0:
-            #saing the main df every 100 records, updating the information on the top in case of failure
+            #saving the main df every 100 records, updating the information on the top in case of failure
             #resting 2 seconds to be polite
             sleep(2)
             clear()

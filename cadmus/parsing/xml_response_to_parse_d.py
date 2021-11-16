@@ -17,7 +17,7 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     if retrieval_df.loc[index, 'abstract'] != '' and retrieval_df.loc[index, 'abstract'] != None and retrieval_df.loc[index, 'abstract'] == retrieval_df.loc[index, 'abstract']:
         ab = retrieval_df.loc[index, 'abstract']
     else:    
-        # try parse the abstract
+        # try parse the abstract since not provided by PubMed
         ab = get_ab(soup)
     # try parse the text
     p_text = xml_body_p_parse(soup, ab, keep_abstract)
@@ -26,7 +26,7 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     size = len(xml_response.content)
     # get the word_count
     wc = len(p_text.split())
-    
+    #compute the score for evaluation 
     bu_score = body_unique_score(p_text, ab)
     as_score = abstract_similarity_score(p_text, ab)
     
@@ -40,10 +40,5 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
                     'url':xml_response.url,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
-    
-    '''if retrieval_df.loc[index, 'abstract'] == '' or retrieval_df.loc[index, 'abstract'] == None or retrieval_df.loc[index, 'abstract'] != retrieval_df.loc[index, 'abstract']:
-        retrieval_df.loc[index, 'abstract'] = ab
-    else:
-        pass'''
     
     return parse_d
