@@ -51,7 +51,7 @@ def pubmed_linkout_parse(index, retrieval_df, response):
         
     # now remove any duplicate links
     link_list = list(set(link_list))
-
+    # in case of two strings keep only the first one
     for i in range(len(link_list)):
         if len(link_list[i].split()) > 1:
             link_list[i] = link_list[i].split()[0]

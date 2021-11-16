@@ -25,6 +25,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
     for index, row in retrieval_df.iterrows():
         if counter == 0:
             clear()
+            # showing the information in case of failluer to restart without having to redo everything
             print(f'In case of faillure please put the parameters start="{stage}" (or "{stage}_only" if in only mode) and idx="{index}"') 
             saved_stage = stage
             saved_index = index   
@@ -35,7 +36,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
         pdf = row['pdf']
         xml = row['xml']
         html = row['html']
-        # first check the criteria for further checking
+        # first check the criteria for further checking we want to have minimu one tagged version and the pdf
         if xml == 1 or html == 1:
             if pdf == 1 :
                 # we'll create while loop to iterate through all available links 
@@ -51,7 +52,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
 
         # now we will work through all the available links to try and fill in the missing formats for each record
         full_text_links_d = row['full_text_links']
-        # build a list of links to try
+        # build a list of links to try from previous detection
         link_list = []
         for key in ['html_parse', 'pubmed_links']:
             link_list.extend(full_text_links_d.get(key))
@@ -129,7 +130,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
                         # perform xml parsing and FP detection
                         xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                         xml_d = evaluation_funct(xml_d)
-                        # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                        # now we have the xml_d we can decide if it is a TP, FP or AB 
                         if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
                             with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                                 file.write(response_d['text'].encode('ascii', 'ignore').decode())
@@ -152,7 +153,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
                         # perform html parsing and FP detection
                         html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                         html_d = evaluation_funct(html_d)
-                        # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
+                        # now we have the html_d we can decide if it is a TP, FP or AB 
                         if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
                             with open(f'./output/formats/htmls/{index}.html', 'w') as file:
                                     file.write(response_d['text'].encode('ascii', 'ignore').decode())
@@ -205,6 +206,7 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
             clear()
             saved_stage = stage
             saved_index = index
+            # in case of faillure to concat the previous run and the current one
             if done is None:
                 pickle.dump(retrieval_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:

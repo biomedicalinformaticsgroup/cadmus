@@ -18,7 +18,7 @@ def get_abstract_txt(p_text):
                 ab = p_text[lower:upper]
                 ab = ' '.join([str(elem) for elem in ab])
                 break
-            #once we arrived at the half of the docuemnt we stop
+            #once we arrived at the half of the docuemnt we stop looking for abstract 
             elif i > len(p_text)/2:
                 break
             else:

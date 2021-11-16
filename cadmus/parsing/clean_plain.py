@@ -3,10 +3,12 @@ import re
 import unicodedata
 
 def clean_plain(p_text):  
-    #checking that the text is not none 
+    #checking that the text is not none i.e. there is text to clean
     if p_text != None:
+        # removing unicode from text
         p_text = unicodedata.normalize("NFKD", p_text)
-        #replacing characters by space or none
+        # replacing characters by space or none
+        # following a study of OOV from previous search we identify a list of strings of character to remove or replace
         p_text = p_text.replace('\n',' ')
         p_text = p_text.replace('\t','')
         p_text = p_text.replace('- ','')
@@ -38,12 +40,12 @@ def clean_plain(p_text):
         p_text = p_text.replace('http://','')
         p_text = p_text.replace('doi:','')
         p_text = p_text.replace('ftp:','')
-        #remove the emails from the text
+        #remove the emails from the text with a domain name of 3 like .com
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
             p_text = p_text.replace(result[i],'')
-        #remove the emails from the text
+        #remove the emails from the text with a domain name of 2 like country domain
         email_detection = re.compile('\w+@\w+\.[a-z]{2}')
         result = re.findall(email_detection, p_text)
         for i in range(len(result)):
@@ -79,7 +81,7 @@ def clean_plain(p_text):
 
     else:
         pass
-
+    # removing artefact of citation and double space
     p_text = re.sub('\[[, ]*\]', ' ', p_text)
     p_text = re.sub('\[(, )*\]', ' ', p_text)
     p_text = p_text.replace('  ',' ')

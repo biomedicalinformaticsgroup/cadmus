@@ -9,6 +9,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # now draw together all the parsing functions above and apply to any html response
+# this function is to identify candidate links
 def complete_html_link_parser(response):
         link_list = []
     
@@ -19,22 +20,22 @@ def complete_html_link_parser(response):
         html_links = html_link_from_meta(soup)
         if html_links != []:
                 link_list.extend(html_links)
-        
+        # extanding the list with candidate links
         link_list.extend(pdf_links_from_meta(soup))
         link_list.extend(explicit_pdf_links(soup, base_url))
         link_list.extend(links_from_a_tags(soup, base_url))
 
-
+        # combine all the link together to be prensent only one time
         link_list = list(set(link_list))
-
+        # if a link was extracted and there is two strings we will only keep the first one
         for i in range(len(link_list)):
                 if len(link_list[i].split()) > 1:
                         link_list[i] = link_list[i].split()[0]
-        
+        # if a link does not start by http we remove it
         for i in link_list[:]:
                 if 'http' not in i:
                         link_list.remove(i)
-                        
+        # the link from  f6publishing usually doesn't contain the document     
         for i in link_list[:]:
                 if 'f6publishing' in i:
                         link_list.remove(i)

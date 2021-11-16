@@ -33,34 +33,44 @@ from cadmus.post_retrieval.correct_date_format import correct_date_format
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     
-    # lets check whether this is an update of a previous search or a new search.
+    # first bioscraping checks whether this is an update of a previous search or a new search.
+    # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
     
     if update:
         print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
-        # save the original df to use downstream.
+        # load the original df to use downstream.
         original_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
-        # we need to save all the find all the pmids where already a PDF and (HTML or XML)
-        # these pmids will then be removed from the the search df
+        # bioscraping needs to extract all the pmids where already we already have the content_text
+        # these pmids will then be removed from the the search df according to the parameter used for 'full_search' 
         original_pmids = []
         drop_lines = []
-        # loop through all rows checking the criteria
+        # loop through all rows checking the criteria according to 'full_search' 
         if full_search == None:
+            # We are not updating the previous search(es) of the DataFrame, only looking for new lines
             print('We are not updating the previous search(es) of the DataFrame, only looking for new lines')
             original_pmids = (np.array(original_df.pmid))
         if full_search == 'light':
+            # We are doing a light search, from the previous search we are only going to take a look at the missing content_text
             print('We are doing a light search, from the previous search we are only going to take a look at the missing content_text')
             for index, row in original_df.iterrows():
+                # checking what is present in the content_text field from the previous search
                 if row.content_text == '' or row.content_text == None or row.content_text != row.content_text or row.content_text[:4] == 'ABS:':
+                    # keeping the pmid to replace the lines with the new line from this process to avoid duplicates
                     drop_lines.append(index)
                 else:
+                    # removing these pmids from the search
                     original_pmids.append(row['pmid'])
         if full_search == 'heavy':
+            # We are doing a heavy search, trying to find new taged version from previous search
             print('We are doing a heavy search, trying to find new taged version from previous search')
             for index, row in original_df.iterrows():
+                # Looking if we have at least one tagged format with a pdf format
                 if (row['pdf'] == 1 and row['html'] == 1) or (row['pdf'] == 1 and row['xml'] == 1):
+                    # removing these pmids from the search
                     original_pmids.append(row['pmid'])
                 else:
+                    # keeping the pmid to replace the lines with the new line from this process to avoid duplicates
                     drop_lines.append(index)
         
     else:
@@ -70,9 +80,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             print('This is a new project, creating all directories')
     
     # search strings and pmid lists have the same basic pipeline +/- the search at the start
+    # checking the input type
     if type(input_function) == str or input_function[0].isdigit() == True:
         print('This look like a search string or list of pmids. \nIf this is not correct Please stop now')
-        # create all the output directories if they do not already exist
         
         if input_function == '':
             print('You did not enter any search term')
@@ -114,10 +124,13 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 print(f"You can't have your parameter idx not equal to None and your start = None, changing your idx to None")
                 idx = None
 
+            # starting bioscraping from somewhere else than the begining, most likely due to a previous crash of the function
             if start != None:
                 try:
+                    # loading the 'moving' df to restart where we stop from
                     retrieved_df = pickle.load(open(f'./output/retrieved_df/retrieved_df.p','rb'))
                     if update:
+                        # subset the df to keep only the new line 
                         retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
                 except:
                     print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
@@ -630,9 +643,10 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
 
             if start == None and idx == None:
-                #updating the retreived df with the candidate links
+                # updating the retreived df with the candidate links that we extracted during the previous steps
                 retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
             elif start == 'retrieved2' and idx == None:
+                # restart from this step
                 retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
                 start = None
             elif start == 'retrieved2_only':
