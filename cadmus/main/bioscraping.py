@@ -54,7 +54,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # We are doing a light search, from the previous search we are only going to take a look at the missing content_text
             print('We are doing a light search, from the previous search we are only going to take a look at the missing content_text')
             for index, row in original_df.iterrows():
-                # checking what is present in the content_text field from the previous search
+                # checking what is present in the content_text field from the previous search, if it is not a full text, we want to try again
                 if row.content_text == '' or row.content_text == None or row.content_text != row.content_text or row.content_text[:4] == 'ABS:':
                     # keeping the pmid to replace the lines with the new line from this process to avoid duplicates
                     drop_lines.append(index)
@@ -62,7 +62,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     # removing these pmids from the search
                     original_pmids.append(row['pmid'])
         if full_search == 'heavy':
-            # We are doing a heavy search, trying to find new taged version from previous search
+            # We are doing a heavy search, trying to find new taged version and pdf version from previous search
             print('We are doing a heavy search, trying to find new taged version from previous search')
             for index, row in original_df.iterrows():
                 # Looking if we have at least one tagged format with a pdf format
@@ -74,13 +74,15 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     drop_lines.append(index)
         
     else:
+        # check if a start position is given (this would suggest restarting a failed program)
         if start != None:
             pass
         else:    
             print('This is a new project, creating all directories')
     
     # search strings and pmid lists have the same basic pipeline +/- the search at the start
-    # checking the input type
+    # checking the input type 
+    # in principle, this step could be augmented to use DOIs or PMCIDs but this has not been implemented yet
     if type(input_function) == str or input_function[0].isdigit() == True:
         print('This look like a search string or list of pmids. \nIf this is not correct Please stop now')
         
@@ -90,10 +92,10 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         else:
             # run the search if the input is a string
             if type(input_function) == str:
-                # This is the search step when a query string is provided resulting in a list of pmids within a dictionary
+                # This is the NCBI e-search step (PubMed API)when a query string is provided resulting in a list of pmids within a dictionary
                 results_d = search_terms_to_pmid_list(input_function, email, api_key)
             else:
-                # the input is a list of pmids we just need to make a results_d to maintain the output variables
+                # if the input is a list of pmids we just need to make a results_d to maintain the output variables
                 
                 # get todays date 
                 date = datetime.datetime.today()
@@ -103,17 +105,17 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 # save the output dictionary for our records of what terms used and number of records returned for a given date.
                 pickle.dump(results_d, open(f'./output/esearch_results/{date}.p', 'wb'))
 
-            # at this stage we need to see if the search is a new search or update of previous list.
+            # at this stage we need to check if the search is a new search or update of previous list.
             if update:
                 # when this is an update we need to remove the previously used pmids from our current pipeline (the orignal df and new df will be merged at the end)
                 current_pmids = results_d.get('pmids')
                 # use set difference to get the new pmids only
                 new_pmids = list(set(current_pmids).difference(set(original_pmids)))
                 if len(new_pmids) == 0:
-                    print('There are no new lines since your previous search stop the function.')
+                    print('There are no new lines since your previous search - stop the function.')
                     exit()
                 else:
-                    print(f'There are {len(new_pmids)} new lines since last run.')
+                    print(f'There are {len(new_pmids)} new results since last run.')
                 # set the new pmids into the results d for the next step
                 results_d.update({'pmids':new_pmids}) 
             else:
@@ -121,7 +123,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 pass
 
             if idx != None and start == None:
-                print(f"You can't have your parameter idx not equal to None and your start = None, changing your idx to None")
+                print(f"You can't have your parameter idx not equal to None when start = None, changing your idx to None")
                 idx = None
 
             # starting bioscraping from somewhere else than the begining, most likely due to a previous crash of the function
@@ -158,7 +160,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
 
                 #create a new column to note whether there is a crossref metadata record available - default - 0 (NO).
                 retrieved_df['crossref'] = 0
-                # we're going to start collection full text links now. so lets make a new column on the retrieved_df to hold a dictionary of links
+                # we're going to start collection for full text links now. so lets make a new column on the retrieved_df to hold a dictionary of links
                 retrieved_df['full_text_links'] = [{'cr_tdm':[],'html_parse':[], 'pubmed_links':[]} for value in retrieved_df.index]
                 retrieved_df['licenses'] = [{} for val in retrieved_df.index]
 
@@ -166,7 +168,8 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 retrieved_df = get_crossref_links_and_licenses(retrieved_df, http, base_url, headers)
 
 
-                # now time to download some fulltexts, will need to create some new columns to show success or failure for each format and the actual parse dictionary
+                # now time to download some fulltexts, will need to create some new columns to show success or failure for each format
+                # we'll also make some dictionaries to hold the parsed data and raw file details
 
                 retrieved_df['pdf'] = 0
                 retrieved_df['xml'] = 0
@@ -184,7 +187,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # set up the http session for crossref requests
             # http is the session object
             # base URL is empty in this case
-            # headers include a clickthrough api key
+            # headers include the clickthrough api key and email address
 
             #this project is not trigered by a save
             if start == None and idx == None:
@@ -257,7 +260,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-            # After crossref, we are going on doi.org
+            # After crossref, we are going on doi.org - this uses the doi provided and redirection to see if we land on the full text html page
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
                 # now use the http request set up to request for each of the retrieved_df 
@@ -319,7 +322,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-            #we continue by epmc, xml format
+            #we continue by sending requests to europe pmc, looking for xml format
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
                 # now use the http request set up to request for each of the retrieved_df 
@@ -443,7 +446,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-            #pmc tgz, contain pdf and xml
+            #pmc tgz, these zip files contain pdf and xml
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
                 # now use the http request set up to request for each of the retrieved_df 
@@ -567,7 +570,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
-            # we are scraping PubMed to identify candidate link
+            # we are now scraping PubMed abstract page to see if we can identify candidate full text links
             if start == None and idx == None:
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
                 # now use the http request set up to request for each of the retrieved_df 
@@ -643,7 +646,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
 
             if start == None and idx == None:
-                # updating the retreived df with the candidate links that we extracted during the previous steps
+                # updating the retrieved df with the candidate links that we extracted during the previous steps
                 retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
             elif start == 'retrieved2' and idx == None:
                 # restart from this step
