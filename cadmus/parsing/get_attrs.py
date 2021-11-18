@@ -6,14 +6,16 @@ def get_attrs(tag):
         
     # lets get the dictionary of attributes for each div_tag, if there are none then {} is returned
     attrs = tag.attrs
-    # now the values for each item in the dictionary
-    vals = attrs.values()
-    # the issue lies in the fact that sometimes the value is a list of items and sometimes a single item
-    # if its a list then we'll flatten it, otherwise just add it as a string (making all values lower case by default)
-    for val in vals:
-        if type(val) == list:
-            flat_vals.extend([element.lower() for element in val])
-        else:
-            flat_vals.append(val.lower())
+    # avoid none type error 
+    if tag.attrs:
+        # now the values for each item in the dictionary
+        vals = attrs.values()
+        # the issue lies in the fact that sometimes the value is a list of items and sometimes a single item
+        # if its a list then we'll flatten it, otherwise just add it as a string (making all values lower case by default)
+        for val in vals:
+            if type(val) == list:
+                flat_vals.extend([element.lower() for element in val])
+            else:
+                flat_vals.append(val.lower())
     
     return flat_vals
