@@ -5,25 +5,29 @@ def html_to_parsed_text(soup, keep_abstract):
     text = ''
     # first we search the body for each division  or article tage and save it as a list of tag object
 
-    # first we look for the cleanest tags.
+    # first we look for the cleanest tags (closest to the body of the article.
     for name in ['article', 'ifp:body', 'articledata']:
         if soup.find(name):
             tag = soup.find(name)
+            # within these main tags we want to find the text contating tags
             paras = tag.find_all(['p',
                                   'h1',
                                   'h2',
                                   'h3',
                                   'div', {'class':'html-p'},
+                                  'div', {'role':'paragraph'},
                                   'div', {'class':'NLM_paragraph'},
                                   'div', {'class':'NLM_p'},
                                   'div', {'class':'NLM_p last'}
                                  ])
+            # work though each text tag and stop the process if we come across end of doc headings
             for p in paras:
                 if p.text.lower() == 'references' \
                     or p.text.lower() == 'supplementary material' \
                     or p.text.lower() == 'acknowledgments':
                     break
-                elif len(p.text.split()) > 1000:
+                # if the tag.text has enormous lump of text best to avoid it, we should be able to get cleaner text by getting targeted smaller paragraphs 
+                elif len(p.text.split()) > 1500:
                     pass
                 
                 else:
@@ -38,10 +42,22 @@ def html_to_parsed_text(soup, keep_abstract):
                     or 'mb0' in attrs \
                     or 'article-section-content' in attrs \
                     or 'articleparagraph' in attrs:
-                        if p.get_text(" ") not in text:
-                            text = text + " " + p.get_text(" ", strip = True)
-            return text
-            
+                        # when criteria met, parse out the text, sentence by sentence.
+                        # if the sent has been seen before, don't add it
+                        ptext = p.get_text(" ", strip = True)
+                            for sent in ptext.split(". "):
+                                if sent not in text:
+                                    text = text + " " + sent + "."
+                    # this allows text found under an "id" attribute tag, i didn't really want to use it but it is very common for some publishers and the text remains pretty clean
+                    if p.attrs.get('id') != None:
+                        # strip out the trailing whitespace, join with a space
+                        ptext = p.get_text(" ", strip = True)
+                        # split roughly into sentences 
+                        for sent in ptext.split(". "):
+                            if sent not in text:
+                                text = text + " " + sent + "."
+            if text != '':
+                return text
             
     # if we don't find a clean tag we can look through all the tags and check the attributes
     if text == '':
@@ -60,6 +76,7 @@ def html_to_parsed_text(soup, keep_abstract):
                     for value in attrs_list:
                         if (('article' in value) and ('body' in value))\
                         or (('article' in value) and ('fulltext' in value))\
+                        or (('journal' in value) and ('fulltext' in value))\
                         or (('article' in value) and ('content' in value))\
                         or (("content" in value) and ('body' in value))\
                         or (('article' in value) and ('row' in value))\
@@ -69,6 +86,7 @@ def html_to_parsed_text(soup, keep_abstract):
                         or value == 'page-body'\
                         or value == 'article'\
                         or value == 'fulltext-view'\
+                        or value == 'journalfulltext'\
                         or value == 'html-body'\
                         or value == 'body-text'\
                         or ('hlfld-fulltext' in value):
@@ -77,6 +95,7 @@ def html_to_parsed_text(soup, keep_abstract):
                                                 'h2',
                                                 'h3',
                                                 'div', {'class':'html-p'},
+                                                'div', {'role':'paragraph'},
                                                 'div', {'class':'NLM_paragraph'},
                                                 'div', {'class':'NLM_p'},
                                                 'div', {'class':'NLM_p last'}
@@ -88,7 +107,7 @@ def html_to_parsed_text(soup, keep_abstract):
                                     or p.text.lower() == 'acknowledgments':
                                     #print('stopping due to section break')
                                     break
-                                elif len(p.text.split()) > 1000:
+                                elif len(p.text.split()) > 1500:
                                     #print("skipping due to size")
                                     pass
                                 else:
@@ -103,21 +122,28 @@ def html_to_parsed_text(soup, keep_abstract):
                                     or 'mb0' in attrs \
                                     or 'article-section-content' in attrs \
                                     or 'articleparagraph' in attrs:
-                                        if p.get_text(" ", strip = True) not in text:
-                                            text = text + " " + p.get_text(" ", strip = True)
+                                        ptext = p.get_text(" ", strip = True)
+                                        for sent in ptext.split(". "):
+                                            if sent not in text:
+                                                text = text + " " + sent + "."
+                                if p.attrs.get('id') != None:
+                                    ptext = p.get_text(" ", strip = True)
+                                    for sent in ptext.split(". "):
+                                        if sent not in text:
+                                            text = text + " " + sent + "."
             if text != '':
                 return text
                 
     if text == '':
         #print('workin on basic tag trawl')
-        # the next step will be extracting the text from our tags 
-        # if any of these criteria are met then we should look for text holding tags
+        # sometimes you cant find any specific tags but you might get a decent clean text from just scraping all the text tags we used above
         if soup.body != None:
             paras = soup.body.find_all(['p',
                                         'h2',
                                         'h3',
                                         'div', {'class':'html-p'},
                                         'div', {'class':'NLM_paragraph'},
+                                        'div', {'role':'paragraph'},
                                         'div', {'class':'NLM_p'},
                                         'div', {'class':'NLM_p last'}
                                     ])
@@ -126,7 +152,7 @@ def html_to_parsed_text(soup, keep_abstract):
                     or p.text.lower() == 'supplementary material' \
                     or p.text.lower() == 'acknowledgments':
                     break
-                elif len(p.text.split()) > 1000:
+                elif len(p.text.split()) > 1500:
                     pass
                 else:
                     attrs = get_attrs(p)
@@ -139,7 +165,14 @@ def html_to_parsed_text(soup, keep_abstract):
                     or 'mb0' in attrs \
                     or 'article-section-content' in attrs \
                     or 'articleparagraph' in attrs:
-                        if p.get_text(" ", strip = True) not in text:
-                            text = text + " " + p.get_text(" ", strip = True)
+                        ptext = p.get_text(" ", strip = True)
+                        for sent in ptext.split(". "):
+                            if sent not in text:
+                                text = text + " " + sent + "."
+                    elif p.attrs.get('id') != None:
+                    ptext = p.get_text(" ", strip = True)
+                    for sent in ptext.split(". "):
+                        if sent not in text:
+                            text = text + " " + sent + "."
 
     return text
