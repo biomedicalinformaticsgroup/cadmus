@@ -45,9 +45,9 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                         # when criteria met, parse out the text, sentence by sentence.
                         # if the sent has been seen before, don't add it
                         ptext = p.get_text(" ", strip = True)
-                            for sent in ptext.split(". "):
-                                if sent not in text:
-                                    text = text + " " + sent + "."
+                        for sent in ptext.split(". "):
+                            if sent not in text:
+                                text = text + " " + sent + "."
                     # this allows text found under an "id" attribute tag, i didn't really want to use it but it is very common for some publishers and the text remains pretty clean
                     if p.attrs.get('id') != None:
                         # strip out the trailing whitespace, join with a space
