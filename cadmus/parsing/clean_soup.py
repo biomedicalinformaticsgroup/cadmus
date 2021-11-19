@@ -52,7 +52,7 @@ def clean_soup(soup):
     # author data is plentiful and not part of the content really   
     # the abstract should not be parsed here, we want control of whether to add it or not - we parse it using the get_abstract funct
     # we also remove acknowledgements, footnotes and correspondence details and licensing details.
-    or tag in soup.find_all(['div', 'section']):
+    for tag in soup.find_all(['div', 'section']):
         attrs = get_attrs(tag)
         for val in attrs:
             if 'author' in val \
