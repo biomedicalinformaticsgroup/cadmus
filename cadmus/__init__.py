@@ -19,7 +19,6 @@ from cadmus.parsing.html_get_ab import html_get_ab
 from cadmus.retrieval.redirect_check import redirect_check
 from cadmus.parsing.html_response_to_parse_d import html_response_to_parse_d
 from cadmus.parsing.xml_response_to_parse_d import xml_response_to_parse_d
-from cadmus.parsing.xml_file_to_parse_d import xml_file_to_parse_d
 from cadmus.parsing.remove_link import remove_link
 from cadmus.parsing.clean_pdf_body import clean_pdf_body
 from cadmus.parsing.limit_body import limit_body

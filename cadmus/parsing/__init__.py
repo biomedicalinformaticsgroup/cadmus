@@ -6,7 +6,6 @@ from cadmus.parsing.get_ab import get_ab
 from cadmus.parsing.html_to_parsed_text import html_to_parsed_text
 from cadmus.parsing.html_get_ab import html_get_ab
 from cadmus.parsing.xml_response_to_parse_d import xml_response_to_parse_d
-from cadmus.parsing.xml_file_to_parse_d import xml_file_to_parse_d
 from cadmus.parsing.remove_link import remove_link
 from cadmus.parsing.clean_pdf_body import clean_pdf_body
 from cadmus.parsing.limit_body import limit_body
