@@ -57,7 +57,7 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                             if sent not in text:
                                 text = text + " " + sent + "."
             if text != '':
-                if keep_abstract = True:
+                if keep_abstract == True:
                     text = str(abstract) + str(' ') + str(text)
                 else:
                     pass
@@ -136,7 +136,7 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                                         if sent not in text:
                                             text = text + " " + sent + "."
             if text != '':
-                if keep_abstract = True:
+                if keep_abstract == True:
                     text = str(abstract) + str(' ') + str(text)
                 else:
                     pass
@@ -183,7 +183,7 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                         if sent not in text:
                             text = text + " " + sent + "."
     if text != '':
-        if keep_abstract = True:
+        if keep_abstract == True:
             text = str(abstract) + str(' ') + str(text)
         else:
             pass
