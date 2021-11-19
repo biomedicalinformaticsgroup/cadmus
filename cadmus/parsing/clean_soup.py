@@ -1,3 +1,5 @@
+from cadmus.parsing.get_attrs import get_attrs
+
 def clean_soup(soup):
     # NB we aim to provide a clean version of the text but the original file is always retained for bespoke parsing.
     # eg you may wish to keep the tables and figures or author data.
