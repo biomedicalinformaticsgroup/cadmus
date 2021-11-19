@@ -178,7 +178,7 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                             if sent not in text:
                                 text = text + " " + sent + "."
                     elif p.attrs.get('id') != None:
-                    ptext = p.get_text(" ", strip = True)
+                        ptext = p.get_text(" ", strip = True)
                     for sent in ptext.split(". "):
                         if sent not in text:
                             text = text + " " + sent + "."
