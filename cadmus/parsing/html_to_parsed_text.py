@@ -1,6 +1,6 @@
 from cadmus.parsing.get_attrs import get_attrs
 
-def html_to_parsed_text(soup, keep_abstract):
+def html_to_parsed_text(soup, abstract, keep_abstract):
     # i want to save the text portions to a holding list, adding new sections each time we think its useful or new.
     text = ''
     # first we search the body for each division  or article tage and save it as a list of tag object
@@ -57,6 +57,10 @@ def html_to_parsed_text(soup, keep_abstract):
                             if sent not in text:
                                 text = text + " " + sent + "."
             if text != '':
+                if keep_abstract = True:
+                    text = str(abstract) + str(' ') + str(text)
+                else:
+                    pass
                 return text
             
     # if we don't find a clean tag we can look through all the tags and check the attributes
@@ -132,6 +136,10 @@ def html_to_parsed_text(soup, keep_abstract):
                                         if sent not in text:
                                             text = text + " " + sent + "."
             if text != '':
+                if keep_abstract = True:
+                    text = str(abstract) + str(' ') + str(text)
+                else:
+                    pass
                 return text
                 
     if text == '':
@@ -174,5 +182,9 @@ def html_to_parsed_text(soup, keep_abstract):
                     for sent in ptext.split(". "):
                         if sent not in text:
                             text = text + " " + sent + "."
-
+    if text != '':
+        if keep_abstract = True:
+            text = str(abstract) + str(' ') + str(text)
+        else:
+            pass
     return text

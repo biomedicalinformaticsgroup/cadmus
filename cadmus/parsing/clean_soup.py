@@ -9,7 +9,7 @@ def clean_soup(soup):
                        'script',
                        'xref',
                        'table',
-                       'label,
+                       'label',
                        'figure',
                        'figcaption',
                        'sup',
