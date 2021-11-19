@@ -37,7 +37,7 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
             abstract = html_get_ab(soup)
        
         # parse out the body text 
-        text = html_to_parsed_text(soup, keep_abstract)
+        text = html_to_parsed_text(soup, abstract, keep_abstract)
         text = clean_html(text)
         
         # get the file_size
