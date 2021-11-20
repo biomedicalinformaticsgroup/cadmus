@@ -179,9 +179,9 @@ def html_to_parsed_text(soup, abstract, keep_abstract):
                                 text = text + " " + sent + "."
                     elif p.attrs.get('id') != None:
                         ptext = p.get_text(" ", strip = True)
-                    for sent in ptext.split(". "):
-                        if sent not in text:
-                            text = text + " " + sent + "."
+                        for sent in ptext.split(". "):
+                            if sent not in text:
+                                text = text + " " + sent + "."
     if text != '':
         if keep_abstract == True:
             text = str(abstract) + str(' ') + str(text)
