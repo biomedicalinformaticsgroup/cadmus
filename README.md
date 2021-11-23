@@ -68,6 +68,87 @@ The output from Cadmus is a Pickle object. In order to open the result use the f
 import pickle
 retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
 ```
+---
+Output details
+---
+The main output is a pandas dataframe saved as a pickle object.  
+This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.p"```. 
+The dataframe columns are 
+- pmid <class 'str'>
+    - pubmed id
+- pmcid <class 'float'>
+    - pubmed central id 
+- title <class 'str'>
+- abstract <class 'str'>
+- authors <class 'list'>
+- journal <class 'str'>
+- pub_type <class 'list'>
+    - Publication type (from pubmed metadata) 
+- pub_date <class 'datetime.date'>
+    - Publication type (from pubmed metadata)  
+- doi <class 'str'>
+- issn <class 'str'>
+- crossref <class 'numpy.int64'>
+    - 1/0 for presence of crossref record when searching on doi 
+- full_text_links <class 'dict'>
+    - dict_keys
+        - 'cr_tdm' (list of crossref tdm links),
+        - 'html_parse' (list of links parsed from html files,
+        - 'pubmed_links' (list of links from "linkout" section on pubmed page, not including PMC])
+- licenses <class 'list'>
+- pdf <class 'numpy.int64'>
+    - (1/0) for successful download of pdf version 
+- xml <class 'numpy.int64'>
+    - (1/0) for successful download of xml version
+- html <class 'numpy.int64'>
+    - (1/0) for successful download of html version
+- plain <class 'numpy.int64'>
+    - (1/0) for successful download of plain text version 
+- pmc_tgz <class 'numpy.int64'>
+    - (1/0) for successful download of Pubmed Central Tar g-zip 
+- xml_parse_d <class 'dict'>
+- html_parse_d <class 'dict'>
+- pdf_parse_d <class 'dict'>
+- plain_parse_d <class 'dict'>
+    - **all parse_d have the same structure to the dictionary**
+    - dict_keys
+        - 'file_path' (string representation of path to raw file saved at ```"output/formats/{format}/{index}.{suffix}"```),
+        - 'text' (parsed text str),
+        - 'abstract' (str),
+        - 'size' (file size - bytes),
+        - 'wc' (rough word count based on string.split() (int)),
+        - 'url' (the url used to retrieve the file),
+        - 'body_unique_score 
+            - score based on union and diffrence in words between the abstract and parsed text. the Higher the score, the more original content in the full text max = 1 min = 0
+        - 'ab_sim_score'
+            - Score based on the count of words in the intersection between the abstract and parsed text, divided by the total union of unique words in the abstract and parsed text, the higher the score, the more similar the abstract is to the parsed text. Max 1, min 0
+        - 'evaluation' 
+            - TP/FP/ABS true positive, false positive or abstract, calculation based on word count, file size, abstract similarity and body unique score.
+- content_text <class 'str'>
+    - the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. 
+---
+---
+## Other Outputs
+- **Medline Record Dictionaries**
+    - these are stored as pickle objects for every row index in the dataframe. 
+    - Medline dictionaries can be found at ```./output/medline/p/{index}.p```. 
+    - You can use these dictionaries to reparse the metadata if there are fields you would like to include see possible fields [here](https://www.nlm.nih.gov/bsd/mms/medlineelements.html)
+    - There is also a text version stored at ```./output/medline/txts/{index}.txt```
+- **Crossref Record Dictionaries**
+    - Similarly to Meline records, we also store crossref records as pickled dictionaries. 
+    - These can be found at ```./output/crossref/p/{index}.p```
+    - there are many fields (dictionary keys) that you can use to parse the crossred record. 
+    - find our more about the crossref REST API [here](https://api.crossref.org/swagger-ui/index.html) 
+- **Raw File Formats**
+    - We try our best to offer a clear representation of the text but sometimes needs will differ from this approach.
+    - Sometimes a project requires diffrent processing so we provide the raw files for you to apply your own parser on
+    - In the ```retrieved_df2``` each row has 1/0 values in columns for each format, HTML, XML, PDF, Plain and PMC_TGZ
+    - If there is a 1 in the desired format you can find the path to the raw file.  
+        - ```retrieve_df2[index,{format}_parsed_d['file_path']```. 
+    - Alternatively you can bulk parse all the available formats from their directories e.g.```./output/formats/html/{index}.html```. 
+    - Each file is linked back to the dataframe using the uniq hexidecimal index, this is the same index used in the medline pickle and crossref pickle.
+---
+
 
 ## Important - Please Read!
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on use of content for redistribution and use in research.
