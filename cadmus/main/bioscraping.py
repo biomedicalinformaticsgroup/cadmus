@@ -30,6 +30,7 @@ from cadmus.retrieval.clear import clear
 from cadmus.post_retrieval.content_text import content_text
 from cadmus.post_retrieval.evaluation import evaluation
 from cadmus.post_retrieval.correct_date_format import correct_date_format
+from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     
@@ -694,7 +695,10 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             else:
                 pass
+
+            clear()
             #selecting the best new text available among all the format available
+            print('Selecting the content_text')
             retrieved_df2 = content_text(retrieved_df2)
             #chaging the date format to yyyy-mm-dd
             retrieved_df2 = correct_date_format(retrieved_df2)
@@ -706,6 +710,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             else:
                 # no merge to perform
                 pass
+                
+            print('Cleaning the directories')
+            clean_up_dir(retrieved_df2)
             
             clear()
             if start == None:
