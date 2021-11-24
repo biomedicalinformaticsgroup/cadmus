@@ -57,3 +57,4 @@ from cadmus.retrieval.timeout import timeout
 from cadmus.parsing.xml_clean_soup import xml_clean_soup
 from cadmus.parsing.clean_xml import clean_xml
 from cadmus.parsing.clean_html import clean_html
+from cadmus.post_retrieval.clean_up_dir import clean_up_dir
