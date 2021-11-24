@@ -9,7 +9,7 @@ You need to have Java 7+.
 
 You need to git clone the project and install it.
 
-An API key from NCBI (this is used to search PubMed from articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
+An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
 An API key from Crossref. 
 Crossref provides metadata via an API providing you with licensing information and links to full text documents (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the following two licenses:
@@ -37,19 +37,18 @@ In order to create your corpora you are going to use the function called `bioscr
    
 The function can also receive optional parameters.
 
-1. The "start" parameter tells the function at which service we were at before failure (e.g. crossref, doi, pubmed central API. . .).
+1. The "start" parameter tells the function at which service we were at before failure (e.g. crossref, doi, PubMed Central API. . .).
 2. The "idx" parameter tells the function what is the last saved row index (article).
 
 Start and idx are designed to use when restarting cadmus after a program failure. When Cadmus is running, there is a repeated output feed at the top of the live output.  This line will show you the stage and index that your output dataframe was last saved in case of failure for whatever reason. By using these optional parameters, the programme will take off where it left off, saving you starting the process from the beginning again.
 
-3. "full_search"
-Finally, in case you want to check if a document became available since the last time you tried. The function takes a last optional parameter called full_search. full_search has three predefined values:
+1. "full_search", in case you want to check if a document became available since the last time you tried. "full_search" has three predefined values:
 
     - The default Value 'None', the function only looks for the new articles since the last run.
     - 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
     - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve a tagged version (i.e. html or xml).  
 
-4. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
+2. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
 ```"output/formats/{format}s/{index}.{suffix}"```.  
 
 
@@ -196,4 +195,4 @@ A: rm -rf cadmus
 
 Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
 
-A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'.
+A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
