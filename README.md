@@ -3,13 +3,13 @@ This project aims to build an automated full text retrieval system for generatio
 
 ## Requirements
 
-In order to run the code, you will need a few things:
+In order to run the code, you need a few things:
 
 You need to have Java 7+.
 
-You will need to git clone the project to the directory where you want to save your result.
+You need to git clone the project and install it.
 
-An API key from NCBI (this is used to search PubMed from articles using a search string or list of PubMed IDs(you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
+An API key from NCBI (this is used to search PubMed from articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
 An API key from Crossref. 
 Crossref provides metadata via an API providing you with licensing information and links to full text documents (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the following two licenses:
@@ -18,7 +18,7 @@ Crossref provides metadata via an API providing you with licensing information a
 2. Elsevier Text and Data Mining Service Agreement)
 
 ## Installation
-Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment.
+Cadmus has a number of dependencies on other Python packages, it is recommended to install it in an isolated environment.
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
@@ -26,9 +26,9 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 ## Get started
 
-The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for Cadmus bioscraping.
+The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for cadmus `bioscraping`.
 
-In order to create your corpora you are going to use the function called 'bioscraping'. The function is taking the following required parameters:
+In order to create your corpora you are going to use the function called `bioscraping`. The function is taking the following required parameters:
 
 1. A PubMed query string or a python list of PubMed IDs
 2. An email address
@@ -48,9 +48,9 @@ Finally, in case you want to check if a document became available since the last
     - The default Value 'None', the function only looks for the new articles since the last run.
     - 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
     - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve a tagged version (i.e. html or xml).  
-<br/>
+
 4. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
-   ```"output/formats/{format}s/{index}.{suffix}"```
+```"output/formats/{format}s/{index}.{suffix}"```.  
 
 
 ```python
@@ -78,9 +78,9 @@ The main output is a pandas dataframe saved as a pickle object.
 This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.p"```. 
 The dataframe columns are:
 - pmid <class 'str'>
-    - Pubmed id.
+    - PubMed id.
 - pmcid <class 'float'>
-    - Pubmed Central id.
+    - PubMed Central id.
 - title <class 'str'>
 - abstract <class 'str'>
   - Abstract (from PubMed metadata). 
@@ -98,7 +98,7 @@ The dataframe columns are:
     - dict_keys:
         - 'cr_tdm' (list of crossref tdm links),
         - 'html_parse' (list of links parsed from html files),
-        - 'pubmed_links' (list of links from "linkout" section on pubmed page, not including PMC]).
+        - 'pubmed_links' (list of links from "linkout" section on pubmed page, not including PMC).
 - licenses <class 'list'>
 - pdf <class 'numpy.int64'>
     - (1/0) for successful download of pdf version. 
