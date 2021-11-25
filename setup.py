@@ -24,7 +24,8 @@ setuptools.setup(
 'biopython',
 'python-dateutil',
 'lxml',
-'IPython'
+'IPython',
+'fuzzywuzzy'
 ],
     python_requires='>=3.6'
 )
