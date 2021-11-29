@@ -10,21 +10,21 @@ def clean_html(p_text):
         p_text = re.sub('\[[, ]*\]', ' ', p_text)
         p_text = re.sub('\[(, )*\]', ' ', p_text)
         
-        # remove any of the unicode characeters and \n chars
+        # remove any of the unicode characeters
         p_text = unicodedata.normalize("NFKD", p_text)
         
         # during a OOV study we identified the strings of character that we want to remove in order to offer a cleaner text as output
         # removing the links from the text
         p_text = remove_link(p_text)
-        p_text = p_text.replace('https://','')
-        p_text = p_text.replace('http://','')
-        p_text = p_text.replace('doi:','')
-        p_text = p_text.replace('ftp:','')
-        p_text = p_text.replace('\n', '')
-        p_text = p_text.replace('\t', '')
+        p_text = p_text.replace('https://',' ')
+        p_text = p_text.replace('http://',' ')
+        p_text = p_text.replace('doi:',' ')
+        p_text = p_text.replace('ftp:',' ')
+        p_text = p_text.replace('\n', ' ')
+        p_text = p_text.replace('\t', ' ')
         # removing the publishing citing
-        p_text = p_text.replace('et al.','')
-        p_text = p_text.replace('et al','')
+        p_text = p_text.replace('et al.',' ')
+        p_text = p_text.replace('et al',' ')
         # remove the email adresses of the text
         email_detection = re.compile('\w+@\w+\.[a-z]{3}')
         result = re.findall(email_detection, p_text)
