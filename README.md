@@ -161,6 +161,11 @@ You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/c
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
 
+## Citing
+
+Please indicate which version of cadmus you used.
+Jamie Campbell, Antoine Lain, & Ian Simpson. (2021). biomedicalinformaticsgroup/cadmus: First Release of Cadmus (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.5618052
+
 ## FAQ
 
 Q: What influences the performance of Cadmus?
