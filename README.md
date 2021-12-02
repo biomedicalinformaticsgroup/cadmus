@@ -128,7 +128,7 @@ The dataframe columns are:
         - 'evaluation' 
             - TP/FP/ABS true positive, false positive or abstract, calculation based on word count, file size, abstract similarity and body unique score.
 - content_text <class 'str'>
-    - The "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. If no full text was found, and the abstract from Medline is available, then the content_text is set to 'ABS:' and the abstract.
+    - The "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. If no full text was found, and the abstract from Medline is available, then the content_text is set to 'ABS:' and the Medline abstract.
 ---
 
 ## Other Outputs
