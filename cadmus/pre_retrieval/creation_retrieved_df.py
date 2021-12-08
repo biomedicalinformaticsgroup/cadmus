@@ -44,7 +44,13 @@ def creation_retrieved_df(medline_file_name):
             pmid = record.get('PMID')
             pmcid = record.get('PMC')
             title = record.get('TI')
+            # sometimes the title is a book title - check BTI if TI is empty
+            if title == None or title == '':
+                title = record.get('BTI')
             abstract = record.get('AB')
+            # sometimes the abstract is added later and stored as other Abstract OAB
+            if abstract == None or abstract == '':
+                abstract = record.get('OAB')
             authors = record.get('AU')
             journal_title = record.get('JT')
             pub_type = record.get('PT')
