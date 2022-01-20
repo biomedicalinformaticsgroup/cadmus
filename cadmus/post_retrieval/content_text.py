@@ -85,7 +85,10 @@ def content_text(retrieval_df):
         #in case we have no text or the text is smaller than the abstract thenusing the abstract as content
         if row['abstract'] == row['abstract'] and row['abstract'] != None and row['abstract'] != '':
             if (best_text == None) or (len(best_text.split()) < len(str(row['abstract']).split()) and len(row['abstract'].split()) < 1000):
-                best_text = str('ABS: ' + row['abstract'])
+                if type(row['abstract']) == list:
+                    best_text = str('ABS: ' + str(''.join(row['abstract'])))
+                else:
+                    best_text = str('ABS: ' + row['abstract'])
         #setting the value
         retrieval_df.loc[index, 'content_text'] = best_text
 
