@@ -182,6 +182,8 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 retrieved_df['pdf_parse_d'] = [{} for index in retrieved_df.index]
                 retrieved_df['plain_parse_d'] = [{} for index in retrieved_df.index]
 
+                retrieved_df = retrieved_df.where(pd.notnull(retrieved_df), None)
+                retrieved_df = retrieved_df.replace('', None)
                 pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:
                 pass    
@@ -640,11 +642,13 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 #changing the date format to yyyy-mm-dd
                 retrieved_df = correct_date_format(retrieved_df)
                 #keeping the current result before looking at the candidate links
-                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
+                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text', 'abstract']]
                 #saving the retrieved df before the candidate links
+                retrieved_df = retrieved_df.where(pd.notnull(retrieved_df), None)
+                retrieved_df = retrieved_df.replace('', None)
                 pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
             else:
-                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text']]
+                eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text', 'abstract']]
 
             if start == None and idx == None:
                 # updating the retrieved df with the candidate links that we extracted during the previous steps
@@ -724,6 +728,8 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #printing the retrieval result once all the steps have been completed
             evaluation(retrieved_df2)
             #saving the final result
+            retrieved_df2 = retrieved_df2.where(pd.notnull(retrieved_df2), None)
+            retrieved_df2 = retrieved_df2.replace('', None)
             pickle.dump(retrieved_df2, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))        
     else:
         #in case the input format type is incorect

@@ -82,13 +82,16 @@ def content_text(retrieval_df):
         if best_text == None:
             best_text = texts[default_format]
         
-        #in case we have no text or the text is smaller than the abstract thenusing the abstract as content
+        #in case the text is smaller than the abstract then cadmus is using the abstract as content
         if row['abstract'] == row['abstract'] and row['abstract'] != None and row['abstract'] != '':
-            if (best_text == None) or (len(best_text.split()) < len(str(row['abstract']).split()) and len(row['abstract'].split()) < 1000):
-                if type(row['abstract']) == list:
-                    best_text = str('ABS: ' + str(''.join(row['abstract'])))
-                else:
-                    best_text = str('ABS: ' + row['abstract'])
+            if best_text == None:
+                pass 
+            else:
+                if (len(best_text.split()) < len(str(row['abstract']).split()) and len(row['abstract'].split()) < 1000):
+                    if type(row['abstract']) == list:
+                        best_text = str(str(''.join(row['abstract'])))
+                    else:
+                        best_text = str(row['abstract'])
         #setting the value
         retrieval_df.loc[index, 'content_text'] = best_text
 

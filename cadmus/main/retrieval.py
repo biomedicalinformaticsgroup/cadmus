@@ -40,17 +40,12 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
         cr_df = retrieval_df[condition]
 
     elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
-        condition = [(type(pmcid) != float) for pmcid in retrieval_df.pmcid]
-        cr_df = retrieval_df[condition]
-        cr_df
+        cr_df = retrieval_df[retrieval_df.pmcid.notnull()]
     elif stage == 'doiorg':
-        condition = [(type(doi) != float) for doi in retrieval_df.doi]
-        cr_df = retrieval_df[condition]
-        cr_df
+        cr_df = retrieval_df[retrieval_df.doi.notnull()]
     elif stage == 'pubmed':
-        condition = [(type(pmid) != float) for pmid in retrieval_df.pmid]
-        cr_df = retrieval_df[condition]
-        cr_df
+        cr_df = retrieval_df[retrieval_df.pmid.notnull()]
+
     else:
         print('There is an error in the stage idendification please fill a bug repport')
         exit()
@@ -73,7 +68,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             
         elif stage == 'epmcxml' or stage == 'epmcsupp' or stage == 'pmcxmls' or stage == 'pmcpdfs' or stage == 'pmctgz':
             #checking that the PMCID is not nan, PMICD is the key needed for epmc pmc
-            if retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+            if retrieval_df.pmcid.loc[index] != None:
                 pmcid = row['pmcid']
                 print(f'Looking for {pmcid} which is record {counter} of {len(cr_df)}')
                 if stage == 'pmcxmls' or stage == 'pmcpdfs':
@@ -86,7 +81,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
         
         elif stage == 'doiorg':
             # checking the DOI is not nan
-            if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
+            if retrieval_df.doi.loc[index] != None:
                 #extracting the doi needed for doiorg
                 doi = row['doi']
                 print(f'DOI {counter} of {len(cr_df)}')
@@ -249,7 +244,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             
         elif stage == 'epmcxml':
             #if xml already retrieved or if the identifier is mising going to the next record
-            if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+            if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and the protocol to retreive the file from epmc API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'epmcxml')
@@ -282,7 +277,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
         
         elif stage == 'pmcxmls':
             #if xml already retreived, or identifier missing going to next record
-            if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+            if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and protocol to retreive the document from PMC API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmcxmls')
@@ -316,7 +311,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
         elif stage == 'pmcpdfs':
             # looking if the pdf is already retreived for that row, if yes moving to the next record
             # the condition alse check if an identifier is present
-            if retrieval_df.pdf.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+            if retrieval_df.pdf.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and the protocol to request the docuemnt from PMC API
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmcpdfs')
@@ -366,7 +361,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                             
         
         elif stage == 'pmctgz':
-            if retrieval_df.pmc_tgz.loc[index] != 1 and retrieval_df.pmcid.loc[index] == retrieval_df.pmcid.loc[index]:
+            if retrieval_df.pmc_tgz.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and protocol to request the tgz from PMC
                     response_d, response = get_request(pmcid, http, base_url, headers, 'pmctgz')
@@ -447,7 +442,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             
         elif stage == 'doiorg':
             #cheking if the doi is not nan
-            if retrieval_df.doi.loc[index] == retrieval_df.doi.loc[index]:
+            if retrieval_df.doi.loc[index] != None:
                 try:
                     #creating the header and the protocol
                     response_d, response = get_request(doi, http, base_url, headers, 'doiorg')
