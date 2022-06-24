@@ -28,13 +28,15 @@ def evaluation(df):
             plain_count += 1
         if row.content_text == '' or row.content_text == None or row.content_text != row.content_text:
             pass
-        elif row.content_text[:4] == 'ABS:':
-            #keeping count of the time we did not retreive the full text but we found teh bastract
-            abstract_count += 1
         else:
             # computing the value of retreived document(any format)
             content_count += 1
-            
+        if row.content_text == '' or row.content_text == None or row.content_text != row.content_text:
+            if row['abstract'] == None or row['abstract'] == '':
+                pass
+            else:
+                #keeping count of the time we did not retreive the full text but we found the abastract
+                abstract_count += 1
         if row['xml'] == 1 or row['html'] == 1:
         #number of document we have at least one taged version available            
             tag_count +=1
@@ -47,7 +49,6 @@ def evaluation(df):
     print(f'XML:{xml_count} = {percent(xml_count, len(df))}')
     print(f'HTML:{html_count} = {percent(html_count, len(df))}')
     print(f'Plain Text:{plain_count} = {percent(plain_count, len(df))}')
-    print(f'\nWe have at least one fomat for {any_count} articles = {percent(any_count, len(df))}')
-    print(f'\nWe have a tagged version for {tag_count} articles = {percent(tag_count, len(df))}')
-    print(f'\nWe have only the abstract for {abstract_count} articles = {percent(abstract_count, len(df))}')     
+    print(f'\nWe have a tagged version (HTML, XML) for {tag_count} articles = {percent(tag_count, len(df))}')
+    print(f'\nWe only have the abstract but not the associated content text for {abstract_count} articles = {percent(abstract_count, len(df))}')     
     print(f'\nWe have a content text for {content_count} articles = {percent(content_count, len(df))}')     
