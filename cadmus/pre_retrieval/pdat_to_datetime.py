@@ -59,6 +59,6 @@ def pdat_to_datetime(date):
                         dt = parser.parse(date.split('/')[0]).date()
                         return dt
                     except:
-                        print(date)
-                        pass
-    return dt
+                        return date
+                       
+    return date
