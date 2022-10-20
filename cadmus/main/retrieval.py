@@ -167,7 +167,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                                 # we change the value to 1 in order to not look for that format again
                                                 retrieval_df.loc[index, 'pdf'] = 1                                    
-                                                retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
+                                                retrieval_df.loc[index, 'pdf_parse_d'].update(pdf_d)
                                             else:
                                                 pass
                                         except:
@@ -190,7 +190,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
                                         # changing the value to one for future references
                                         retrieval_df.loc[index,'xml'] = 1
-                                        retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
+                                        retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
                                     else:
                                         pass
                                 else:
@@ -217,7 +217,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                                 # since the file as been identified as TP we save it to a pre-defined structure
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
                                         retrieval_df.loc[index,'html'] = 1
-                                        retrieval_df.loc[index,'html_parse_d'] = [html_d]
+                                        retrieval_df.loc[index,'html_parse_d'].update(html_d)
                                     else:
                                         pass
                                 else:
@@ -229,7 +229,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             file.write(response.text.encode('ascii', 'ignore').decode())
                                     plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
                                     if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
-                                        retrieval_df.loc[index, 'plain_parse_d'] = [plain_d]
+                                        retrieval_df.loc[index, 'plain_parse_d'].update(plain_d)
                                         retrieval_df.loc[index,'plain'] = 1
                                 else:
                                     pass
@@ -268,7 +268,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                         # we can keep track of the sucesses as we go by saving 1 to xml column and avoid trying again
                         retrieval_df.loc[index,'xml'] = 1
-                        retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
+                        retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
                 else:
                     print('error with request')
                     print(f'{response_d["error"]}')
@@ -300,7 +300,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                             # saving the file as it has been evaluated as TP
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                         retrieval_df.loc[index,'xml'] = 1
-                        retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
+                        retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
                 else:
                     # in case the status code is different than 200 or 429
                     print('error with request')
@@ -344,7 +344,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                         pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
                                         if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                             retrieval_df.loc[index, 'pdf'] = 1
-                                            retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
+                                            retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
                                         else:
                                             pass
                                     except:
@@ -484,7 +484,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                                                 #if the content retreived from the docuemnt followed the rule we implemented we are altering the main df
                                                 retrieval_df.loc[index, 'pdf'] = 1
-                                                retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
+                                                retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
                                             else:
                                                 pass
                                         except:
@@ -503,7 +503,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                     retrieval_df.loc[index,'xml'] = 1
-                                    retrieval_df.loc[index,'xml_parse_d'] = [xml_d]
+                                    retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
 
 
                             elif 'html' in format_type.lower() and retrieval_df.html.loc[index] != 1:
@@ -522,14 +522,14 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     with open(f'./output/formats/htmls/{index}.html', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                     retrieval_df.loc[index,'html'] = 1
-                                    retrieval_df.loc[index,'html_parse_d'] = [html_d]
+                                    retrieval_df.loc[index,'html_parse_d'].update(html_d)
                         
                             elif 'plain' in format_type.lower() and retrieval_df.plain.loc[index] != 1:
                                 with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                                     file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                 plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', f'{base_url}{doi}', keep_abstract)
                                 if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
-                                    retrieval_df.loc[index, 'plain_parse_d'] = [plain_d]
+                                    retrieval_df.loc[index,'plain_parse_d'].update(plain_d)
                                     retrieval_df.loc[index,'plain'] = 1 
                                 
                                                 
