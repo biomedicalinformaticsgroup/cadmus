@@ -1,5 +1,6 @@
 # Cadmus [![DOI](https://zenodo.org/badge/364367629.svg)](https://zenodo.org/badge/latestdoi/364367629)
 This project aims to build an automated full text retrieval system for generation of large biomedical corpora from published literature for research purposes.
+Cadmus has been developed for use in non-commercial research. Use out with this remit is not recommended nor the intended purpose.
 
 ## Requirements
 
