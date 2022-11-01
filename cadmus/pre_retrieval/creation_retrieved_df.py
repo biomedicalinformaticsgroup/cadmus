@@ -51,6 +51,7 @@ def creation_retrieved_df(medline_file_name):
             # sometimes the abstract is added later and stored as other Abstract OAB
             if abstract == None or abstract == '':
                 abstract = record.get('OAB')
+            mesh_terms = record.get('MH')
             authors = record.get('AU')
             journal_title = record.get('JT')
             pub_type = record.get('PT')
@@ -68,6 +69,7 @@ def creation_retrieved_df(medline_file_name):
                                 'pmcid':pmcid,
                                 'title': title,
                                 'abstract': abstract,
+                                'mesh': mesh_terms,
                                 'authors':authors,
                                 'journal':journal_title,
                                 'pub_type':pub_type,
@@ -76,6 +78,12 @@ def creation_retrieved_df(medline_file_name):
                                 'issn':issn}})
 
     pm_df = pd.DataFrame.from_dict(parse_d, orient= 'index')
-
+    index_to_keep = []
+    for i in range(len(pm_df)):
+        if 'Preprint' in pm_df.pub_type.iloc[i]:
+            pass
+        else:
+            index_to_keep.append(pm_df.index[i])
+    pm_df = pm_df[pm_df.index.isin(index_to_keep)]
     print('Process Complete')
     return pm_df 

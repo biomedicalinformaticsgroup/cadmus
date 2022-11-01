@@ -31,6 +31,7 @@ from cadmus.post_retrieval.content_text import content_text
 from cadmus.post_retrieval.evaluation import evaluation
 from cadmus.post_retrieval.correct_date_format import correct_date_format
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
+from cadmus.pre_retrieval. add_mesh_remove_preprint import add_mesh_remove_preprint
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     
@@ -42,6 +43,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
         # load the original df to use downstream.
         original_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+        if 'mesh' not in original_df.columns:
+            print('Implementing changes to your previous result due to change in the library.')
+            original_df = add_mesh_remove_preprint(original_df)
         # bioscraping needs to extract all the pmids where already we already have the content_text
         # these pmids will then be removed from the the search df according to the parameter used for 'full_search' 
         original_pmids = []

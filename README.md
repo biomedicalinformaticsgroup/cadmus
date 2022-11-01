@@ -84,6 +84,8 @@ The dataframe columns are:
 - title <class 'str'>
 - abstract <class 'str'>
   - Abstract (from PubMed metadata). 
+- mesh <class 'list'>
+  -  MeSH (Medical Subject Headings) provided by Medline.
 - authors <class 'list'>
 - journal <class 'str'>
 - pub_type <class 'list'>
