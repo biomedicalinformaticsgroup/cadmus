@@ -78,7 +78,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                         pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)
                         if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
                             retrieval_df.loc[index, 'pdf'] = 1
-                            retrieval_df.loc[index, 'pdf_parse_d'] = [pdf_d]
+                            retrieval_df.loc[index, 'pdf_parse_d'] = pdf_d
                             condition = True
                         else:
                             # no need to spend more time in the tgz the function could not identify the file we are looking for
@@ -155,7 +155,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 
                                 # then record success on the retrieved_df
                                 retrieval_df.loc[index,'xml'] = 1
-                                retrieval_df.loc[index,'xml_parse_d'] = [parse_d]
+                                retrieval_df.loc[index,'xml_parse_d'] = parse_d
                                 condition = True
                             else:
                                 # no need to spend more time in the tgz the function could not identify the file we are looking for
