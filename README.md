@@ -80,6 +80,7 @@ retrieved_df = parsed_to_df(path = './output/retrieved_parsed_files/content_text
 ```
 
 As default we assume the directory to the files is ```"./ouput/retrieved_parsed_files/content_text/``` please change the parameter 'path' otherwise.
+
 ---
 ## Output details
 
