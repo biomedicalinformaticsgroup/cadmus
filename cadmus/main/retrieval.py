@@ -163,13 +163,20 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             file.write(response.content)
                                         try:
                                             #looking at the content of the pdf, if the content showed evidence it is the full text we modify the df to update with the new information
-                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
-                                            if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                                            pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
+                                            if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
                                                 # we change the value to 1 in order to not look for that format again
                                                 retrieval_df.loc[index, 'pdf'] = 1                                    
                                                 retrieval_df.loc[index, 'pdf_parse_d'].update(pdf_d)
+                                                f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
+                                                f.write(p_text)
+                                                f.close()
                                             else:
                                                 pass
+                                            if 'wc' in row['pdf_parse_d'].keys():
+                                                pass
+                                            else:
+                                                retrieval_df.loc[index, 'pdf'] = int(0)
                                         except:
                                             pass
                                     else:
@@ -181,18 +188,26 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 # the algorithm will spend time on the following only if it has not retrieved it already
                                 if retrieval_df.xml.loc[index] != 1:
                                     # perform xml parsing and FP detection
-                                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                                    xml_d, p_text = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     xml_d = evaluation_funct(xml_d)
                                     # now we have the xml_d we can evaluate to decide if it is a TP, FP or AB
-                                    if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
+                                    if xml_d['evaluation'] == 'TP' and (xml_d['wc_abs'] < xml_d['wc'] or xml_d['wc_abs'] > 1000 if xml_d['wc_abs'] != 0 else True) and 100 < xml_d['wc']:
                                         with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                                                 # saving the  file to a pre-defines directory as we identified it as TP
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
                                         # changing the value to one for future references
                                         retrieval_df.loc[index,'xml'] = 1
                                         retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
+                                        f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
+                                        f.write(p_text)
+                                        f.close()
+
                                     else:
                                         pass
+                                    if 'wc' in row['xml_parse_d'].keys():
+                                        pass
+                                    else:
+                                        retrieval_df.loc[index, 'xml'] = int(0)
                                 else:
                                     pass
 
@@ -209,17 +224,25 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                         retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
                                     
                                     # perform html parsing and FP detection
-                                    html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                                    html_d, p_text = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                     html_d = evaluation_funct(html_d)
                                     # now we have the html_d we can evaluate to decide if it is a TP, FP or AB
-                                    if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
+                                    if html_d['evaluation'] == 'TP' and (html_d['wc_abs'] < html_d['wc'] or html_d['wc_abs'] > 1000 if html_d['wc_abs'] != 0 else True) and 100 < html_d['wc']:
                                         with open(f'./output/formats/htmls/{index}.html', 'w') as file:
                                                 # since the file as been identified as TP we save it to a pre-defined structure
                                                 file.write(response.text.encode('ascii', 'ignore').decode())
                                         retrieval_df.loc[index,'html'] = 1
                                         retrieval_df.loc[index,'html_parse_d'].update(html_d)
+                                        f = open(f"./output/retrieved_parsed_files/htmls/{index}.txt", "w")
+                                        f.write(p_text)
+                                        f.close()
+
                                     else:
                                         pass
+                                    if 'wc' in row['html_parse_d'].keys():
+                                        pass
+                                    else:
+                                        retrieval_df.loc[index, 'html'] = int(0)
                                 else:
                                     pass
                             #doing the same as before for .txt file format
@@ -227,10 +250,18 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 if retrieval_df.plain.loc[index] != 1:
                                     with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                                             file.write(response.text.encode('ascii', 'ignore').decode())
-                                    plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
-                                    if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
+                                    plain_d, p_text = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
+                                    if plain_d['wc'] != 0 and (plain_d['wc_abs'] < plain_d['wc'] or plain_d['wc_abs'] > 1000 if plain_d['wc_abs'] != 0 else True) and 100 < plain_d['wc']:
                                         retrieval_df.loc[index, 'plain_parse_d'].update(plain_d)
                                         retrieval_df.loc[index,'plain'] = 1
+                                        f = open(f"./output/retrieved_parsed_files/txts/{index}.txt", "w")
+                                        f.write(p_text)
+                                        f.close()
+                                    if 'wc' in row['plain_parse_d'].keys():
+                                        pass
+                                    else:
+                                        retrieval_df.loc[index, 'plain'] = int(0)
+
                                 else:
                                     pass
 
@@ -258,10 +289,10 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 #if status code is 200, it means everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
-                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                    xml_d, p_text = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                     xml_d = evaluation_funct(xml_d)
                     # now we have the xml_d we can compare look at the parsed text to decide if it is a TP, FP or AB class
-                    if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
+                    if xml_d['evaluation'] == 'TP' and (xml_d['wc_abs'] < xml_d['wc'] or xml_d['wc_abs'] > 1000 if xml_d['wc_abs'] != 0 else True) and 100 < xml_d['wc']:
                         print('success, now writing to file')
                         # the file as been classified as TP, saving the file
                         with open(f'./output/formats/xmls/{index}.xml', 'w+') as file:
@@ -269,6 +300,14 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                         # we can keep track of the sucesses as we go by saving 1 to xml column and avoid trying again
                         retrieval_df.loc[index,'xml'] = 1
                         retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
+                        f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
+                        f.write(p_text)
+                        f.close()
+                    if 'wc' in row['xml_parse_d'].keys():
+                        pass
+                    else:
+                        retrieval_df.loc[index, 'xml'] = int(0)
+
                 else:
                     print('error with request')
                     print(f'{response_d["error"]}')
@@ -291,16 +330,24 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 # code 200 everything works correctly
                 elif response_d['status_code'] == 200:
                     # perform xml parsing and FP detection
-                    xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                    xml_d, p_text = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                     xml_d = evaluation_funct(xml_d)
                     # now we have the xml_d we can decide if it is a TP, FP or AB class
-                    if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
+                    if xml_d['evaluation'] == 'TP' and (xml_d['wc_abs'] < xml_d['wc'] or xml_d['wc_abs'] > 1000 if xml_d['wc_abs'] != 0 else True) and 100 < xml_d['wc']:
                         print('success, now writing to file')
                         with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                             # saving the file as it has been evaluated as TP
                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                         retrieval_df.loc[index,'xml'] = 1
                         retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
+                        f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
+                        f.write(p_text)
+                        f.close()
+                    if 'wc' in row['xml_parse_d'].keys():
+                        pass
+                    else:
+                        retrieval_df.loc[index, 'xml'] = int(0)
+
                 else:
                     # in case the status code is different than 200 or 429
                     print('error with request')
@@ -341,12 +388,20 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as f:
                                         shutil.copyfileobj(r, f)
                                     try:
-                                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
-                                        if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                                        pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
+                                        if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
                                             retrieval_df.loc[index, 'pdf'] = 1
                                             retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
+                                            f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
+                                            f.write(p_text)
+                                            f.close()
+
                                         else:
                                             pass
+                                        if 'wc' in row['pdf_parse_d'].keys():
+                                            pass
+                                        else:
+                                            retrieval_df.loc[index, 'pdf'] = int(0)
                                     except:
                                         pass
                                 else:
@@ -480,13 +535,21 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                         with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as file:
                                             file.write(response_d['content'])
                                         try:
-                                            pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', f'{base_url}{doi}', keep_abstract)
-                                            if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                                            pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', f'{base_url}{doi}', keep_abstract)
+                                            if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
                                                 #if the content retreived from the docuemnt followed the rule we implemented we are altering the main df
                                                 retrieval_df.loc[index, 'pdf'] = 1
                                                 retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
+                                                f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
+                                                f.write(p_text)
+                                                f.close()
+
                                             else:
                                                 pass
+                                            if 'wc' in row['pdf_parse_d'].keys():
+                                                pass
+                                            else:
+                                                retrieval_df.loc[index, 'pdf'] = int(0)
                                         except:
                                             pass
                                     else:
@@ -496,14 +559,22 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                             
                             elif 'xml' in format_type.lower() and retrieval_df.xml.loc[index] != 1:
                                 # perform xml parsing and FP detection
-                                xml_d = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                                xml_d, p_text = xml_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 xml_d = evaluation_funct(xml_d)
                                 # now that we have the xml_d we can decide if it is a TP, FP or AB 
-                                if xml_d['evaluation'] == 'TP' and (len(xml_d['abstract'].split()) < xml_d['wc'] or len(xml_d['abstract'].split()) > 1000 if xml_d['abstract'] != None else True) and 100 < xml_d['wc']:
+                                if xml_d['evaluation'] == 'TP' and (xml_d['wc_abs'] < xml_d['wc'] or xml_d['wc_abs'] > 1000 if xml_d['wc_abs'] != 0 else True) and 100 < xml_d['wc']:
                                     with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                     retrieval_df.loc[index,'xml'] = 1
                                     retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
+                                    f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
+                                    f.write(p_text)
+                                    f.close()
+                                if 'wc' in row['xml_parse_d'].keys():
+                                    pass
+                                else:
+                                    retrieval_df.loc[index, 'xml'] = int(0)
+
 
 
                             elif 'html' in format_type.lower() and retrieval_df.html.loc[index] != 1:
@@ -515,22 +586,38 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                     retrieval_df.at[index, 'full_text_links'] = full_text_link_dict
                             
                                 # perform html parsing and FP detection
-                                html_d = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
+                                html_d, p_text = html_response_to_parse_d(retrieval_df, index, response, keep_abstract)
                                 html_d = evaluation_funct(html_d)
                                 # now we have the html_d we can compare to decide if it is a TP, FP or AB 
-                                if html_d['evaluation'] == 'TP' and (len(html_d['abstract'].split()) < html_d['wc'] or len(html_d['abstract'].split()) > 1000 if html_d['abstract'] != None else True) and 100 < html_d['wc']:
+                                if html_d['evaluation'] == 'TP' and (html_d['wc_abs'] < html_d['wc'] or html_d['wc_abs'] > 1000 if html_d['wc_abs'] != 0 else True) and 100 < html_d['wc']:
                                     with open(f'./output/formats/htmls/{index}.html', 'w') as file:
                                             file.write(response_d['text'].encode('ascii', 'ignore').decode())
                                     retrieval_df.loc[index,'html'] = 1
                                     retrieval_df.loc[index,'html_parse_d'].update(html_d)
+                                    f = open(f"./output/retrieved_parsed_files/htmls/{index}.txt", "w")
+                                    f.write(p_text)
+                                    f.close()
+                                if 'wc' in row['html_parse_d'].keys():
+                                    pass
+                                else:
+                                    retrieval_df.loc[index, 'html'] = int(0)
+
                         
                             elif 'plain' in format_type.lower() and retrieval_df.plain.loc[index] != 1:
                                 with open(f'./output/formats/txts/{index}.txt', 'w') as file:
                                     file.write(response_d['text'].encode('ascii', 'ignore').decode())
-                                plain_d = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', f'{base_url}{doi}', keep_abstract)
-                                if plain_d['text'] != '' and (len(plain_d['abstract'].split()) < plain_d['wc'] or len(plain_d['abstract'].split()) > 1000 if plain_d['abstract'] != None else True) and 100 < plain_d['wc']:
+                                plain_d, p_text = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', f'{base_url}{doi}', keep_abstract)
+                                if plain_d['wc'] != 0 and (plain_d['wc_abs'] < plain_d['wc'] or plain_d['wc_abs'] > 1000 if plain_d['wc_abs'] != 0 else True) and 100 < plain_d['wc']:
                                     retrieval_df.loc[index,'plain_parse_d'].update(plain_d)
                                     retrieval_df.loc[index,'plain'] = 1 
+                                    f = open(f"./output/retrieved_parsed_files/txts/{index}.txt", "w")
+                                    f.write(p_text)
+                                    f.close()
+                                if 'wc' in row['plain_parse_d'].keys():
+                                    pass
+                                else:
+                                    retrieval_df.loc[index, 'plain'] = int(0)
+
                                 
                                                 
 
@@ -604,7 +691,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             else:
                 saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
                 pickle.dump(saved_processed_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
-            print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
+            print(f'In case of fa illure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n')
 
     #When all the the rows have been completed saving the main df and the information of the current stage   

@@ -47,7 +47,7 @@ Start and idx are designed to use when restarting cadmus after a program failure
 
     - The default Value 'None', the function only looks for the new articles since the last run.
     - 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
-    - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve a tagged version (i.e. html or xml).  
+    - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve at least one tagged version (i.e. html or xml) in combination with the pdf format.  
 
 2. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
 ```"output/formats/{format}s/{index}.{suffix}"```.  
@@ -65,16 +65,24 @@ bioscraping(
 
 ## Load the result
 
-The output from Cadmus is a Pickle object. In order to open the result use the following two lines of code.
+The output from cadmus is a directory with the content text of each retrieved publication saved as a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt"```. It also provides the metadata saved as a Pickle object and a tsv file. In order to load the metadata use the following two lines of code.
 
 ```python
 import pickle
-retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+metadata_retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
 ```
+
+Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger the function takes more time to run. 
+
+```python
+from cadmus import parsed_to_df
+retrieved_df = parsed_to_df(path = './output/retrieved_parsed_files/content_text/')
+```
+As default we assume the directory to the files is ```"./ouput/retrieved_parsed_files/content_text/``` please change the parameter 'path' otherwise.
 ---
 ## Output details
 
-The main output is a pandas dataframe saved as a pickle object.  
+The Metadata output is a pandas dataframe saved as a pickle object.  
 This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.p"```. 
 The dataframe columns are:
 - pmid <class 'str'>
@@ -119,19 +127,21 @@ The dataframe columns are:
     - **all parse_d have the same structure to the dictionary**
     - dict_keys:
         - 'file_path' (string representation of path to raw file saved at ```"output/formats/{format}s/{index}.{suffix}"```),
-        - 'text' (parsed text str),
-        - 'abstract' (str),
         - 'size' (file size - bytes),
-        - 'wc' (rough word count based on string.split() (int)),
+        - 'wc' (rough word count based on string.split() for the content text (int)),
+        - 'wc_abs' (rough word count based on string.split() for the abstract (int)),
         - 'url' (the url used to retrieve the file),
         - 'body_unique_score' 
             - Score based on union and diffrence in words between the abstract and parsed text. The higher the score, the more original content in the full text, max = 1, min = 0.
         - 'ab_sim_score'
             - Score based on the count of words in the intersection between the abstract and parsed text, divided by the total union of unique words in the abstract and parsed text, the higher the score, the more similar the abstract is to the parsed text, max = 1, min = 0.
-        - 'evaluation' 
-            - TP/FP/ABS true positive, false positive or abstract, calculation based on word count, file size, abstract similarity and body unique score.
-- content_text <class 'str'>
-    - The "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. (The following does not apply since version version 0.3.0 and above) If no full text was found, and the abstract from Medline is available, then the content_text is set to 'ABS:' and the Medline abstract.
+- content_text <class 'int'>
+    - 0 if not retrieved 1 otherwise.
+
+The 'core' data, content text from the retrieved publications are strored here:
+- **retrieved_parsed_files**
+    - In this directory you cand find 5 sub-directories: content_text, pdfs, htmls, xmls, txts. Each format sub-directories contains the content of the files saved as a txt file. 
+    - The content_text sub-directory, ```"./ouput/retrieved_parsed_files/content_text/*.txt"```, contains the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is the place where the output is saved.
 ---
 
 ## Other Outputs
@@ -163,6 +173,10 @@ The dataframe columns are:
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
+
+ <!--  Here is our library forthe Pubmed Central Open Access Corpus Generation
+
+Here is our library for the Pubmed Abstract Corpus Generation --> 
 
 ## Citing
 

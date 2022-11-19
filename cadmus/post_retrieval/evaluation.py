@@ -26,12 +26,12 @@ def evaluation(df):
             html_count += 1
         if row['plain'] == 1:
             plain_count += 1
-        if row.content_text == '' or row.content_text == None or row.content_text != row.content_text:
+        if row.content_text == 0:
             pass
         else:
             # computing the value of retreived document(any format)
             content_count += 1
-        if row.content_text == '' or row.content_text == None or row.content_text != row.content_text:
+        if row.content_text == 0:
             if row['abstract'] == None or row['abstract'] == '':
                 pass
             else:

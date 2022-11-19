@@ -25,7 +25,10 @@ def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abs
     size = os.stat(path_document).st_size
     # get the word_count
     wc = len(p_text.split())
-    Content_type = 'txt'
+    if ab != '' and ab != None: 
+        wc_abs = len(ab.split())
+    else:
+        wc_abs = 0
     # computing the abs_score and body_unique
     bu_score = body_unique_score(p_text, ab)
     as_score = abstract_similarity_score(p_text, ab)
@@ -33,13 +36,11 @@ def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abs
 
     # use the output from each function to build a output dictionary to use for our evaluation and saving the content if it's a true positive
     parse_d.update({'file_path':f'./output/formats/txts/{index}.txt',
-                    'text':p_text,
-                    'abstract':ab,
                     'size':size,
                     'wc':wc,
-                    'Content_type':Content_type, 
+                    'wc_abs': wc_abs,
                     'url': ftp_link,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})   
     
-    return parse_d
+    return parse_d, p_text

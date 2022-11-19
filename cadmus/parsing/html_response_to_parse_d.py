@@ -47,19 +47,22 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
         if text:
             wc = len(text.split())
         else:
-            wc = 0       
+            wc = 0
 
+    if abstract != '' and abstract != None:       
+        wc_abs = len(abstract.split())
+    else:
+        wc_abs = 0
     bu_score = body_unique_score(text, abstract)
     as_score = abstract_similarity_score(text, abstract)
     
     # now lets update our df with the new variable we have parsed/made
     parse_d.update({'file_path':f'./output/formats/htmls/{index}.html',
-                    'text':text,
-                    'abstract':abstract,
                     'size':size,
                     'wc':wc,
+                    'wc_abs': wc_abs,
                     'url':response.url,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
     
-    return parse_d
+    return parse_d, text

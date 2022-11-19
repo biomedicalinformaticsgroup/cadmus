@@ -3,3 +3,4 @@ from cadmus.post_retrieval.df_eval import df_eval
 from cadmus.post_retrieval.evaluation import evaluation
 from cadmus.post_retrieval.content_text import content_text
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
+from cadmus.post_retrieval.parsed_to_df import parsed_to_df

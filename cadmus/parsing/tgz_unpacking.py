@@ -75,15 +75,22 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                     print(' Main PDF found = writing to file')
                     pdf_path.rename(to_file)
                     try:
-                        pdf_d = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)
-                        if pdf_d['Content_type'] == 'pdf' and pdf_d['text'] != '' and (len(pdf_d['abstract'].split()) < pdf_d['wc'] or len(pdf_d['abstract'].split()) > 1000 if pdf_d['abstract'] != None else True) and 100 < pdf_d['wc']:
+                        pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)
+                        if pdf_d['Content_type'] == 'pdf' and p_text != '' and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
                             retrieval_df.loc[index, 'pdf'] = 1
-                            retrieval_df.loc[index, 'pdf_parse_d'] = pdf_d
+                            retrieval_df.loc[index, 'pdf_parse_d'].update(pdf_d)
+                            f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
+                            f.write(p_text)
+                            f.close()
                             condition = True
                         else:
                             # no need to spend more time in the tgz the function could not identify the file we are looking for
                             condition = True
                             pass
+                        if 'wc' in retrieval_df.loc[index, 'pdf_parse_d'].keys():
+                            pass
+                        else:
+                            retrieval_df.loc[index, 'pdf'] = int(0)
                     except:
                         # no need to spend more time in the tgz the function could not identify the file we are looking for
                         condition = True
@@ -128,6 +135,10 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                             size = xml.stat().st_size
                             # get the word_count
                             wc = len(p_text.split())
+                            if ab != None:
+                                wc_abs = len(ab.split())
+                            else:
+                                wc_abs = 0
 
                             bu_score = body_unique_score(p_text, ab)
                             as_score = abstract_similarity_score(p_text, ab)
@@ -137,10 +148,9 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
 
                             # use the output from each function to build a output dictionary to use for our evaluation
                             parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml',
-                                            'text':p_text,
-                                            'abstract':ab,
                                             'size':size,
                                             'wc':wc,
+                                            'wc_abs': wc_abs,
                                             'url':f'https://www.ncbi.nlm.nih.gov/pmc/utils/oa/oa.fcgi?id={pmcid}&format=',
                                             'body_unique_score':bu_score,
                                             'ab_sim_score':as_score})
@@ -148,7 +158,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                             
                             parse_d = evaluation_funct(parse_d)
                             
-                            if parse_d['evaluation'] == 'TP' and (len(parse_d['abstract'].split()) < parse_d['wc'] or len(parse_d['abstract'].split()) > 1000 if parse_d['abstract'] != None else True) and 100 < parse_d['wc']:
+                            if parse_d['evaluation'] == 'TP' and (parse_d['wc_abs'] < parse_d['wc'] or parse_d['wc_abs'] > 1000 if parse_d['wc_abs'] != 0 else True) and 100 < parse_d['wc']:
                                 to_file = Path(f'./output/formats/xmls/{index}.xml')
                                 print('XML found = writing to file')
                                 xml.rename(to_file)
@@ -156,10 +166,17 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 # then record success on the retrieved_df
                                 retrieval_df.loc[index,'xml'] = 1
                                 retrieval_df.loc[index,'xml_parse_d'] = parse_d
+                                f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
+                                f.write(p_text)
+                                f.close()
                                 condition = True
                             else:
                                 # no need to spend more time in the tgz the function could not identify the file we are looking for
                                 condition = True
+                            if 'wc' in retrieval_df.loc[index, 'xml_parse_d'].keys():
+                                pass
+                            else:
+                                retrieval_df.loc[index, 'xml'] = int(0)
 
                     else:
                         # no need to spend more time in the tgz the function could not identify the file we are looking for

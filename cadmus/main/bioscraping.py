@@ -31,7 +31,8 @@ from cadmus.post_retrieval.content_text import content_text
 from cadmus.post_retrieval.evaluation import evaluation
 from cadmus.post_retrieval.correct_date_format import correct_date_format
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
-from cadmus.pre_retrieval. add_mesh_remove_preprint import add_mesh_remove_preprint
+from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
+from cadmus.pre_retrieval.change_output_structure import change_output_structure
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     
@@ -46,6 +47,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         if 'mesh' not in original_df.columns:
             print('Implementing changes to your previous result due to change in the library.')
             original_df = add_mesh_remove_preprint(original_df)
+        if original_df.iloc[0].content_text == 0 or original_df.iloc[0].content_text == 1:
+            pass
+        else:
+            print('Implementing changes to your previous result due to change in the library.')
+            original_df = change_output_structure(original_df)
         # bioscraping needs to extract all the pmids where already we already have the content_text
         # these pmids will then be removed from the the search df according to the parameter used for 'full_search' 
         original_pmids = []
@@ -60,7 +66,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             print('We are doing a light search, from the previous search we are only going to take a look at the missing content_text')
             for index, row in original_df.iterrows():
                 # checking what is present in the content_text field from the previous search, if it is not a full text, we want to try again
-                if row.content_text == '' or row.content_text == None or row.content_text != row.content_text or row.content_text[:4] == 'ABS:':
+                if row.content_text == 0:
                     # keeping the pmid to replace the lines with the new line from this process to avoid duplicates
                     drop_lines.append(index)
                 else:
@@ -734,7 +740,8 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #saving the final result
             retrieved_df2 = retrieved_df2.where(pd.notnull(retrieved_df2), None)
             retrieved_df2 = retrieved_df2.replace('', None)
-            pickle.dump(retrieved_df2, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))        
+            pickle.dump(retrieved_df2, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))
+            retrieved_df2.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t')         
     else:
         #in case the input format type is incorect
         print('Your input is not handle by the function please enter Pubmed search terms or a list of single type(dois, pmids, pmcids), without header')
