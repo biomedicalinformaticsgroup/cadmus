@@ -26,6 +26,10 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     size = len(xml_response.content)
     # get the word_count
     wc = len(p_text.split())
+    if ab != '' and ab != None: 
+        wc_abs = len(ab.split())
+    else:
+        wc_abs = 0
     #compute the score for evaluation 
     bu_score = body_unique_score(p_text, ab)
     as_score = abstract_similarity_score(p_text, ab)
@@ -33,12 +37,11 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
 
     # use the output from each function to build a output dictionary to use for our evaluation
     parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml',
-                    'text':p_text,
-                    'abstract':ab,
                     'size':size,
                     'wc':wc,
+                    'wc_abs': wc_abs,
                     'url':xml_response.url,
                     'body_unique_score':bu_score,
                     'ab_sim_score':as_score})
     
-    return parse_d
+    return parse_d, p_text

@@ -43,6 +43,10 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
         size = os.stat(path_document).st_size
         # get the word_count
         wc = len(p_text.split())
+        if ab != '' and ab != None: 
+            wc_abs = len(ab.split())
+        else:
+            wc_abs = 0
         Content_type = 'pdf'
         #extracting the date
         if 'Creation-Date' in soup['metadata'].keys():
@@ -58,14 +62,13 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
 
         # use the output from each function to build a output dictionary to use for our evaluation and saving the information in case it's TP
         parse_d.update({'file_path':f'./output/formats/pdfs/{index}.pdf',
-                        'text':p_text,
-                        'abstract':ab,
                         'date': date,
                         'size':size,
                         'wc':wc,
+                        'wc_abs': wc_abs,
                         'Content_type':Content_type, 
                         'url': ftp_link,
                         'body_unique_score':bu_score,
                         'ab_sim_score':as_score})
     
-    return parse_d
+    return parse_d, p_text

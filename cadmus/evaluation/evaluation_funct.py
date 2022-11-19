@@ -5,11 +5,7 @@ def evaluation_funct(parse_dict):
     # collecting the information necessary to evaluate the text
     size = parse_dict['size']
     wc = parse_dict['wc']
-    abstract = parse_dict['abstract']
-    if abstract == None:
-        abstract = ''
-    else:
-        pass
+    abstract = parse_dict['wc_abs']
     
     bu_score = parse_dict['body_unique_score']
     ab_score = parse_dict['ab_sim_score']
@@ -31,15 +27,12 @@ def evaluation_funct(parse_dict):
     
     # now we can use the body unique and abstract similarity score to classify the rest
     if bu_score >= 0.6 and ab_score != 0.0:
-        result = 'TP'
-        
-    elif (abstract != abstract and (wc > 100)) or (abstract == None and (wc > 100)) or (abstract == '' and (wc > 100)):
-        result = 'TP'    
+        result = 'TP' 
 
     # everything else should be possible with the text and abstract evaluation scores.
     # if the abstract is missing then we need to just accept the full text extracted 
     # so long as its of a decent length
-    elif (len(abstract.split()) < 50) and (wc > 100):
+    elif (abstract < 50) and (wc > 100):
         result = 'TP'
     
     else:
