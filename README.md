@@ -174,7 +174,7 @@ The 'core' data, content text from the retrieved publications are strored here:
 ## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
-You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
+You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started.
 
  <!--  Here is our library forthe Pubmed Central Open Access Corpus Generation
 
