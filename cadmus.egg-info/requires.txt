@@ -1,0 +1,12 @@
+pandas
+numpy
+requests
+bs4
+tika==1.24
+urllib3
+wget
+biopython
+python-dateutil
+lxml
+IPython
+fuzzywuzzy
