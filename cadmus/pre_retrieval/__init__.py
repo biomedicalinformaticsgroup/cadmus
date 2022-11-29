@@ -1,5 +1,4 @@
 from cadmus.pre_retrieval.output_files import output_files
-from cadmus.pre_retrieval.pmids_to_medline_file import pmids_to_medline_file
 from cadmus.pre_retrieval.pdat_to_datetime import pdat_to_datetime
 from cadmus.pre_retrieval.creation_retrieved_df import creation_retrieved_df
 from cadmus.pre_retrieval.ncbi_id_converter_batch import ncbi_id_converter_batch

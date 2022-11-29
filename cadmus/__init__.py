@@ -1,6 +1,5 @@
 from cadmus.pre_retrieval.output_files import output_files
-from cadmus.retrieval.search_terms_to_pmid_list import search_terms_to_pmid_list
-from cadmus.pre_retrieval.pmids_to_medline_file import pmids_to_medline_file
+from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 from cadmus.parsing.get_medline_doi import get_medline_doi
 from cadmus.pre_retrieval.pdat_to_datetime import pdat_to_datetime
 from cadmus.pre_retrieval.creation_retrieved_df import creation_retrieved_df
@@ -61,3 +60,4 @@ from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.post_retrieval.parsed_to_df import parsed_to_df
+from cadmus.retrieval.edirect import pipeline

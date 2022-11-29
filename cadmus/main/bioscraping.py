@@ -13,12 +13,12 @@ import pandas as pd
 import tika
 import wget
 from dateutil import parser
+import subprocess
 
 os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/'+tika.__version__+'/tika-server-'+tika.__version__+'.jar'
 from tika import parser
 
-from cadmus.retrieval.search_terms_to_pmid_list import search_terms_to_pmid_list
-from cadmus.pre_retrieval.pmids_to_medline_file import pmids_to_medline_file
+from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 from cadmus.pre_retrieval.creation_retrieved_df import creation_retrieved_df
 from cadmus.pre_retrieval.ncbi_id_converter_batch import ncbi_id_converter_batch
 from cadmus.retrieval.HTTP_setup import HTTP_setup
@@ -33,8 +33,12 @@ from cadmus.post_retrieval.correct_date_format import correct_date_format
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
+from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
+    
+    # check for the Edirect programme and install it if not already present
+    subprocess.call(["./cadmus/pre_retrieval/edirect_setup.sh", api_key])
     
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
@@ -103,23 +107,26 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         else:
             # run the search if the input is a string
             if type(input_function) == str:
-                # This is the NCBI e-search step (PubMed API)when a query string is provided resulting in a list of pmids within a dictionary
-                results_d = search_terms_to_pmid_list(input_function, email, api_key)
+                # This is the NCBI e-search step (PubMed) when a query string is provided resulting in a Medline file being created
+                search_terms_to_medline(input_function)
             else:
-                # if the input is a list of pmids we just need to make a results_d to maintain the output variables
-                
-                # get todays date 
-                date = datetime.datetime.today()
-                date = f'{date.year}_{date.month}_{date.day}_{date.hour}_{date.minute}'
-                # construct the output dict
-                results_d = {'date':date, 'search_term':'', 'total_count':len(input_function), 'pmids':input_function}
-                # save the output dictionary for our records of what terms used and number of records returned for a given date.
-                pickle.dump(results_d, open(f'./output/esearch_results/{date}.p', 'wb'))
+                if type(input_function) == list:
+                    input_funct = (',').join(input_funct)
+                    search_terms_to_medline(input_function)
+            
+            # we have already saved the medline file, lets now make the retrieved df
+            medline_file_name = './output/medline/txts/medline_output.txt'
+            # parse the medline file and create a retrieved_df with unique indexes for each record
+            retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
+            
+            # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
+            retrieved_df.fillna(value=np.nan, inplace=True)
+            retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
+            # save a list of the pmids returned by the search
+            current_pmids = list(retrieved_df['pmid'])
 
             # at this stage we need to check if the search is a new search or update of previous list.
             if update:
-                # when this is an update we need to remove the previously used pmids from our current pipeline (the orignal df and new df will be merged at the end)
-                current_pmids = results_d.get('pmids')
                 # use set difference to get the new pmids only
                 new_pmids = list(set(current_pmids).difference(set(original_pmids)))
                 if len(new_pmids) == 0:
@@ -127,8 +134,6 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     exit()
                 else:
                     print(f'There are {len(new_pmids)} new results since last run.')
-                # set the new pmids into the results d for the next step
-                results_d.update({'pmids':new_pmids}) 
             else:
                 # this project is new, no need to subset the pmids
                 pass
@@ -151,20 +156,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     idx = None
             
             if start == None:
-                # make a medline records text file for a given list of pmids
-                medline_file_name = pmids_to_medline_file(results_d['date'], results_d['pmids'], email, api_key)
-                # parse the medline file and create a retrieved_df with unique indexes for each record
-                retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
-                
-                # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
-                retrieved_df.fillna(value=np.nan, inplace=True)
-                retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
                 
                 # use the NCBI id converter API to get any missing IDs known to the NCBI databases
-                retrieved_df = ncbi_id_converter_batch(retrieved_df, email)     
-                
-                # we now have a retrieved_df of metadata. 
-                # We can use the previous retrieved_df index to exclude ones we have looked for already.
+                retrieved_df = ncbi_id_converter_batch(retrieved_df, email)
                 
                 # set up the crossref metadata http request ('base')
                 http, base_url, headers = HTTP_setup(email, click_through_api_key, 'base')
