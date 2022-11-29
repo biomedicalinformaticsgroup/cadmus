@@ -1,4 +1,4 @@
-from cadmus.retrieval.search_terms_to_pmid_list import search_terms_to_pmid_list
+from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 from cadmus.retrieval.HTTP_setup import HTTP_setup
 from cadmus.retrieval.get_request import get_request
 from cadmus.retrieval.get_tdm_links import get_tdm_links
