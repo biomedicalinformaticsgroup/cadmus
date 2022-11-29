@@ -7,6 +7,7 @@ from collections import Counter
 from contextlib import closing
 from datetime import timedelta
 from pathlib import Path
+import stat
 
 import numpy as np
 import pandas as pd
@@ -35,10 +36,10 @@ from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_prepri
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 
-! chmod 777 ./cadmus/cadmus/pre_retrieval/edirect_setup.sh
-    
+
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     # check for the Edirect programme and install it if not already present
+    os.chmod("./cadmus/cadmus/pre_retrieval/edirect_setup.sh", stat.S_IEXEC)
     subprocess.call(["./cadmus/cadmus/pre_retrieval/edirect_setup.sh", api_key])
     
     # first bioscraping checks whether this is an update of a previous search or a new search.
