@@ -38,7 +38,7 @@ from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
     
     # check for the Edirect programme and install it if not already present
-    subprocess.call([".cadmus/cadmus/pre_retrieval/edirect_setup.sh", api_key])
+    subprocess.call(["./cadmus/cadmus/pre_retrieval/edirect_setup.sh", api_key])
     
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
