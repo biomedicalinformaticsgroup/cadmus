@@ -36,7 +36,7 @@ from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
-    
+    ! chmod 777 ./cadmus/cadmus/pre_retrieval/edirect_setup.sh
     # check for the Edirect programme and install it if not already present
     subprocess.call(["./cadmus/cadmus/pre_retrieval/edirect_setup.sh", api_key])
     
