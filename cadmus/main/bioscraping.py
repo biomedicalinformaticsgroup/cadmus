@@ -34,18 +34,11 @@ from cadmus.post_retrieval.correct_date_format import correct_date_format
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
-from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
-
 
 def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
-    # check for the Edirect programme and install it if not already present
-    os.chmod("./cadmus/cadmus/pre_retrieval/edirect_setup.sh", stat.S_IEXEC)
-    subprocess.call(["./cadmus/cadmus/pre_retrieval/edirect_setup.sh", api_key])
-    
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
-    
     if update:
         print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
         # load the original df to use downstream.
@@ -110,11 +103,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # run the search if the input is a string
             if type(input_function) == str:
                 # This is the NCBI e-search step (PubMed) when a query string is provided resulting in a Medline file being created
-                search_terms_to_medline(input_function)
+                search_terms_to_medline(input_function, api_key)
             else:
                 if type(input_function) == list:
-                    input_funct = (',').join(input_funct)
-                    search_terms_to_medline(input_function)
+                    input_function = (',').join(input_function)
+                    search_terms_to_medline(input_function, api_key)
             
             # we have already saved the medline file, lets now make the retrieved df
             medline_file_name = './output/medline/txts/medline_output.txt'
@@ -136,6 +129,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                     exit()
                 else:
                     print(f'There are {len(new_pmids)} new results since last run.')
+                    retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
             else:
                 # this project is new, no need to subset the pmids
                 pass

@@ -13,7 +13,7 @@ def execute(cmmd, data=""):
                         encoding='UTF-8')
     return res.stdout.strip()
 
-def pipeline(cmmds, data=""):
+def pipeline(cmmds):
     def flatten(cmmd):
         if isinstance(cmmd, str):
             return cmmd
@@ -21,7 +21,7 @@ def pipeline(cmmds, data=""):
             return shlex.join(cmmd)
     if not isinstance(cmmds, str):
         cmmds = ' | '.join(map(flatten, cmmds))
-    res = subprocess.run(cmmds, input=data, shell=True,
+    res = subprocess.run(cmmds, shell=True,
                         capture_output=True,
                         encoding='UTF-8')
     return res.stdout.strip()

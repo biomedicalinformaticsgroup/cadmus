@@ -51,4 +51,4 @@ def evaluation(df):
     print(f'Plain Text:{plain_count} = {percent(plain_count, len(df))}')
     print(f'\nWe have a tagged version (HTML, XML) for {tag_count} articles = {percent(tag_count, len(df))}')
     print(f'\nWe only have the abstract but not the associated content text for {abstract_count} articles = {percent(abstract_count, len(df))}')     
-    print(f'\nWe have a content text for {content_count} articles = {percent(content_count, len(df))}')     
+    print(f'\nWe have a content text for {content_count} out of {len(df)} articles = {percent(content_count, len(df))}')     
