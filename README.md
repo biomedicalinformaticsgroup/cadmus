@@ -184,10 +184,10 @@ The 'core' data, content text from the retrieved publications are strored here:
 ## Important - Please Read!
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on use of content for redistribution and use in research.
 
-## Extra resources
+ <!-- ## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
-You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started.
+You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started. --> 
 
  <!--  Here is our library forthe Pubmed Central Open Access Corpus Generation
 
