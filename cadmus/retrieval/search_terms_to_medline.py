@@ -9,8 +9,10 @@ def search_terms_to_medline(query_string, api_key):
         if os.path.isdir('./output/medline/edirect') == False:
             pass
         else:
+            path_to_edirect = str(str('export PATH=${\PATH}:') + str(os.path.realpath('.')) + str('/output/medline/edirect'))
+            path_to_edirect = path_to_edirect.replace('\\', '')
             bash_profile_file = [
-                "export PATH=./output/medline/edirect",
+                path_to_edirect,
                 f"export NCBI_API_KEY={api_key}"
             ]
             with open('./.bash_profile', 'w') as fp:
@@ -20,8 +22,10 @@ def search_terms_to_medline(query_string, api_key):
                     fp.write('\n')
     else:
         os.remove('./.bash_profile')
+        path_to_edirect = str(str('export PATH=${PATH}:') + str(os.path.realpath('.')) + str('/output/medline/edirect'))
+        path_to_edirect = path_to_edirect.replace('\\', '')
         bash_profile_file = [
-            "export PATH=./output/medline/edirect",
+            path_to_edirect,
             f"export NCBI_API_KEY={api_key}"
         ]
         with open('./.bash_profile', 'w') as fp:

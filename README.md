@@ -52,6 +52,19 @@ Start and idx are designed to use when restarting cadmus after a program failure
 2. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
 ```"output/formats/{format}s/{index}.{suffix}"```.  
 
+You need to set the export path before every use so that cadmus is able to retrieve more than 10 000 records from NCBI. For that we offer a function called `display_export_path`. You just need to call this function and copy past the result into your terminal before calling `bioscraping`. 
+
+```python
+from cadmus import display_export_path
+display_export_path()
+```
+
+The result should look like:
+```python
+export PATH=${PATH}:YOUR_WORKING_DIRECTORY/output/medline/edirect
+```
+
+After copying and paste the above export into your terminal you can now run `bioscraping` with the following example:
 
 ```python
 from cadmus import bioscraping

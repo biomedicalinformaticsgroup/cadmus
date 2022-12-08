@@ -36,7 +36,9 @@ def output_files ():
 
     if os.path.isfile('./output/medline/edirect_setup.sh') == False:
         # check for the Edirect setup and install it if not already present
-        edirect_setup_script = '''#!/bin/bash
+        path_to_edirect = str(str('export PATH=${\PATH}:') + str(os.path.realpath('.')) + str('/output/medline/edirect'))
+        path_to_edirect = path_to_edirect.replace('\\', '')
+        edirect_setup_script = f'''#!/bin/bash
         # this script aims to set up edirect for use in cadmus
         # first check if edirect is present in the home directory 
         echo checking if edirect is already installed
@@ -49,7 +51,7 @@ def output_files ():
         if (($check ==0)); then 
         echo edirect not installed, begining download
         yes | sh -c "$(./output/medline/install-edirect.sh)"
-        echo "export PATH=./output/medline/edirect" >> ./.bash_profile
+        echo "{path_to_edirect}" >> ./.bash_profile
         echo "export NCBI_API_KEY=$1" >> ./.bash_profile
         echo install finished
         else 
