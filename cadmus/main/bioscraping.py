@@ -106,15 +106,10 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 search_terms_to_medline(input_function, api_key)
             else:
                 if type(input_function) == list:
-                    ####### NEW CODE ########
-                    print('Your list of PMIDs is greater than 9000, creating bins of 9000.')
+                    if 9000 < len(input_function):
+                        print('Your list of PMIDs is greater than 9000, creating bins of 9000.')
                     chunks = [(',').join(input_function[x:x+9000]) for x in range(0, len(input_function), 9000)]
                     search_terms_to_medline(chunks, api_key)
-
-                    ####### END CODE ########
-
-                    #input_function = (',').join(input_function)
-                    #search_terms_to_medline(input_function, api_key)
             
             # we have already saved the medline file, lets now make the retrieved df
             medline_file_name = './output/medline/txts/medline_output.txt'
