@@ -37,14 +37,14 @@ def search_terms_to_medline(query_string, api_key):
     # send the query string by esearch then retrieve by efetch in medline format
     if type(query_string) == str:
         search_results = pipeline(f'esearch -db pubmed -query "{query_string}" | efetch -format medline')
-        with open('./output/medline/txts/medline_output.txt', 'w') as file:
+        with open('./output/medline/txts/medline_output.txt', 'a') as file:
             file.write(search_results)
         file.close()
         print('Medline Records retrieved and saved')
     else:
+        #to avoid errors for large pmids list. We now chunk into smaller set of 9000. Finally we append every chunk in the medline text file.
         for i in range(len(query_string)):
             search_results = pipeline(f'esearch -db pubmed -query "{query_string[i]}" | efetch -format medline')
-            print(search_results.split('\n')[0])
             with open('./output/medline/txts/medline_output.txt', 'a') as file:
                 file.write(search_results)
             file.close()
