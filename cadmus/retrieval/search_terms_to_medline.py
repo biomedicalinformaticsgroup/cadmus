@@ -39,10 +39,13 @@ def search_terms_to_medline(query_string, api_key):
         search_results = pipeline(f'esearch -db pubmed -query "{query_string}" | efetch -format medline')
         with open('./output/medline/txts/medline_output.txt', 'w') as file:
             file.write(search_results)
+        file.close()
         print('Medline Records retrieved and saved')
     else:
-        for chunk in query_string:
+        for i,chunk in enumerate(query_string):
             search_results = pipeline(f'esearch -db pubmed -query "{chunk[0]}" | efetch -format medline')
+            print(search_results[0])
             with open('./output/medline/txts/medline_output.txt', 'a') as file:
                 file.write(search_results)
-            print('Medline Records retrieved and saved')
+            file.close()
+            print(f'Medline Records retrieved and saved {i} out of {len(query_string)}')
