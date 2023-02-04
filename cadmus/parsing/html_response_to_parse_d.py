@@ -49,8 +49,11 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
         else:
             wc = 0
 
-    if abstract != '' and abstract != None:       
-        wc_abs = len(abstract.split())
+    if abstract != '' and abstract != None:      
+        if type(abstract) == str:
+            wc_abs = len(abstract.split())
+        else:
+            wc_abs = 0
     else:
         wc_abs = 0
     bu_score = body_unique_score(text, abstract)

@@ -44,7 +44,10 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
         # get the word_count
         wc = len(p_text.split())
         if ab != '' and ab != None: 
-            wc_abs = len(ab.split())
+            if type(ab) == str:
+                wc_abs = len(ab.split())
+            else:
+                wc_abs = 0
         else:
             wc_abs = 0
         Content_type = 'pdf'
