@@ -7,6 +7,8 @@ def get_ab(soup):
         search_result = soup.find(tag)
         if search_result:
             ab = search_result.get_text(separator = u' ')
+            if type(ab) == list:
+                ab = ' '.join(ab)
             # if text is extracted then no need to try the other options.
             break
     return ab
