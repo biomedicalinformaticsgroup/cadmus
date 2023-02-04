@@ -113,12 +113,26 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             
             # we have already saved the medline file, lets now make the retrieved df
             medline_file_name = './output/medline/txts/medline_output.txt'
-            # parse the medline file and create a retrieved_df with unique indexes for each record
-            retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
             
-            # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
-            retrieved_df.fillna(value=np.nan, inplace=True)
-            retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
+            # starting bioscraping from somewhere else than the begining, most likely due to a previous crash of the function
+            if start != None:
+                try:
+                    # loading the 'moving' df to restart where we stop from
+                    retrieved_df = pickle.load(open(f'./output/retrieved_df/retrieved_df.p','rb'))
+                    if update:
+                        # subset the df to keep only the new line 
+                        retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
+                except:
+                    print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
+                    start = None
+                    idx = None
+            # parse the medline file and create a retrieved_df with unique indexes for each record
+            if start == None:
+                retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
+                # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
+                retrieved_df.fillna(value=np.nan, inplace=True)
+                retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
+
             # save a list of the pmids returned by the search
             current_pmids = list(retrieved_df['pmid'])
 
@@ -140,19 +154,6 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 print(f"You can't have your parameter idx not equal to None when start = None, changing your idx to None")
                 idx = None
 
-            # starting bioscraping from somewhere else than the begining, most likely due to a previous crash of the function
-            if start != None:
-                try:
-                    # loading the 'moving' df to restart where we stop from
-                    retrieved_df = pickle.load(open(f'./output/retrieved_df/retrieved_df.p','rb'))
-                    if update:
-                        # subset the df to keep only the new line 
-                        retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
-                except:
-                    print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
-                    start = None
-                    idx = None
-            
             if start == None:
                 
                 # use the NCBI id converter API to get any missing IDs known to the NCBI databases
