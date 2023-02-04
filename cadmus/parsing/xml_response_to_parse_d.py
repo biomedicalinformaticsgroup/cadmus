@@ -26,8 +26,11 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     size = len(xml_response.content)
     # get the word_count
     wc = len(p_text.split())
-    if ab != '' and ab != None: 
-        wc_abs = len(ab.split())
+    if ab != '' and ab != None:
+        if type(ab) == str: 
+            wc_abs = len(ab.split())
+        else:
+            wc_abs = 0
     else:
         wc_abs = 0
     #compute the score for evaluation 
