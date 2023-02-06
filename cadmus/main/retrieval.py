@@ -150,6 +150,8 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                 soup = BeautifulSoup(response.text)
                                 format_type = doctype(soup)
 
+                            if format_type == None:
+                                format_type = ''
                             print(f'Format:{format_type} found')
 
                             #in case the link suggest that the link direct to a pdf format
