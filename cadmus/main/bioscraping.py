@@ -15,6 +15,7 @@ import tika
 import wget
 from dateutil import parser
 import subprocess
+import json
 
 os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/'+tika.__version__+'/tika-server-'+tika.__version__+'.jar'
 from tika import parser
@@ -42,7 +43,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
     if update:
         print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
         # load the original df to use downstream.
-        original_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+        f = open('./output/retrieved_df/retrieved_df2.json')
+        data = json.load(f)
+        f.close()
+        original_df = pd.read_json(data, orient='index')
+        original_df.pmid = original_df.pmid.astype(str)
         if 'mesh' not in original_df.columns:
             print('Implementing changes to your previous result due to change in the library.')
             original_df = add_mesh_remove_preprint(original_df)
@@ -100,7 +105,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         if start != None:
             try:
                 # loading the 'moving' df to restart where we stop from
-                retrieved_df = pickle.load(open(f'./output/retrieved_df/retrieved_df.p','rb'))
+                f = open(f'./output/retrieved_df/retrieved_df.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df = pd.read_json(data, orient='index')
+                retrieved_df.pmid = retrieved_df.pmid.astype(str)
             except:
                 print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
                 start = None
@@ -140,6 +149,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             # use set difference to get the new pmids only
             new_pmids = list(set(current_pmids).difference(set(original_pmids)))
             if len(new_pmids) == 0:
+                clean_up_dir(retrieved_df, failed = True)
                 print('There are no new lines since your previous search - stop the function.')
                 exit()
             else:
@@ -186,7 +196,17 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
 
             retrieved_df = retrieved_df.where(pd.notnull(retrieved_df), None)
             retrieved_df = retrieved_df.replace('', None)
-            pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            retrieved_df.pub_date = retrieved_df.pub_date.astype(str)
+            result = retrieved_df.to_json(orient="index")
+            json_object = json.dumps(result, indent=4)
+            with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
+                outfile.write(json_object)
+            outfile.close()
+            results_d = {'date':datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'search_term':input_function, 'total_count':len(list(np.unique(retrieved_df.pmid))), 'pmids':list(np.unique(retrieved_df.pmid))}
+            json_object = json.dumps(results_d)
+            with open(f"./output/esearch_results/{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json", "w") as outfile:
+                outfile.write(json_object)
+            outfile.close()
         else:
             pass    
         # set up the http session for crossref requests
@@ -209,7 +229,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         elif start == 'crossref_only':
             try:
                 # we load the previous result to re-run a step
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     #if in update mode keep only the row we are interested in
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -277,7 +301,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'doiorg_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -339,7 +367,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'epmcxml_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -401,7 +433,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmcxmls_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -463,7 +499,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmctgz_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -525,7 +565,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmcpdfs_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -587,7 +631,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pubmed_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -648,7 +696,12 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             #saving the retrieved df before the candidate links
             retrieved_df = retrieved_df.where(pd.notnull(retrieved_df), None)
             retrieved_df = retrieved_df.replace('', None)
-            pickle.dump(retrieved_df, open(f'./output/retrieved_df/retrieved_df.p', 'wb'))
+            retrieved_df.pub_date = retrieved_df.pub_date.astype(str)
+            result = retrieved_df.to_json(orient="index")
+            json_object = json.dumps(result, indent=4)
+            with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
+                outfile.write(json_object)
+            outfile.close()
         else:
             eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text', 'abstract']]
 
@@ -661,7 +714,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'retrieved2_only':
             try:
-                retrieved_df2 = pickle.load(open(f'./output/retrieved_df/retrieved_df2.p', 'rb'))
+                f = open(f'./output/retrieved_df/retrieved_df2.json')
+                data = json.load(f)
+                f.close()
+                retrieved_df2 = pd.read_json(data, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
             except:
@@ -732,7 +789,12 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         #saving the final result
         retrieved_df2 = retrieved_df2.where(pd.notnull(retrieved_df2), None)
         retrieved_df2 = retrieved_df2.replace('', None)
-        pickle.dump(retrieved_df2, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))
+        retrieved_df2.pub_date = retrieved_df2.pub_date.astype(str)
+        result = retrieved_df2.to_json(orient="index")
+        json_object = json.dumps(result, indent=4)
+        with open(f"./output/retrieved_df/retrieved_df2.json", "w") as outfile:
+            outfile.write(json_object)
+        outfile.close()
         retrieved_df2.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t')         
     else:
         #in case the input format type is incorect

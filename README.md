@@ -78,11 +78,15 @@ bioscraping(
 
 ## Load the result
 
-The output from cadmus is a directory with the content text of each retrieved publication saved as a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt"```. It also provides the metadata saved as a Pickle object and a tsv file. In order to load the metadata use the following two lines of code.
+The output from cadmus is a directory with the content text of each retrieved publication saved as a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt"```. It also provides the metadata saved as a JSON file and a tsv file. In order to load the metadata you can use the following lines of code.
 
 ```python
-import pickle
-metadata_retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+import json
+import pandas as pd
+f = open('./ouput/retrieved_df/retrieved_df2.json')
+data = json.load(f)
+f.close()
+metadata_retrieved_df = pd.read_json(data, orient='index')
 ```
 
 Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger the function takes more time to run. 
@@ -97,11 +101,12 @@ As default we assume the directory to the files is ```"./ouput/retrieved_parsed_
 ---
 ## Output details
 
-The Metadata output is a pandas dataframe saved as a pickle object.  
-This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.p"```. 
+**retrieved_df**
+The Metadata output is a pandas dataframe saved as a JSON file.  
+This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.json"```. 
 The dataframe columns are:
-- pmid <class 'str'>
-    - PubMed id.
+- pmid <class 'int64'>
+    - PubMed id. If you prefer to change the data type of PMIDs to <class 'str'> you can use the following example: metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)
 - pmcid <class 'float'>
     - PubMed Central id.
 - title <class 'str'>
@@ -113,7 +118,7 @@ The dataframe columns are:
 - journal <class 'str'>
 - pub_type <class 'list'>
     - Publication type (from PubMed metadata).
-- pub_date <class 'datetime.date'>
+- pub_date <class 'str'>
     - Publication date (from PubMed metadata).  
 - doi <class 'str'>
 - issn <class 'str'>
@@ -161,13 +166,14 @@ The 'core' data, content text from the retrieved publications are strored here:
 
 ## Other Outputs
 - **Medline Record Dictionaries**
-    - These are stored as pickle objects for every row index in the dataframe. 
-    - Medline dictionaries can be found at ```./output/medline/p/{index}.p```. 
+    - These are stored as JSON file for every row index in the dataframe. 
+    - Medline dictionaries can be found at ```./output/medline/json/{index}.json```. 
     - You can use these dictionaries to reparse the metadata if there are fields you would like to include see possible fields [here](https://www.nlm.nih.gov/bsd/mms/medlineelements.html).
-    - There is also a text version stored at ```./output/medline/txts/{index}.txt```.
+    - There is also a text version stored at ```./output/medline/txts/medline_output.txt```.
+    - The edirect module and configuration files are stored in this directory following the 10 000 PMIDs limitation from the API.
 - **Crossref Record Dictionaries**
-    - Similarly to Meline records, we also store crossref records as pickled dictionaries. 
-    - These can be found at ```./output/crossref/p/{index}.p```.
+    - Similarly to Meline records, we also store crossref records as JSON dictionaries. 
+    - These can be found at ```./output/crossref/json/{index}.json```.
     - There are many fields (dictionary keys) that you can use to parse the crossred record. 
     - Find our more about the crossref REST API [here](https://api.crossref.org/swagger-ui/index.html).
 - **Raw File Formats**
@@ -177,7 +183,14 @@ The 'core' data, content text from the retrieved publications are strored here:
     - If there is a 1 in the desired format you can find the path to the raw file:  
         - ```retrieve_df2[index,{format}_parsed_d['file_path']]```. 
     - Alternatively you can bulk parse all the available formats from their directories e.g.```./output/formats/html/{index}.html```. 
-    - Each file is linked back to the dataframe using the unique hexidecimal index, this is the same index used in the medline pickle and crossref pickle.
+    - Each file is linked back to the dataframe using the unique hexidecimal index, this is the same index used in the medline JSON and crossref JSON.
+- **esearch_results Record Dictionaries**
+    - The directory keeps track of all the successful queries made for that output as a dictionary. They are saved under ```./output/esearch_results/YYYY_MM_DD_HH_MM_SS.json```.
+    - The dictionary contains 4 keys:
+      - date: date of the run with the format YYYY_MM_DD_HH_MM_SS.
+      - search_term: the search terms or PMIDs you entered for that run.
+      - total_count: number of new PMID candidates.
+      - pmids: the list of PMIDs identified.
 ---
 
 
@@ -234,3 +247,12 @@ A: rm -rf cadmus
 Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
 
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
+
+## Version
+
+### Version 0.3.7
+-> Moved away from pickle objects to convert to JSON files. Previous output will be automatically changed to the new format at the begining of the next run.
+-> PMID type changed from str to int64.
+-> PUB_DATE moved from datetime.time to str.
+-> Return of the esearch_results files. The files are saved under the format YYYY_MM_DD_HH_MM_SS.json. They contain a dictionary with the date the query was run, the query, the number of PMIDs cadmus will look for, and the list of the newly identified PMIDs.
+-> Update the clean up fonction to remove unnecessary files.

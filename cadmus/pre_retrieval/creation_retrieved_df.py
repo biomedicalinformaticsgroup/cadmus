@@ -3,6 +3,7 @@ from cadmus.parsing.get_medline_doi import get_medline_doi
 from Bio import Entrez, Medline
 import uuid
 import pickle
+import json
 import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
@@ -19,8 +20,8 @@ def creation_retrieved_df(medline_file_name):
     
     # set the input file
     in_file = medline_file_name
-    # each record will be saved as a pickle file (using the unique index as the name) so we can re-parse medline records retrospectively for our retrieved_df
-    medline_ouptut_path = f'./output/medline/p/'
+    # each record will be saved as a json file (using the unique index as the name) so we can re-parse medline records retrospectively for our retrieved_df
+    medline_ouptut_path = f'./output/medline/json/'
     
     # our main output will be a dictionary ready to be converted into a retrieved df
     parse_d = {}
@@ -35,9 +36,12 @@ def creation_retrieved_df(medline_file_name):
             # create a hexidecimal unique id for the record
             index = str(uuid.uuid4().hex)
 
-            # now lets write the indexed medline record to a pickle object (a dictionary)
-            pickle.dump(dict(record), open(f"{medline_ouptut_path}{index}.p", 'wb'))
-
+            # now lets write the indexed medline record to a json object (a dictionary)
+            result = dict(record)
+            json_object = json.dumps(result, indent=4)
+            with open(f"{medline_ouptut_path}{index}.json", "w") as outfile:
+                outfile.write(json_object)
+            outfile.close()
 
             # we use the get() function for a dictionary to search each field.
             # if the field is populated add the value, else, add 'None'

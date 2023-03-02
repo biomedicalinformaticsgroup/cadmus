@@ -1,5 +1,6 @@
 import re
 import pickle
+import json
 import os.path
 
 def correct_date_format(retrieval_df):
@@ -15,7 +16,9 @@ def correct_date_format(retrieval_df):
             #if the date does not follow yyyy-mm-dd open the crossref file to find the date field we collected during the metadata retrieval
             crossref_ouptut_path = f'./output/crossref/p/'
             if os.path.exists(f"{crossref_ouptut_path}{index}.p") == True:
-                crossref_file = pickle.load(open(f"{crossref_ouptut_path}{index}.p", "rb"))
+                f = open(f'{crossref_ouptut_path}{index}.json')
+                crossref_file = json.load(f)
+                f.close()
                 new_date = crossref_file['message'].get('issued')            
                 if new_date != None: 
                     #cheking that the field is composed of 3 parts year month day
