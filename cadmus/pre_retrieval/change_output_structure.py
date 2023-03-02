@@ -1,6 +1,7 @@
 from cadmus.pre_retrieval.output_files import output_files
 
 import pickle
+import json
 import pandas as pd
 
 def change_output_structure(df):
@@ -96,7 +97,12 @@ def change_output_structure(df):
         else:
             df.loc[index, 'plain'] = int(0)
     
-    pickle.dump(df, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))
+    df.pub_date = df.pub_date.astype(str)
+    result = df.to_json(orient="index")
+    json_object = json.dumps(result, indent=4)
+    with open("./output/retrieved_df/retrieved_df2.json", "w") as outfile:
+        outfile.write(json_object)
+    outfile.close()
     df.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t')
 
     return df

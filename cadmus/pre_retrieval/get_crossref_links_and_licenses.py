@@ -23,8 +23,11 @@ def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
             # if its good then read the json response from the r.text
             response_json = json.loads(response_d['text'])
             
-            # dump a pickle of the response saved as the index
-            pickle.dump(response_json, open(f'./output/crossref/p/{index}.p', 'wb'))
+            # dump a json of the response saved as the index
+            json_object = json.dumps(response_json, indent=4)
+            with open(f"./output/crossref/json/{index}.json", "w") as outfile:
+                outfile.write(json_object)
+            outfile.close()
             retrieved_df.loc[index, 'crossref'] = 1
             
             message = response_json['message']

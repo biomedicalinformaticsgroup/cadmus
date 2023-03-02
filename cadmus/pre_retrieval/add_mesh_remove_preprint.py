@@ -1,4 +1,5 @@
 import pickle
+import json
 import pandas as pd
 import subprocess
 
@@ -63,6 +64,11 @@ def add_mesh_remove_preprint(df):
             index_to_keep.append(df.index[i])
     df = df[df.index.isin(index_to_keep)]
 
-    pickle.dump(df, open(f'./output/retrieved_df/retrieved_df2.p', 'wb'))
+    df.pub_date = df.pub_date.astype(str)
+    result = df.to_json(orient="index")
+    json_object = json.dumps(result, indent=4)
+    with open(f"./output/retrieved_df/retrieved_df2.json", "w") as outfile:
+        outfile.write(json_object)
+    outfile.close()
     
     return df
