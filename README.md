@@ -102,11 +102,12 @@ As default we assume the directory to the files is ```"./ouput/retrieved_parsed_
 ## Output details
 
 **retrieved_df**
+
 The Metadata output is a pandas dataframe saved as a JSON file.  
 This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.json"```. 
 The dataframe columns are:
 - pmid <class 'int64'>
-    - PubMed id. If you prefer to change the data type of PMIDs to <class 'str'> you can use the following example: metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)
+    - PubMed id. If you prefer to change the data type of PMIDs to <class 'str'> you can use the following example: `metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)`
 - pmcid <class 'float'>
     - PubMed Central id.
 - title <class 'str'>
@@ -252,7 +253,11 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ### Version 0.3.7
 -> Moved away from pickle objects to convert to JSON files. Previous output will be automatically changed to the new format at the begining of the next run.
+
 -> PMID type changed from str to int64.
+
 -> PUB_DATE moved from datetime.time to str.
+
 -> Return of the esearch_results files. The files are saved under the format YYYY_MM_DD_HH_MM_SS.json. They contain a dictionary with the date the query was run, the query, the number of PMIDs cadmus will look for, and the list of the newly identified PMIDs.
+
 -> Update the clean up fonction to remove unnecessary files.
