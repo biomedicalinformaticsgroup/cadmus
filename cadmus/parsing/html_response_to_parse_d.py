@@ -60,7 +60,7 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
     as_score = abstract_similarity_score(text, abstract)
     
     # now lets update our df with the new variable we have parsed/made
-    parse_d.update({'file_path':f'./output/formats/htmls/{index}.html',
+    parse_d.update({'file_path':f'./output/formats/htmls/{index}.html.zip',
                     'size':size,
                     'wc':wc,
                     'wc_abs': wc_abs,

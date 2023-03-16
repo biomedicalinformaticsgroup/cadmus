@@ -16,6 +16,9 @@ from time import sleep
 import pickle
 import json
 import pandas as pd
+import zipfile
+import os 
+import glob
 
 # once we get to this stage we have tried quite a few approaches to get a full text document for each article.
 # we can pull out the records that do not have a tagged version and a pdf version to keep trying for.
@@ -117,20 +120,19 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
                         try:
                             pdf_d, p_text  = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', link, keep_abstract)
                             if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
+                                zipfile.ZipFile(f'./output/formats/pdfs/{index}.pdf.zip', mode='w').write(f'./output/formats/pdfs/{index}.pdf', arcname=f'{index}.pdf')
+                                os.remove(f'./output/formats/pdfs/{index}.pdf')
                                 retrieval_df.loc[index,'pdf'] = 1
                                 retrieval_df.loc[index, 'pdf_parse_d'].update(pdf_d)
-                                f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
-                                f.write(p_text)
-                                f.close()
-
+                                with zipfile.ZipFile(f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                    zip_file.writestr(f"{index}.txt", data=p_text)
+                                    zip_file.testzip()
+                                zip_file.close()
                                 pdf = 1
                             else:
-                                pass 
-                            if 'wc' in row['pdf_parse_d'].keys():
-                                pass
-                            else:
-                                retrieval_df.loc[index, 'pdf'] = int(0)
+                                os.remove(f'./output/formats/pdfs/{index}.pdf') 
                         except:
+                            os.remove(f'./output/formats/pdfs/{index}.pdf') 
                             pass
                         else:
                             pass
@@ -141,13 +143,16 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
                         xml_d = evaluation_funct(xml_d)
                         # now we have the xml_d we can decide if it is a TP, FP or AB 
                         if xml_d['evaluation'] == 'TP' and (xml_d['wc_abs'] < xml_d['wc'] or xml_d['wc_abs'] > 1000 if xml_d['wc_abs'] != 0 else True) and 100 < xml_d['wc']:
-                            with open(f'./output/formats/xmls/{index}.xml', 'w') as file:
-                                file.write(response_d['text'].encode('ascii', 'ignore').decode())
+                            with zipfile.ZipFile(f"./output/formats/xmls/{index}.xml.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.xml", data=response_d['text'].encode('ascii', 'ignore').decode())
+                                zip_file.testzip()
+                            zip_file.close()
                             retrieval_df.loc[index,'xml'] = 1
                             retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
-                            f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
-                            f.write(p_text)
-                            f.close()
+                            with zipfile.ZipFile(f"./output/retrieved_parsed_files/xmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.txt", data=p_text)
+                                zip_file.testzip()
+                            zip_file.close()
 
                             xml = 1
                         if 'wc' in row['xml_parse_d'].keys():
@@ -172,29 +177,35 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
                         html_d = evaluation_funct(html_d)
                         # now we have the html_d we can decide if it is a TP, FP or AB 
                         if html_d['evaluation'] == 'TP' and (html_d['wc_abs'] < html_d['wc'] or html_d['wc_abs'] > 1000 if html_d['wc_abs'] != 0 else True) and 100 < html_d['wc']:
-                            with open(f'./output/formats/htmls/{index}.html', 'w') as file:
-                                    file.write(response_d['text'].encode('ascii', 'ignore').decode())
+                            with zipfile.ZipFile(f"./output/formats/htmls/{index}.html.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.html", data=response_d['text'].encode('ascii', 'ignore').decode())
+                                zip_file.testzip()
+                            zip_file.close()
                             retrieval_df.loc[index,'html'] = 1
                             retrieval_df.loc[index,'html_parse_d'].update(html_d)
                             html = 1
-                            f = open(f"./output/retrieved_parsed_files/htmls/{index}.txt", "w")
-                            f.write(p_text)
-                            f.close()
+                            with zipfile.ZipFile(f"./output/retrieved_parsed_files/htmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.txt", data=p_text)
+                                zip_file.testzip()
+                            zip_file.close()
                         if 'wc' in row['html_parse_d'].keys():
                             pass
                         else:
                             retrieval_df.loc[index, 'html'] = int(0)
 
                     elif 'plain' in format_type and retrieval_df.plain.loc[index] != 1:
-                        with open(f'./output/formats/txts/{index}.txt', 'w') as file:
-                            file.write(response_d['text'].encode('ascii', 'ignore').decode())
+                        with zipfile.ZipFile(f"./output/formats/txts/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                            zip_file.writestr(f"{index}.txt", data=response_d['text'].encode('ascii', 'ignore').decode())
+                            zip_file.testzip()
+                        zip_file.close()
                         plain_d, p_text = plain_file_to_parse_d(retrieval_df, index, f'./output/formats/txts/{index}.txt', link, keep_abstract)
                         if plain_d['wc'] != 0 and (plain_d['wc_abs'] < plain_d['wc'] or plain_d['wc_abs'] > 1000 if plain_d['wc_abs'] != 0 else True) and 100 < plain_d['wc']:
                             retrieval_df.loc[index, 'plain_parse_d'].update(plain_d)
                             retrieval_df.loc[index,'plain'] = 1
-                            f = open(f"./output/retrieved_parsed_files/txts/{index}.txt", "w")
-                            f.write(p_text)
-                            f.close()
+                            with zipfile.ZipFile(f"./output/retrieved_parsed_files/txts/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.txt", data=p_text)
+                                zip_file.testzip()
+                            zip_file.close()
                         if 'wc' in row['plain_parse_d'].keys():
                             pass
                         else:
@@ -241,18 +252,38 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
             if done is None:
                 retrieval_df.pub_date = retrieval_df.pub_date.astype(str)
                 result = retrieval_df.to_json(orient="index")
-                json_object = json.dumps(result, indent=4)
-                with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-                    outfile.write(json_object)
-                outfile.close()
+                if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+                    with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                        dumped_JSON: str = json.dumps(result, indent=4)
+                        zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                        zip_file.testzip()
+                    zip_file.close()
+                else:
+                    os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+                    with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                        dumped_JSON: str = json.dumps(result, indent=4)
+                        zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                        zip_file.testzip()
+                    zip_file.close()
+                    os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
             else:
                 saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
                 saved_processed_df.pub_date = saved_processed_df.pub_date.astype(str)
                 result = saved_processed_df.to_json(orient="index")
-                json_object = json.dumps(result, indent=4)
-                with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-                    outfile.write(json_object)
-                outfile.close()
+                if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+                    with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                        dumped_JSON: str = json.dumps(result, indent=4)
+                        zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                        zip_file.testzip()
+                    zip_file.close()
+                else:
+                    os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+                    with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                        dumped_JSON: str = json.dumps(result, indent=4)
+                        zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                        zip_file.testzip()
+                    zip_file.close()
+                    os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
             print(f'In case of faillure please put the parameters start="{saved_stage}" (or "{saved_stage}_only" if in only mode) and idx="{saved_index}"')
             print('\n') 
             
@@ -260,16 +291,36 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
     if done is None:
         retrieval_df.pub_date = retrieval_df.pub_date.astype(str)
         result = retrieval_df.to_json(orient="index")
-        json_object = json.dumps(result, indent=4)
-        with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-            outfile.write(json_object)
-        outfile.close()
+        if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+            with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                dumped_JSON: str = json.dumps(result, indent=4)
+                zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                zip_file.testzip()
+            zip_file.close()
+        else:
+            os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+            with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                dumped_JSON: str = json.dumps(result, indent=4)
+                zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                zip_file.testzip()
+            zip_file.close()
+            os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
     else:
         saved_processed_df = pd.concat([done, retrieval_df], axis=0, join='outer', ignore_index=False, copy=True)
         saved_processed_df.pub_date = saved_processed_df.pub_date.astype(str)
         result = saved_processed_df.to_json(orient="index")
-        json_object = json.dumps(result, indent=4)
-        with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-            outfile.write(json_object)
-        outfile.close()
+        if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+            with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                dumped_JSON: str = json.dumps(result, indent=4)
+                zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                zip_file.testzip()
+            zip_file.close()
+        else:
+            os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+            with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                dumped_JSON: str = json.dumps(result, indent=4)
+                zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                zip_file.testzip()
+            zip_file.close()
+            os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
     return retrieval_df

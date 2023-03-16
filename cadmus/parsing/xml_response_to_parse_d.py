@@ -39,7 +39,7 @@ def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
     
 
     # use the output from each function to build a output dictionary to use for our evaluation
-    parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml',
+    parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml.zip',
                     'size':size,
                     'wc':wc,
                     'wc_abs': wc_abs,

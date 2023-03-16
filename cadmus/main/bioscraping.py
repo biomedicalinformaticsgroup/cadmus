@@ -8,6 +8,8 @@ from contextlib import closing
 from datetime import timedelta
 from pathlib import Path
 import stat
+import zipfile
+import glob
 
 import numpy as np
 import pandas as pd
@@ -43,10 +45,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
     if update:
         print('There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates.')
         # load the original df to use downstream.
-        f = open('./output/retrieved_df/retrieved_df2.json')
-        data = json.load(f)
-        f.close()
-        original_df = pd.read_json(data, orient='index')
+        with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+            for filename in z.namelist():  
+                with z.open(filename) as f:  
+                    d = f.read()  
+                    d = json.loads(d)    
+                f.close()
+        z.close()
+        original_df = pd.read_json(d, orient='index')
         original_df.pmid = original_df.pmid.astype(str)
         if 'mesh' not in original_df.columns:
             print('Implementing changes to your previous result due to change in the library.')
@@ -105,10 +111,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         if start != None:
             try:
                 # loading the 'moving' df to restart where we stop from
-                f = open(f'./output/retrieved_df/retrieved_df.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df = pd.read_json(d, orient='index')
                 retrieved_df.pmid = retrieved_df.pmid.astype(str)
             except:
                 print(f"You don't have any previous retrieved_df we changed your parameters start and idx to None")
@@ -150,8 +160,11 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             new_pmids = list(set(current_pmids).difference(set(original_pmids)))
             if len(new_pmids) == 0:
                 clean_up_dir(retrieved_df, failed = True)
-                print('There are no new lines since your previous search - stop the function.')
-                exit()
+                if start == None:
+                    print('There are no new lines since your previous search - stop the function.')
+                    exit()
+                else:
+                    pass
             else:
                 print(f'There are {len(new_pmids)} new results since last run.')
                 retrieved_df = retrieved_df[retrieved_df.pmid.isin(new_pmids)]
@@ -198,15 +211,27 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             retrieved_df = retrieved_df.replace('', None)
             retrieved_df.pub_date = retrieved_df.pub_date.astype(str)
             result = retrieved_df.to_json(orient="index")
-            json_object = json.dumps(result, indent=4)
-            with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-                outfile.write(json_object)
-            outfile.close()
+            if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+            else:
+                os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+                os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
+            
             results_d = {'date':datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"), 'search_term':input_function, 'total_count':len(list(np.unique(retrieved_df.pmid))), 'pmids':list(np.unique(retrieved_df.pmid))}
-            json_object = json.dumps(results_d)
-            with open(f"./output/esearch_results/{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json", "w") as outfile:
-                outfile.write(json_object)
-            outfile.close()
+            with zipfile.ZipFile(f"./output/esearch_results/{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                dumped_JSON: str = json.dumps(results_d)
+                zip_file.writestr(f"{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}.json", data=dumped_JSON)
+                zip_file.testzip()
+            zip_file.close()
         else:
             pass    
         # set up the http session for crossref requests
@@ -229,10 +254,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         elif start == 'crossref_only':
             try:
                 # we load the previous result to re-run a step
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     #if in update mode keep only the row we are interested in
@@ -301,10 +330,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'doiorg_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -367,10 +400,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'epmcxml_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -433,10 +470,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmcxmls_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -499,10 +540,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmctgz_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -565,10 +610,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pmcpdfs_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -631,10 +680,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'pubmed_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -686,7 +739,9 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         else:
             pass
         #checking if the start is different than retrieved2
-        if start == None:
+        if start == None or start == 'mid_retrieval':
+            clear()
+            print(f'In case of faillure please put the parameters start="mid_retrieval", it might take a while depending on the size of your search')
             #select the best text candidate out of all the format available
             retrieved_df = content_text(retrieved_df)
             #changing the date format to yyyy-mm-dd
@@ -698,10 +753,22 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             retrieved_df = retrieved_df.replace('', None)
             retrieved_df.pub_date = retrieved_df.pub_date.astype(str)
             result = retrieved_df.to_json(orient="index")
-            json_object = json.dumps(result, indent=4)
-            with open(f"./output/retrieved_df/retrieved_df.json", "w") as outfile:
-                outfile.write(json_object)
-            outfile.close()
+            if len(glob.glob('./output/retrieved_df/retrieved_df.json.zip')) == 0:
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+            else:
+                os.rename('./output/retrieved_df/retrieved_df.json.zip', './output/retrieved_df/temp_retrieved_df.json.zip')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+                os.remove('./output/retrieved_df/temp_retrieved_df.json.zip')
+            start = None
+            idx == None
         else:
             eval_retrieved_df = retrieved_df[['pdf', 'html', 'plain', 'xml', 'content_text', 'abstract']]
 
@@ -714,10 +781,14 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
             start = None
         elif start == 'retrieved2_only':
             try:
-                f = open(f'./output/retrieved_df/retrieved_df2.json')
-                data = json.load(f)
-                f.close()
-                retrieved_df2 = pd.read_json(data, orient='index')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
                 retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
                 if update:
                     retrieved_df2 = retrieved_df2[retrieved_df2.pmid.isin(new_pmids)]
@@ -762,21 +833,61 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         clear()
         #selecting the best new text available among all the format available
         print('Selecting the content_text')
-        retrieved_df2 = content_text(retrieved_df2)
-        #chaging the date format to yyyy-mm-dd
-        retrieved_df2 = correct_date_format(retrieved_df2)
+        if start == None or start == 'post_retrieval':
+            print(f'In case of faillure please put the parameters start="post_retrieval", it might take a while depending on the size of your search')
+            if start == 'post_retrieval':
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df.json.zip", "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            d = f.read()
+                            d = json.loads(d)
+                        f.close()
+                z.close()
+                retrieved_df2 = pd.read_json(d, orient='index')
+                retrieved_df2.pmid = retrieved_df2.pmid.astype(str)
+            retrieved_df2 = content_text(retrieved_df2)
+            #chaging the date format to yyyy-mm-dd
+            retrieved_df2 = correct_date_format(retrieved_df2)
         
-        # finally if this is an update then we need to concatenate the original df and the new content df
-        if update:
-            original_df = original_df.drop(drop_lines)
-            retrieved_df2 = pd.concat([original_df, retrieved_df2], axis=0, join='outer', ignore_index=False, copy=True)
-        else:
-            # no merge to perform
-            pass
+            # finally if this is an update then we need to concatenate the original df and the new content df
+            if update:
+                original_df = original_df.drop(drop_lines)
+                retrieved_df2 = pd.concat([original_df, retrieved_df2], axis=0, join='outer', ignore_index=False, copy=True)
+                retrieved_df2 = retrieved_df2.drop_duplicates(subset=['pmid'], keep='first')
+            else:
+                # no merge to perform
+                pass
             
-        print('Cleaning the directories')
-        clean_up_dir(retrieved_df2)
+            print('Cleaning the directories')
+            clean_up_dir(retrieved_df2)
         
+            #saving the final result  
+            retrieved_df2 = retrieved_df2.where(pd.notnull(retrieved_df2), None)
+            retrieved_df2 = retrieved_df2.replace('', None)
+            retrieved_df2.pub_date = retrieved_df2.pub_date.astype(str)
+            result = retrieved_df2.to_json(orient="index")
+            if len(glob.glob('./output/retrieved_df/retrieved_df2.json.zip')) == 0:
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+            else:
+                os.rename('./output/retrieved_df/retrieved_df2.json.zip', './output/retrieved_df/temp_retrieved_df2.json.zip')
+                with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                    dumped_JSON: str = json.dumps(result, indent=4)
+                    zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+                    zip_file.testzip()
+                zip_file.close()
+                os.remove('./output/retrieved_df/temp_retrieved_df2.json.zip')
+            if len(glob.glob('./output/retrieved_df/retrieved_df2.tsv.zip')) == 0:
+                retrieved_df2.to_csv(f'./output/retrieved_df/retrieved_df2.tsv.zip', sep='\t', compression='zip')  
+            else:
+                os.rename('./output/retrieved_df/retrieved_df2.tsv.zip', './output/retrieved_df/temp_retrieved_df2.tsv.zip')
+                retrieved_df2.to_csv(f'./output/retrieved_df/retrieved_df2.tsv.zip', sep='\t', compression='zip')   
+                os.remove('./output/retrieved_df/temp_retrieved_df2.tsv.zip')
+            start = None    
+
         clear()
         if start == None:
             print(f'Result for retrieved_df : ') 
@@ -786,16 +897,6 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
         print(f'Result for retrieved_df2 : ')
         #printing the retrieval result once all the steps have been completed
         evaluation(retrieved_df2)
-        #saving the final result
-        retrieved_df2 = retrieved_df2.where(pd.notnull(retrieved_df2), None)
-        retrieved_df2 = retrieved_df2.replace('', None)
-        retrieved_df2.pub_date = retrieved_df2.pub_date.astype(str)
-        result = retrieved_df2.to_json(orient="index")
-        json_object = json.dumps(result, indent=4)
-        with open(f"./output/retrieved_df/retrieved_df2.json", "w") as outfile:
-            outfile.write(json_object)
-        outfile.close()
-        retrieved_df2.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t')         
     else:
         #in case the input format type is incorect
         print('Your input is not handle by the function please enter Pubmed search terms or a list of single type(dois, pmids, pmcids), without header')

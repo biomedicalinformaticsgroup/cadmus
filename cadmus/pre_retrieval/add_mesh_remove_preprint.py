@@ -2,6 +2,9 @@ import pickle
 import json
 import pandas as pd
 import subprocess
+import zipfile
+import glob
+import os
 
 def add_mesh_remove_preprint(df):
 
@@ -17,9 +20,12 @@ def add_mesh_remove_preprint(df):
     total_list = []
     for i in range(len(my_medline_files)):
         my_file = ''
-        fo = open(f"./output/medline/txts/{my_medline_files[i]}", "r+")
-        my_file = fo.readlines()
-        fo.close()
+        with zipfile.ZipFile(f"./output/medline/txts/{my_medline_files[i]}", "r") as z:
+            for filename in z.namelist():
+                with z.open(filename) as f:
+                    my_file = f.read()
+                f.close()
+        z.close()
         total_list.extend(my_file)
 
     for i in range(len(total_list)):
@@ -66,9 +72,19 @@ def add_mesh_remove_preprint(df):
 
     df.pub_date = df.pub_date.astype(str)
     result = df.to_json(orient="index")
-    json_object = json.dumps(result, indent=4)
-    with open(f"./output/retrieved_df/retrieved_df2.json", "w") as outfile:
-        outfile.write(json_object)
-    outfile.close()
+    if len(glob.glob('./output/retrieved_df/retrieved_df2.json.zip')) == 0:
+        with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+            dumped_JSON: str = json.dumps(result, indent=4)
+            zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+            zip_file.testzip()
+        zip_file.close()
+    else:
+        os.rename('./output/retrieved_df/retrieved_df2.json.zip', './output/retrieved_df/temp_retrieved_df2.json.zip')
+        with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+            dumped_JSON: str = json.dumps(result, indent=4)
+            zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+            zip_file.testzip()
+        zip_file.close()
+        os.remove('./output/retrieved_df/temp_retrieved_df2.json.zip')
     
     return df

@@ -64,7 +64,7 @@ def pdf_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstr
 
 
         # use the output from each function to build a output dictionary to use for our evaluation and saving the information in case it's TP
-        parse_d.update({'file_path':f'./output/formats/pdfs/{index}.pdf',
+        parse_d.update({'file_path':f'./output/formats/pdfs/{index}.pdf.zip',
                         'date': date,
                         'size':size,
                         'wc':wc,

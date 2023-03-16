@@ -46,7 +46,7 @@ def pdat_to_datetime(date):
             try:
                 # now try parse the date using the simplified text
                 dt = parser.parse(date).date()
-                return df
+                return dt
             except:
                 # try to parse the date when the date is split by - or /
                 try:

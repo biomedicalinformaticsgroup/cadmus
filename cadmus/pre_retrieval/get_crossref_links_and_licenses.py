@@ -2,6 +2,7 @@ from cadmus.retrieval.get_request import get_request
 from cadmus.retrieval.get_tdm_links import get_tdm_links
 import json
 import pickle
+import zipfile
 
 # use this function when we already have a retrieved_df with indexes and all available ids
 def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
@@ -24,10 +25,11 @@ def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
             response_json = json.loads(response_d['text'])
             
             # dump a json of the response saved as the index
-            json_object = json.dumps(response_json, indent=4)
-            with open(f"./output/crossref/json/{index}.json", "w") as outfile:
-                outfile.write(json_object)
-            outfile.close()
+            with zipfile.ZipFile(f"./output/crossref/json/{index}.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                json_object: str = json.dumps(response_json, indent=4)
+                zip_file.writestr(f"{index}.json", data=json_object)
+                zip_file.testzip()
+            zip_file.close()
             retrieved_df.loc[index, 'crossref'] = 1
             
             message = response_json['message']

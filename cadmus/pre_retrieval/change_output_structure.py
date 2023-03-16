@@ -3,6 +3,9 @@ from cadmus.pre_retrieval.output_files import output_files
 import pickle
 import json
 import pandas as pd
+import zipfile
+import os
+import glob
 
 def change_output_structure(df):
     output_files()
@@ -10,15 +13,17 @@ def change_output_structure(df):
         if row['content_text'] == '' or row['content_text'] == None or row['content_text'] != row['content_text'] or row['content_text'][:4] == ' ABS:':
             df.loc[index, 'content_text'] = int(0)
         else:
-            w = open(f"./output/retrieved_parsed_files/content_text/{index}.txt", "w")
-            w.write(row['content_text'])
-            w.close()
+            with zipfile.ZipFile(f"./output/retrieved_parsed_files/content_text/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("{index}.txt", data=row['content_text'])
+                zip_file.testzip()
+            zip_file.close()
             df.loc[index, 'content_text'] = int(1)
 
         if 'wc' in row['html_parse_d'].keys():
-            w = open(f"./output/retrieved_parsed_files/htmls/{index}.txt", "w")
-            w.write(row['html_parse_d']['text'])
-            w.close()
+            with zipfile.ZipFile(f"./output/retrieved_parsed_files/htmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("{index}.txt", data=row['html_parse_d']['text'])
+                zip_file.testzip()
+            zip_file.close()
             if row['abstract'] != '' and row['abstract'] != None:       
                 wc_abs = len(row['abstract'].split())
             else:
@@ -36,9 +41,10 @@ def change_output_structure(df):
             df.loc[index, 'html'] = int(0)
 
         if 'wc' in row['xml_parse_d'].keys():
-            w = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
-            w.write(row['xml_parse_d']['text'])
-            w.close()
+            with zipfile.ZipFile(f"./output/retrieved_parsed_files/xmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("{index}.txt", data=row['xml_parse_d']['text'])
+                zip_file.testzip()
+            zip_file.close()
             if row['abstract'] != '' and row['abstract'] != None:       
                 wc_abs = len(row['abstract'].split())
             else:
@@ -56,9 +62,10 @@ def change_output_structure(df):
             df.loc[index, 'xml'] = int(0)
 
         if 'wc' in row['pdf_parse_d'].keys():
-            w = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
-            w.write(row['pdf_parse_d']['text'])
-            w.close()
+            with zipfile.ZipFile(f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("{index}.txt", data=row['pdf_parse_d']['text'])
+                zip_file.testzip()
+            zip_file.close()
             if row['abstract'] != '' and row['abstract'] != None:       
                 wc_abs = len(row['abstract'].split())
             else:
@@ -78,9 +85,10 @@ def change_output_structure(df):
             df.loc[index, 'pdf'] = int(0)
 
         if 'wc' in row['plain_parse_d'].keys():
-            w = open(f"./output/retrieved_parsed_files/txts/{index}.txt", "w")
-            w.write(row['plain_parse_d']['text'])
-            w.close()
+            with zipfile.ZipFile(f"./output/retrieved_parsed_files/txts/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("{index}.txt", data=row['plain_parse_d']['text'])
+                zip_file.testzip()
+            zip_file.close()
             if row['abstract'] != '' and row['abstract'] != None:       
                 wc_abs = len(row['abstract'].split())
             else:
@@ -99,10 +107,20 @@ def change_output_structure(df):
     
     df.pub_date = df.pub_date.astype(str)
     result = df.to_json(orient="index")
-    json_object = json.dumps(result, indent=4)
-    with open("./output/retrieved_df/retrieved_df2.json", "w") as outfile:
-        outfile.write(json_object)
-    outfile.close()
-    df.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t')
+    if len(glob.glob('./output/retrieved_df/retrieved_df2.json.zip')) == 0:
+        with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+            dumped_JSON: str = json.dumps(result, indent=4)
+            zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+            zip_file.testzip()
+        zip_file.close()
+    else:
+        os.rename('./output/retrieved_df/retrieved_df2.json.zip', './output/retrieved_df/temp_retrieved_df2.json.zip')
+        with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+            dumped_JSON: str = json.dumps(result, indent=4)
+            zip_file.writestr("retrieved_df2.json", data=dumped_JSON)
+            zip_file.testzip()
+        zip_file.close()
+        os.remove('./output/retrieved_df/temp_retrieved_df2.json.zip')
+    df.to_csv(f'./output/retrieved_df/retrieved_df2.tsv', sep='\t', compression='zip')
 
     return df

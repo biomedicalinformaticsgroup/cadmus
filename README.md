@@ -50,7 +50,7 @@ Start and idx are designed to use when restarting cadmus after a program failure
     - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve at least one tagged version (i.e. html or xml) in combination with the pdf format.  
 
 2. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
-```"output/formats/{format}s/{index}.{suffix}"```.  
+```"output/formats/{format}s/{index}.{suffix}.zip"```.  
 
 You need to set the export path before every use so that cadmus is able to retrieve more than 10 000 records from NCBI. For that we offer a function called `display_export_path`. You just need to call this function and copy past the result into your terminal before calling `bioscraping`. 
 
@@ -78,15 +78,23 @@ bioscraping(
 
 ## Load the result
 
-The output from cadmus is a directory with the content text of each retrieved publication saved as a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt"```. It also provides the metadata saved as a JSON file and a tsv file. In order to load the metadata you can use the following lines of code.
+The output from cadmus is a directory with the content text of each retrieved publication saved as a zip file containing a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```. It also provides the metadata saved as a zip file containing a JSON file and a zip file containing a tsv file. In order to load the metadata you can use the following lines of code.
 
 ```python
+import zipfile
 import json
 import pandas as pd
-f = open('./ouput/retrieved_df/retrieved_df2.json')
-data = json.load(f)
+with zipfile.ZipFile("./ouput/retrieved_df/retrieved_df2.json.zip", "r") as z:
+    for filename in z.namelist():
+        with z.open(filename) as f:
+            d = f.read()
+            d = json.loads(d)
+
+
 f.close()
+z.close()
 metadata_retrieved_df = pd.read_json(data, orient='index')
+metadata_retrieved_df = metadata_retrieved_df.pmid.astype(str)
 ```
 
 Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger the function takes more time to run. 
@@ -103,8 +111,8 @@ As default we assume the directory to the files is ```"./ouput/retrieved_parsed_
 
 **retrieved_df**
 
-The Metadata output is a pandas dataframe saved as a JSON file.  
-This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.json"```. 
+The Metadata output is a pandas dataframe saved as a zip containing a JSON file.  
+This is stored in the directory ```"./ouput/retrieved_df/retrieved_df2.json.zip"```. 
 The dataframe columns are:
 - pmid <class 'int64'>
     - PubMed id. If you prefer to change the data type of PMIDs to <class 'str'> you can use the following example: `metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)`
@@ -147,7 +155,7 @@ The dataframe columns are:
 - plain_parse_d <class 'dict'>
     - **all parse_d have the same structure to the dictionary**
     - dict_keys:
-        - 'file_path' (string representation of path to raw file saved at ```"output/formats/{format}s/{index}.{suffix}"```),
+        - 'file_path' (string representation of path to raw file saved at ```"output/formats/{format}s/{index}.{suffix}.zip"```),
         - 'size' (file size - bytes),
         - 'wc' (rough word count based on string.split() for the content text (int)),
         - 'wc_abs' (rough word count based on string.split() for the abstract (int)),
@@ -161,20 +169,20 @@ The dataframe columns are:
 
 The 'core' data, content text from the retrieved publications are strored here:
 - **retrieved_parsed_files**
-    - In this directory you cand find 5 sub-directories: content_text, pdfs, htmls, xmls, txts. Each format sub-directories contains the content of the files saved as a txt file. 
-    - The content_text sub-directory, ```"./ouput/retrieved_parsed_files/content_text/*.txt"```, contains the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is the place where the output is saved.
+    - In this directory you cand find 5 sub-directories: content_text, pdfs, htmls, xmls, txts. Each format sub-directories contains the content of the files saved as a zip containing a txt file. 
+    - The content_text sub-directory, ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```, contains the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is the place where the output is saved.
 ---
 
 ## Other Outputs
 - **Medline Record Dictionaries**
-    - These are stored as JSON file for every row index in the dataframe. 
-    - Medline dictionaries can be found at ```./output/medline/json/{index}.json```. 
+    - These are stored as zip files containing a JSON file for every row index in the dataframe. 
+    - Medline dictionaries can be found at ```./output/medline/json/{index}.json.zip```. 
     - You can use these dictionaries to reparse the metadata if there are fields you would like to include see possible fields [here](https://www.nlm.nih.gov/bsd/mms/medlineelements.html).
-    - There is also a text version stored at ```./output/medline/txts/medline_output.txt```.
+    - There is also a text version stored at ```./output/medline/txts/medline_output.txt.zip```.
     - The edirect module and configuration files are stored in this directory following the 10 000 PMIDs limitation from the API.
 - **Crossref Record Dictionaries**
-    - Similarly to Meline records, we also store crossref records as JSON dictionaries. 
-    - These can be found at ```./output/crossref/json/{index}.json```.
+    - Similarly to Meline records, we also store crossref records as a zip files containing JSON dictionaries. 
+    - These can be found at ```./output/crossref/json/{index}.json.zip```.
     - There are many fields (dictionary keys) that you can use to parse the crossred record. 
     - Find our more about the crossref REST API [here](https://api.crossref.org/swagger-ui/index.html).
 - **Raw File Formats**
@@ -183,10 +191,10 @@ The 'core' data, content text from the retrieved publications are strored here:
     - In the ```retrieved_df2``` each row has 1/0 values in columns for each format, HTML, XML, PDF, Plain and PMC_TGZ.
     - If there is a 1 in the desired format you can find the path to the raw file:  
         - ```retrieve_df2[index,{format}_parsed_d['file_path']]```. 
-    - Alternatively you can bulk parse all the available formats from their directories e.g.```./output/formats/html/{index}.html```. 
-    - Each file is linked back to the dataframe using the unique hexidecimal index, this is the same index used in the medline JSON and crossref JSON.
+    - Alternatively you can bulk parse all the available formats from their directories e.g.```./output/formats/html/{index}.html.zip```. 
+    - Each zip file is linked back to the dataframe using the unique hexidecimal index, this is the same index used in the medline JSON and crossref JSON.
 - **esearch_results Record Dictionaries**
-    - The directory keeps track of all the successful queries made for that output as a dictionary. They are saved under ```./output/esearch_results/YYYY_MM_DD_HH_MM_SS.json```.
+    - The directory keeps track of all the successful queries made for that output as a zip file containing a JSON dictionary. They are saved under ```./output/esearch_results/YYYY_MM_DD_HH_MM_SS.json.zip```.
     - The dictionary contains 4 keys:
       - date: date of the run with the format YYYY_MM_DD_HH_MM_SS.
       - search_term: the search terms or PMIDs you entered for that run.
@@ -251,6 +259,12 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ## Version
 
+### Version 0.3.8
+-> For disk storage purpose, we now zip all the files retrieved/generated from cadmus in order to be less consuming.
+
+-> We propose more restrart options in case of faillure.
+
+-> We updated the clean directory function. Sometimes the tgz files downloaded had .tmp as extension.
 ### Version 0.3.7
 -> Moved away from pickle objects to convert to JSON files. Previous output will be automatically changed to the new format at the begining of the next run.
 
