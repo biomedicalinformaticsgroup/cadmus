@@ -2,6 +2,7 @@ import re
 import pickle
 import json
 import os.path
+import zipfile
 
 def correct_date_format(retrieval_df):
     for index, row in retrieval_df.iterrows():
@@ -14,11 +15,15 @@ def correct_date_format(retrieval_df):
             pass
         else:
             #if the date does not follow yyyy-mm-dd open the crossref file to find the date field we collected during the metadata retrieval
-            crossref_ouptut_path = f'./output/crossref/p/'
+            crossref_ouptut_path = f'./output/crossref/json/'
             if os.path.exists(f"{crossref_ouptut_path}{index}.p") == True:
-                f = open(f'{crossref_ouptut_path}{index}.json')
-                crossref_file = json.load(f)
-                f.close()
+                with zipfile.ZipFile(f'{crossref_ouptut_path}{index}.json', "r") as z:
+                    for filename in z.namelist():
+                        with z.open(filename) as f:
+                            crossref_file = f.read()
+                            crossref_file = json.loads(crossref_file)
+                        f.close()
+                z.close()
                 new_date = crossref_file['message'].get('issued')            
                 if new_date != None: 
                     #cheking that the field is composed of 3 parts year month day

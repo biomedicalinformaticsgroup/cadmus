@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import shutil
 
 def content_text(retrieval_df):
     # this function is to determine among all the formats retrieved what is the best format available
@@ -42,12 +43,7 @@ def content_text(retrieval_df):
         if choice_count == 1:
             for i in range(len(wcs)):
                 if wcs[i] != None:
-                    r = open(f"./output/retrieved_parsed_files/{formats[i]}/{index}.txt", "r")
-                    text = r.read()
-                    w = open(f"./output/retrieved_parsed_files/content_text/{index}.txt", "w")
-                    w.write(text)
-                    r.close()
-                    w.close()
+                    shutil.copyfile(f"./output/retrieved_parsed_files/{formats[i]}/{index}.txt.zip", f"./output/retrieved_parsed_files/content_text/{index}.txt.zip")
                     retrieval_df.loc[index, 'content_text'] = int(1)
         # if we have more than one option, then we want to compute the average of the WC across all formats
         numerator = 0 
@@ -82,11 +78,6 @@ def content_text(retrieval_df):
         
         #setting the value
         if choice_count > 1:
-            r = open(f"./output/retrieved_parsed_files/{best_text}/{index}.txt", "r")
-            text = r.read()
-            w = open(f"./output/retrieved_parsed_files/content_text/{index}.txt", "w")
-            w.write(text)
-            r.close()
-            w.close()
+            shutil.copyfile(f"./output/retrieved_parsed_files/{best_text}/{index}.txt.zip", f"./output/retrieved_parsed_files/content_text/{index}.txt.zip")
             retrieval_df.loc[index, 'content_text'] = int(1)
     return retrieval_df

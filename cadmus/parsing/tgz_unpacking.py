@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import lxml
 import shutil
 import time
+import zipfile
 
 def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
 
@@ -77,22 +78,23 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                     try:
                         pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)
                         if pdf_d['Content_type'] == 'pdf' and p_text != '' and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
+                            zipfile.ZipFile(f'./output/formats/pdfs/{index}.pdf.zip', mode='w').write(f'./output/formats/pdfs/{index}.pdf', arcname=f'{index}.pdf')
+                            os.remove(to_file)
                             retrieval_df.loc[index, 'pdf'] = 1
                             retrieval_df.loc[index, 'pdf_parse_d'].update(pdf_d)
-                            f = open(f"./output/retrieved_parsed_files/pdfs/{index}.txt", "w")
-                            f.write(p_text)
-                            f.close()
+                            with zipfile.ZipFile(f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                zip_file.writestr(f"{index}.txt", data=p_text)
+                                zip_file.testzip()
+                            zip_file.close()
                             condition = True
                         else:
                             # no need to spend more time in the tgz the function could not identify the file we are looking for
                             condition = True
+                            os.remove(to_file)
                             pass
-                        if 'wc' in retrieval_df.loc[index, 'pdf_parse_d'].keys():
-                            pass
-                        else:
-                            retrieval_df.loc[index, 'pdf'] = int(0)
                     except:
                         # no need to spend more time in the tgz the function could not identify the file we are looking for
+                        os.remove(to_file)
                         condition = True
                         pass
                 else:
@@ -147,7 +149,7 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                             pmcid = retrieval_df.at[index, "pmcid"]
 
                             # use the output from each function to build a output dictionary to use for our evaluation
-                            parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml',
+                            parse_d.update({'file_path':f'./output/formats/xmls/{index}.xml.zip',
                                             'size':size,
                                             'wc':wc,
                                             'wc_abs': wc_abs,
@@ -162,13 +164,15 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 to_file = Path(f'./output/formats/xmls/{index}.xml')
                                 print('XML found = writing to file')
                                 xml.rename(to_file)
-                                
+                                zipfile.ZipFile(f'./output/formats/xmls/{index}.xml.zip', mode='w').write(f'./output/formats/xmls/{index}.xml', arcname=f'{index}.xml')
                                 # then record success on the retrieved_df
                                 retrieval_df.loc[index,'xml'] = 1
                                 retrieval_df.loc[index,'xml_parse_d'] = parse_d
-                                f = open(f"./output/retrieved_parsed_files/xmls/{index}.txt", "w")
-                                f.write(p_text)
-                                f.close()
+                                with zipfile.ZipFile(f"./output/retrieved_parsed_files/xmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                    zip_file.writestr(f"{index}.txt", data=p_text)
+                                    zip_file.testzip()
+                                zip_file.close()
+                                os.remove(to_file)
                                 condition = True
                             else:
                                 # no need to spend more time in the tgz the function could not identify the file we are looking for
