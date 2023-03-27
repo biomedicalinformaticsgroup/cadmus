@@ -94,7 +94,7 @@ with zipfile.ZipFile("./ouput/retrieved_df/retrieved_df2.json.zip", "r") as z:
 f.close()
 z.close()
 metadata_retrieved_df = pd.read_json(data, orient='index')
-metadata_retrieved_df = metadata_retrieved_df.pmid.astype(str)
+metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)
 ```
 
 Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of full text from the available formats. XML, HTML, Plain text and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger the function takes more time to run. 
