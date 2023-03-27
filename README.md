@@ -87,8 +87,8 @@ import pandas as pd
 with zipfile.ZipFile("./ouput/retrieved_df/retrieved_df2.json.zip", "r") as z:
     for filename in z.namelist():
         with z.open(filename) as f:
-            d = f.read()
-            d = json.loads(d)
+            data = f.read()
+            data = json.loads(data)
 
 
 f.close()
