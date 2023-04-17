@@ -403,30 +403,33 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                         if link.attrs['format'] == 'pdf':
                             print('pdf file available')
                             # get the link for the pdf
-                            ftp_link = link.get('href')
-                            with closing(request.urlopen(ftp_link)) as r:
-                                detection = r.info().get_content_subtype()
-                                if detection == 'pdf':
-                                    with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as f:
-                                        shutil.copyfileobj(r, f)
-                                    try:
-                                        pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
-                                        if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
-                                            zipfile.ZipFile(f'./output/formats/pdfs/{index}.pdf.zip', mode='w').write(f'./output/formats/pdfs/{index}.pdf', arcname=f'{index}.pdf')
+                            try:
+                                ftp_link = link.get('href')
+                                with closing(request.urlopen(ftp_link)) as r:
+                                    detection = r.info().get_content_subtype()
+                                    if detection == 'pdf':
+                                        with open(f'./output/formats/pdfs/{index}.pdf', 'wb') as f:
+                                            shutil.copyfileobj(r, f)
+                                        try:
+                                            pdf_d, p_text = pdf_file_to_parse_d(retrieval_df, index, f'./output/formats/pdfs/{index}.pdf', ftp_link, keep_abstract)           
+                                            if pdf_d['Content_type'] == 'pdf' and pdf_d['wc'] != 0 and (pdf_d['wc_abs'] < pdf_d['wc'] or pdf_d['wc_abs'] > 1000 if pdf_d['wc_abs'] != 0 else True) and 100 < pdf_d['wc']:
+                                                zipfile.ZipFile(f'./output/formats/pdfs/{index}.pdf.zip', mode='w').write(f'./output/formats/pdfs/{index}.pdf', arcname=f'{index}.pdf')
+                                                os.remove(f'./output/formats/pdfs/{index}.pdf')
+                                                retrieval_df.loc[index, 'pdf'] = 1
+                                                retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
+                                                with zipfile.ZipFile(f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                                    zip_file.writestr(f"{index}.txt", data=p_text)
+                                                    zip_file.testzip()
+                                                zip_file.close()
+                                            else:
+                                                os.remove(f'./output/formats/pdfs/{index}.pdf')
+                                        except:
                                             os.remove(f'./output/formats/pdfs/{index}.pdf')
-                                            retrieval_df.loc[index, 'pdf'] = 1
-                                            retrieval_df.loc[index,'pdf_parse_d'].update(pdf_d)
-                                            with zipfile.ZipFile(f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
-                                                zip_file.writestr(f"{index}.txt", data=p_text)
-                                                zip_file.testzip()
-                                            zip_file.close()
-                                        else:
-                                            os.remove(f'./output/formats/pdfs/{index}.pdf')
-                                    except:
-                                        os.remove(f'./output/formats/pdfs/{index}.pdf')
+                                            pass
+                                    else:
                                         pass
-                                else:
-                                    pass
+                            except:
+                                pass
                 # alternative error code, register the fail but keep going.     
                 else:
                     print('error with request')
