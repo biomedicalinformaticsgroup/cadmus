@@ -149,7 +149,7 @@ def bioscraping(input_function, email, api_key, click_through_api_key, start = N
                 retrieved_df = pd.DataFrame(creation_retrieved_df(medline_file_name))
                 # standardise the empty values and ensure there are no duplicates of pmids or dois in our retrieved_df
                 retrieved_df.fillna(value=np.nan, inplace=True)
-                retrieved_df = retrieved_df.drop_duplicates(keep='first', ignore_index=False, subset=['doi', 'pmid'])
+                retrieved_df = retrieved_df.drop_duplicates(keep='last', ignore_index=False, subset=['doi', 'pmid'])
 
         # save a list of the pmids returned by the search
         current_pmids = list(retrieved_df['pmid'])
