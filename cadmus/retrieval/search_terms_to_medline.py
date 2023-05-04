@@ -52,7 +52,7 @@ def search_terms_to_medline(query_string, api_key):
                         d = f.read()
                     f.close()
             z.close()
-            d = str(str(d.decode('utf-8')) + str('\n') + str(search_results)).encode('utf-8')
+            d = str(str(d.decode('utf-8')) + str(search_results)).encode('utf-8')
             os.rename('./output/medline/txts/medline_output.txt.zip', './output/medline/txts/temp_medline_output.txt.zip')
             with zipfile.ZipFile("./output/medline/txts/medline_output.txt.zip", mode="a", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
                 zip_file.writestr("medline_output.txt", data=d)
@@ -76,7 +76,7 @@ def search_terms_to_medline(query_string, api_key):
                             d = f.read()
                         f.close()
                 z.close()
-                d = str(str(d.decode('utf-8')) + str('\n') + str(search_results)).encode('utf-8')
+                d = str(str(d.decode('utf-8')) + str(search_results)).encode('utf-8')
                 os.rename('./output/medline/txts/medline_output.txt.zip', './output/medline/txts/temp_medline_output.txt.zip')
                 with zipfile.ZipFile("./output/medline/txts/medline_output.txt.zip", mode="a", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
                     zip_file.writestr("medline_output.txt", data=d)

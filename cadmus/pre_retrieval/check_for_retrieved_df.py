@@ -158,7 +158,7 @@ def check_for_retrieved_df():
                 zipfile.ZipFile(f'{all_ps[i]}.zip', mode='w').write(f'{all_ps[i]}', arcname=f'{all_ps[i].split("/")[-1].split(".")[0]}.xml')
                 os.remove(f'{all_ps[i]}')
 
-        result = int(os.stat(retrieved_path[0]).st_size) > 10000
+        result = True
     else:
         result = False
     

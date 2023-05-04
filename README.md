@@ -84,7 +84,7 @@ The output from cadmus is a directory with the content text of each retrieved pu
 import zipfile
 import json
 import pandas as pd
-with zipfile.ZipFile("./ouput/retrieved_df/retrieved_df2.json.zip", "r") as z:
+with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
     for filename in z.namelist():
         with z.open(filename) as f:
             data = f.read()
@@ -258,6 +258,15 @@ Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Pe
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
 
 ## Version
+
+### Version 0.3.9
+-> Fixed code according to the new script for edrirect retrieval.
+
+-> Fixed typos in the README.
+
+-> Remove the limitation to the minimum file size of the retrieved_df2.
+
+-> Fixed code error of duplicate pmids (this was not impacting previous results but added an extra unnecessary row when using the update parameter).
 
 ### Version 0.3.8
 -> For disk storage purpose, we now zip all the files retrieved/generated from cadmus in order to be less consuming.
