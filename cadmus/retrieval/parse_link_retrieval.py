@@ -73,16 +73,11 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
             count +=1
             # we need to send each link in a get request to determine the response format type.
             # we can use the same settings as the doi.org step but provide an empty base_url for input along with the link
-            try:
-                http, base_url, headers= HTTP_setup(email, click_through_api_key, 'doiorg')
-            except:
-                pass
+            http, base_url, headers= HTTP_setup(email, click_through_api_key, 'doiorg')
+            
 
             # we send the request using our generic function
-            try:
-                response_d, response = get_request(link, http, '', headers, 'doiorg')
-            except:
-                pass
+            response_d, response = get_request(link, http, '', headers, 'doiorg')
 
             # check the response status
             if response_d['status_code'] == 429:

@@ -259,6 +259,9 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ## Version
 
+### Version 0.3.10
+-> Add a fixed version to the request library from the setup file to work with our code.
+
 ### Version 0.3.9
 -> Fixed code according to the new script for edrirect retrieval.
 
