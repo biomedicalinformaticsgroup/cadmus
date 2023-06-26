@@ -259,6 +259,11 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ## Version
 
+### Version 0.3.11
+-> Fixed a typo in parse_link_retrieval.py
+
+-> Applied some changes in clean_up_dir.py
+
 ### Version 0.3.10
 -> Add a fixed version to the request library from the setup file to work with our code.
 

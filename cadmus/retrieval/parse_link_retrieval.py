@@ -24,7 +24,7 @@ import glob
 # we can pull out the records that do not have a tagged version and a pdf version to keep trying for.
 # we will now go through the dataframe and sequentially try the untried links in the full_text_links dictionary.
 def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstract, done = None):
-    counter = -0
+    counter = 0
     stage = 'retrieved2'
     for index, row in retrieval_df.iterrows():
         if counter == 0:

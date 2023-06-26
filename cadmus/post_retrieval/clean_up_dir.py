@@ -18,12 +18,14 @@ def clean_up_dir(df, failed = False):
         # the list as 2 elements, first the answer_code from subprocess, second the actual output
         command = command[1]
         # here we split everything in order to have one line per file
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         # we remove all the other information to only keep the the file name without extension
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-9])
+            files.append(command[i].split()[-1].split('/')[-1][:-9])
         # we create a list that keep all the index that should be saved
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
@@ -35,11 +37,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/medline/json/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-9])
+            files.append(command[i].split()[-1].split('/')[-1][:-9])
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -49,11 +53,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/formats/htmls/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-9])
+            files.append(command[i].split()[-1].split('/')[-1][:-9])
         list_to_keep = list(df[df.html == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -63,25 +69,44 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/formats/pdfs/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.pdf == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
             os.remove(f'./output/formats/pdfs/{list_to_remove[i]}.pdf.zip')
 
         # same to the xmls directory
-        command = subprocess.getstatusoutput("ls -l ./output/formats/xmls/")
+        command = subprocess.getstatusoutput("ls -l ./output/formats/xmls/*.xml")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split('/')[-1].split('/')[-1][:-4])
+        list_to_remove = files
+        for i in range(len(list_to_remove)):
+            os.remove(f'./output/formats/xmls/{list_to_remove[i]}.xml')
+
+        # same to the xmls directory
+        command = subprocess.getstatusoutput("ls -l ./output/formats/xmls/*.xml.zip")
+        command = list(command)
+        command = command[1]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
+        command = my_list
+        files = []
+        for i in range(len(command)):
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.xml == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -91,11 +116,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/formats/txts/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.plain == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -105,11 +132,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/formats/tgzs/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-4])
+            files.append(command[i].split()[-1].split('/')[-1][:-4])
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -122,11 +151,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/htmls/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.html == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -136,11 +167,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/xmls/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.xml == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -150,11 +183,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/pdfs/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.pdf == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -164,11 +199,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/txts/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.plain == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -178,11 +215,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/content_text/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-8])
+            files.append(command[i].split()[-1].split('/')[-1][:-8])
         list_to_keep = list(df[df.content_text == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
@@ -192,11 +231,13 @@ def clean_up_dir(df, failed = False):
         command = subprocess.getstatusoutput("ls -l ./output/medline/json/")
         command = list(command)
         command = command[1]
-        my_list = str(command).split('\n')[1:]
+        my_list = str(command).split('\n')
+        if 'total' in my_list[0]:
+            my_list = my_list[1:]
         command = my_list
         files = []
         for i in range(len(command)):
-            files.append(command[i].split()[-1][:-9])
+            files.append(command[i].split()[-1].split('/')[-1][:-9])
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
