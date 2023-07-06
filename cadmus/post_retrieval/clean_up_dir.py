@@ -31,7 +31,10 @@ def clean_up_dir(df, failed = False):
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
             # if the file name doesn't have a corresponding line in the df we can remove the file
-            os.remove(f'./output/crossref/json/{list_to_remove[i]}.json.zip')
+            try:
+                os.remove(f'./output/crossref/json/{list_to_remove[i]}.json.zip')
+            except:
+                pass
 
         # we now apply the same method to the medline directory
         command = subprocess.getstatusoutput("ls -l ./output/medline/json/")
@@ -47,7 +50,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/medline/json/{list_to_remove[i]}.json.zip')
+            try:
+                os.remove(f'./output/medline/json/{list_to_remove[i]}.json.zip')
+            except:
+                pass
 
         # we now apply it to the htmls directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/htmls/")
@@ -63,7 +69,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.html == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/formats/htmls/{list_to_remove[i]}.html.zip')
+            try:
+                os.remove(f'./output/formats/htmls/{list_to_remove[i]}.html.zip')
+            except:
+                pass
         
         # we now apply it to the pdfs directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/pdfs/")
@@ -79,7 +88,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.pdf == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/formats/pdfs/{list_to_remove[i]}.pdf.zip')
+            try:
+                os.remove(f'./output/formats/pdfs/{list_to_remove[i]}.pdf.zip')
+            except:
+                pass
 
         # same to the xmls directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/xmls/*.xml")
@@ -94,7 +106,10 @@ def clean_up_dir(df, failed = False):
             files.append(command[i].split('/')[-1].split('/')[-1][:-4])
         list_to_remove = files
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/formats/xmls/{list_to_remove[i]}.xml')
+            try:
+                os.remove(f'./output/formats/xmls/{list_to_remove[i]}.xml')
+            except:
+                pass
 
         # same to the xmls directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/xmls/*.xml.zip")
@@ -110,7 +125,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.xml == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/formats/xmls/{list_to_remove[i]}.xml.zip')
+            try:
+                os.remove(f'./output/formats/xmls/{list_to_remove[i]}.xml.zip')
+            except:
+                pass
 
         # again for the txts directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/txts/")
@@ -126,7 +144,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.plain == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/formats/txts/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/formats/txts/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
     
         # finally, we are now finishing with the tgzs directory
         command = subprocess.getstatusoutput("ls -l ./output/formats/tgzs/")
@@ -161,7 +182,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.html == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/retrieved_parsed_files/htmls/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/retrieved_parsed_files/htmls/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
 
         # again for the txts directory
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/xmls/")
@@ -177,7 +201,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.xml == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/retrieved_parsed_files/xmls/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/retrieved_parsed_files/xmls/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
         
         # again for the txts directory
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/pdfs/")
@@ -193,7 +220,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.pdf == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/retrieved_parsed_files/pdfs/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/retrieved_parsed_files/pdfs/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
         
         # again for the txts directory
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/txts/")
@@ -209,7 +239,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.plain == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/retrieved_parsed_files/txts/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/retrieved_parsed_files/txts/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
         
         # again for the txts directory
         command = subprocess.getstatusoutput("ls -l ./output/retrieved_parsed_files/content_text/")
@@ -225,7 +258,10 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df[df.content_text == 1].index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/retrieved_parsed_files/content_text/{list_to_remove[i]}.txt.zip')
+            try:
+                os.remove(f'./output/retrieved_parsed_files/content_text/{list_to_remove[i]}.txt.zip')
+            except:
+                pass
     else:
         # we now apply the same method to the medline directory
         command = subprocess.getstatusoutput("ls -l ./output/medline/json/")
@@ -241,4 +277,7 @@ def clean_up_dir(df, failed = False):
         list_to_keep = list(df.index)
         list_to_remove = list(set(files) - set(list_to_keep))
         for i in range(len(list_to_remove)):
-            os.remove(f'./output/medline/json/{list_to_remove[i]}.json.zip')
+            try:
+                os.remove(f'./output/medline/json/{list_to_remove[i]}.json.zip')
+            except:
+                pass
