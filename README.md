@@ -12,12 +12,6 @@ You need to git clone the project and install it.
 
 An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
-An API key from Crossref. 
-Crossref provides metadata via an API providing you with licensing information and links to full text documents (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the following two licenses:
-
-1. Wiley Text and Data Mining License v1.1
-2. Elsevier Text and Data Mining Service Agreement)
-
 ## Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install it in an isolated environment.
 
@@ -34,7 +28,6 @@ In order to create your corpora you are going to use the function called `bioscr
 1. A PubMed query string or a python list of PubMed IDs
 2. An email address
 3. Your NCBI_API_KEY
-4. Your Crossref_API_KEY
    
 The function can also receive optional parameters.
 
@@ -71,8 +64,7 @@ from cadmus import bioscraping
 bioscraping(
     INPUT,
     EMAIL,
-    NCBI_APY_KEY,
-    CROSSREF_API_KEY
+    NCBI_APY_KEY
     )
 ```
 
@@ -259,10 +251,15 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ## Version
 
-### Version 0.3.11
--> Fixed a typo in parse_link_retrieval.py
+### Version 0.3.12
+-> Applied some changes in clean_up_dir.py.
 
--> Applied some changes in clean_up_dir.py
+-> Removed the 'click_through_api_key' mandatory parameter since Crossref is retiring this feature.
+
+### Version 0.3.11
+-> Fixed a typo in parse_link_retrieval.py.
+
+-> Applied some changes in clean_up_dir.py.
 
 ### Version 0.3.10
 -> Add a fixed version to the request library from the setup file to work with our code.
@@ -282,6 +279,7 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 -> We propose more restrart options in case of faillure.
 
 -> We updated the clean directory function. Sometimes the tgz files downloaded had .tmp as extension.
+
 ### Version 0.3.7
 -> Moved away from pickle objects to convert to JSON files. Previous output will be automatically changed to the new format at the begining of the next run.
 

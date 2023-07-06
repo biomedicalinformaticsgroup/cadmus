@@ -38,7 +38,7 @@ from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 
-def bioscraping(input_function, email, api_key, click_through_api_key, start = None, idx = None , full_search = None, keep_abstract = True):
+def bioscraping(input_function, email, api_key, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX'):
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
