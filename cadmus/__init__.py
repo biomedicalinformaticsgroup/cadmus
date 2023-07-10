@@ -5,6 +5,7 @@ from cadmus.pre_retrieval.pdat_to_datetime import pdat_to_datetime
 from cadmus.pre_retrieval.creation_retrieved_df import creation_retrieved_df
 from cadmus.pre_retrieval.ncbi_id_converter_batch import ncbi_id_converter_batch
 from cadmus.retrieval.HTTP_setup import HTTP_setup
+from cadmus.retrieval.HTTP_setup_elsevier import HTTP_setup_elsevier
 from cadmus.retrieval.get_request import get_request
 from cadmus.retrieval.get_tdm_links import get_tdm_links
 from cadmus.pre_retrieval.key_fields import key_fields
