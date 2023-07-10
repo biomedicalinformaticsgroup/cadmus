@@ -12,6 +12,13 @@ You need to git clone the project and install it.
 
 An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
+**Recommended requirements:**
+
+An API key from Wiley, this key will allow you to get access to the OA and publications you or your institution have the right to access from Wiley. You can find more information [here](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining)
+
+An API key from Elsevier, this key will allow you to get access to the OA and publications you or your institution have the right to access from Elsevier. You can find more information [here](https://dev.elsevier.com/)
+
+
 ## Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install it in an isolated environment.
 
@@ -31,18 +38,20 @@ In order to create your corpora you are going to use the function called `bioscr
    
 The function can also receive optional parameters.
 
-1. The "start" parameter tells the function at which service we were at before failure (e.g. crossref, doi, PubMed Central API. . .).
-2. The "idx" parameter tells the function what is the last saved row index (article).
+1. wiley_api_key parameter allows Wiley to identy which publications you or your institution have the right to access. It will give you access to the OA publications that wihout key you would not get access to. RECOMMENDED
+2. elsevier_api_key parameter allows Elsevier to identy which publications you or your institution have the right to access. It will give you access to the OA publications that wihout key you would not get access to. RECOMMENDED
+3. The "start" parameter tells the function at which service we were at before failure (e.g. crossref, doi, PubMed Central API. . .).
+4. The "idx" parameter tells the function what is the last saved row index (article).
 
 Start and idx are designed to use when restarting cadmus after a program failure. When Cadmus is running, there is a repeated output feed at the top of the live output.  This line will show you the stage and index that your output dataframe was last saved in case of failure for whatever reason. By using these optional parameters, the programme will take off where it left off, saving you starting the process from the beginning again.
 
-1. "full_search", in case you want to check if a document became available since the last time you tried. "full_search" has three predefined values:
+5. "full_search", in case you want to check if a document became available since the last time you tried. "full_search" has three predefined values:
 
     - The default Value 'None', the function only looks for the new articles since the last run.
     - 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
     - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve at least one tagged version (i.e. html or xml) in combination with the pdf format.  
 
-2. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
+6. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the begining of the document. If change to 'False', our parsing is trying to identify the abstract from any format and start to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more realiable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval availble in the output folder: 
 ```"output/formats/{format}s/{index}.{suffix}.zip"```.  
 
 You need to set the export path before every use so that cadmus is able to retrieve more than 10 000 records from NCBI. For that we offer a function called `display_export_path`. You just need to call this function and copy past the result into your terminal before calling `bioscraping`. 
@@ -59,12 +68,24 @@ export PATH=${PATH}:YOUR_WORKING_DIRECTORY/output/medline/edirect
 
 After copying and paste the above export into your terminal you can now run `bioscraping` with the following example:
 
+**Minimum requirements:**
 ```python
 from cadmus import bioscraping
 bioscraping(
-    INPUT,
-    EMAIL,
-    NCBI_APY_KEY
+    INPUT, #type str
+    EMAIL, #type str
+    NCBI_API_KEY #type str
+    )
+```
+**Minimum recommended requirements:**
+```python
+from cadmus import bioscraping
+bioscraping(
+    INPUT, #type str
+    EMAIL, #type str
+    NCBI_API_KEY, #type str
+    wiley_api_key = YOUR_WILEY_API_KEY, #type str
+    elsevier_api_key = YOUR_ELSEVIER_API_KEY #type str
     )
 ```
 
@@ -250,6 +271,9 @@ Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Pe
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
 
 ## Version
+
+### Version 0.3.13
+-> Since Crossref retired the API key feature to let Elsevier and Wiley identified the author of the publication request. wiley_api_key and elsevier_api_key optional parameters have been added as input parameters. These are not mandatory parameters but increase greatly the retrieval rate as they give access to Wiley and Elsevier publications respectively. 
 
 ### Version 0.3.12
 -> Applied some changes in clean_up_dir.py.

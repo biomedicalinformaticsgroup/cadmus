@@ -23,7 +23,7 @@ import glob
 # once we get to this stage we have tried quite a few approaches to get a full text document for each article.
 # we can pull out the records that do not have a tagged version and a pdf version to keep trying for.
 # we will now go through the dataframe and sequentially try the untried links in the full_text_links dictionary.
-def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstract, done = None):
+def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key, done = None):
     counter = 0
     stage = 'retrieved2'
     for index, row in retrieval_df.iterrows():
@@ -73,11 +73,11 @@ def parse_link_retrieval(retrieval_df, email, click_through_api_key, keep_abstra
             count +=1
             # we need to send each link in a get request to determine the response format type.
             # we can use the same settings as the doi.org step but provide an empty base_url for input along with the link
-            http, base_url, headers= HTTP_setup(email, click_through_api_key, 'doiorg')
+            http, base_url, headers= HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
             
 
             # we send the request using our generic function
-            response_d, response = get_request(link, http, '', headers, 'doiorg')
+            response_d, response = get_request(link, http, '', headers, 'doiorg', elsevier_api_key)
 
             # check the response status
             if response_d['status_code'] == 429:

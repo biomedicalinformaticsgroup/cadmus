@@ -5,7 +5,7 @@ import pickle
 import zipfile
 
 # use this function when we already have a retrieved_df with indexes and all available ids
-def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
+def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers, elsevier_api_key):
     
     # we send the doi to the crossref API server as a GET request using the function defined above
     # lets simplify the retrieved_df to only have rows with dois available
@@ -17,7 +17,7 @@ def get_crossref_links_and_licenses(retrieved_df, http, base_url, headers):
         count +=1
         
         # send the request using our function
-        response_d, response = get_request(row['doi'], http, base_url, headers, 'base')
+        response_d, response = get_request(row['doi'], http, base_url, headers, 'base', elsevier_api_key)
 
         # check the status code
         if response_d['status_code'] == 200:

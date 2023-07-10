@@ -38,7 +38,7 @@ from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 
-def bioscraping(input_function, email, api_key, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX'):
+def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_api_key = None, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX'):
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
@@ -182,7 +182,7 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             retrieved_df = ncbi_id_converter_batch(retrieved_df, email)
             
             # set up the crossref metadata http request ('base')
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'base')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'base')
 
             #create a new column to note whether there is a crossref metadata record available - default - 0 (NO).
             retrieved_df['crossref'] = 0
@@ -191,7 +191,7 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             retrieved_df['licenses'] = [{} for val in retrieved_df.index]
 
             # work through the retrieved_df for every available doi and query crossref for full text links
-            retrieved_df = get_crossref_links_and_licenses(retrieved_df, http, base_url, headers)
+            retrieved_df = get_crossref_links_and_licenses(retrieved_df, http, base_url, headers, elsevier_api_key)
 
 
             # now time to download some fulltexts, will need to create some new columns to show success or failure for each format
@@ -241,14 +241,14 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
 
         #this project is not trigered by a save
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, mail = email)
         #We skip all the previous step to start at the crossref step
         elif start == 'crossref' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, mail = email)
             start = None
         #we run the code only on crossref
         elif start == 'crossref_only':
@@ -280,19 +280,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                     finish = retrieved_df2[divide_at:]
                     # row that have not been done yet
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'crossref', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, done = done, mail = email)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, mail = email)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, mail = email)
         # we start at the crossref step and at a specific index, could be related to a previous failled attempt
         elif start == 'crossref' and idx != None:
             try:
@@ -303,30 +303,30 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'crossref', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, done = done, mail = email)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 #change the start and the idx to none to complete all the next step with all the row
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'crossref')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'crossref')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'crossref', keep_abstract, elsevier_api_key, mail = email)
                 start = None
                 idx = None
         else:
             pass
         # After crossref, we are going on doi.org - this uses the doi provided and redirection to see if we land on the full text html page
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key)
         elif start == 'doiorg' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'doiorg_only':
             try:
@@ -352,19 +352,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'doiorg', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key)
         elif start == 'doiorg' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -374,29 +374,29 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'doiorg', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'doiorg')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'doiorg')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'doiorg', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
             pass
         #we continue by sending requests to europe pmc, looking for xml format
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key)
         elif start == 'epmcxml' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'epmcxml_only':
             try:
@@ -422,19 +422,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'epmcxml', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key)
         elif start == 'epmcxml' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -444,29 +444,29 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'epmcxml', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'epmcxml')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'epmcxml')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'epmcxml', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
             pass  
         #pmc, xml format
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key)
         elif start == 'pmcxmls' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'pmcxmls_only':
             try:
@@ -492,19 +492,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pmcxmls', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key)
         elif start == 'pmcxmls' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -514,29 +514,29 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'pmcxmls', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcxmls')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcxmls')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmcxmls', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
             pass
         #pmc tgz, these zip files contain pdf and xml
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key)
         elif start == 'pmctgz' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'pmctgz_only':
             try:
@@ -562,19 +562,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pmctgz', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key)
         elif start == 'pmctgz' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -584,29 +584,29 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'pmctgz', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmctgz')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmctgz')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pmctgz', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
             pass
         #pmc, pdf format
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key)
         elif start == 'pmcpdfs' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'pmcpdfs_only':
             try:
@@ -632,19 +632,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, '', 'pmcpdfs', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key)
         elif start == 'pmcpdfs' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -654,29 +654,29 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, '', 'pmcpdfs', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pmcpdfs')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pmcpdfs')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, '', 'pmcpdfs', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
             pass
         # we are now scraping PubMed abstract page to see if we can identify candidate full text links
         if start == None and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key)
         elif start == 'pubmed' and idx == None:
-            http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+            http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
             # now use the http request set up to request for each of the retrieved_df 
-            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract)
+            retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key)
             start = None
         elif start == 'pubmed_only':
             try:
@@ -702,19 +702,19 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
                     # now use the http request set up to request for each of the retrieved_df 
-                    finish = retrieval(finish, http, base_url, headers, 'pubmed', keep_abstract, done = done)
+                    finish = retrieval(finish, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+                    http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
                     # now use the http request set up to request for each of the retrieved_df 
-                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed', keep_abstract)
+                    retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key)
 
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed', keep_abstract)
+                retrieved_df2 = retrieval(retrieved_df2, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key)
         elif start == 'pubmed' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -724,16 +724,16 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key, wiley_api_key, 'pubmed')
                 # now use the http request set up to request for each of the retrieved_df 
-                finish = retrieval(finish, http, base_url, headers, 'pubmed', keep_abstract, done = done)
+                finish = retrieval(finish, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key, done = done)
                 retrieved_df = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                http, base_url, headers = HTTP_setup(email, click_through_api_key, 'pubmed')
+                http, base_url, headers = HTTP_setup(email, click_through_api_key,wiley_api_key, 'pubmed')
                 # now use the http request set up to request for each of the retrieved_df 
-                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract)
+                retrieved_df = retrieval(retrieved_df, http, base_url, headers, 'pubmed', keep_abstract, elsevier_api_key)
                 start = None
                 idx = None
         else:
@@ -774,10 +774,10 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
 
         if start == None and idx == None:
             # updating the retrieved df with the candidate links that we extracted during the previous steps
-            retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
+            retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key)
         elif start == 'retrieved2' and idx == None:
             # restart from this step
-            retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
+            retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key)
             start = None
         elif start == 'retrieved2_only':
             try:
@@ -803,13 +803,13 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
                 if divide_at != 0:
                     finish = retrieved_df2[divide_at:]
                     done = retrieved_df2[:divide_at]                       
-                    finish = parse_link_retrieval(finish, email, click_through_api_key, keep_abstract, done = done)
+                    finish = parse_link_retrieval(finish, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key, done = done)
                     retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 else:
-                    retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key, keep_abstract)
+                    retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key)
 
             else:
-                retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key, keep_abstract)
+                retrieved_df2 = parse_link_retrieval(retrieved_df2, email, click_through_api_key, keep_abstract, elsevier_api_key)
         elif start == 'retrieved2' and idx != None:
             try:
                 divide_at = retrieved_df.index.get_loc(idx)
@@ -819,12 +819,12 @@ def bioscraping(input_function, email, api_key, start = None, idx = None , full_
             if divide_at != 0:
                 finish = retrieved_df[divide_at:]
                 done = retrieved_df[:divide_at]
-                finish = parse_link_retrieval(finish, email, click_through_api_key, keep_abstract, done = done)
+                finish = parse_link_retrieval(finish, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key, done = done)
                 retrieved_df2 = pd.concat([done, finish], axis=0, join='outer', ignore_index=False, copy=True)
                 start = None
                 idx = None
             else:
-                retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract)
+                retrieved_df2 = parse_link_retrieval(retrieved_df, email, click_through_api_key, keep_abstract, wiley_api_key, elsevier_api_key)
                 start = None
                 idx = None
         else:

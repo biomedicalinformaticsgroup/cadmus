@@ -28,7 +28,7 @@ import zipfile
 import os
 import glob
 
-def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done = None):
+def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, elsevier_api_key, done = None, mail = ''):
     # the input will be the retrieved_df and each process will be subset so that the required input is always available (doi or pmid or pmcid)
     #the counter variable keep track on when to save the current result, every 100 rows or when a step is completed
     counter = 0
@@ -117,7 +117,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                         print(f'trying to download from: \n{link}')
                         try:
                             #requesting the document by creatng the header and the request
-                            response_d, response = get_request('', http, link, headers, 'crossref')
+                            response_d, response = get_request('', http, link, headers, 'crossref', elsevier_api_key, mail = mail)
                         except:
                             pass
 
@@ -210,6 +210,19 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                                             zip_file.writestr(f"{index}.txt", data=p_text)
                                             zip_file.testzip()
                                         zip_file.close()
+                                        '''elif 'api' in response_d.get('url') and 'elsevier' in response_d.get('url'):
+                                        with zipfile.ZipFile(f"./output/formats/xmls/{index}.xml.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                            zip_file.writestr(f"{index}.xml", data=response.text.encode('ascii', 'ignore').decode())
+                                            zip_file.testzip()
+                                        zip_file.close()
+                                        # saving the  file to a pre-defines directory as we identified it as TP
+                                        # changing the value to one for future references
+                                        retrieval_df.loc[index,'xml'] = 1
+                                        retrieval_df.loc[index,'xml_parse_d'].update(xml_d)
+                                        with zipfile.ZipFile(f"./output/retrieved_parsed_files/xmls/{index}.txt.zip", mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+                                            zip_file.writestr(f"{index}.txt", data=p_text)
+                                            zip_file.testzip()
+                                        zip_file.close()'''
 
                                     else:
                                         pass
@@ -293,7 +306,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and the protocol to retreive the file from epmc API
-                    response_d, response = get_request(pmcid, http, base_url, headers, 'epmcxml')
+                    response_d, response = get_request(pmcid, http, base_url, headers, 'epmcxml', elsevier_api_key)
                 except:
                     pass
                 #if the code status we get from the server is 429, we notifiy the user and stop the process to give some time to rest
@@ -338,7 +351,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             if retrieval_df.xml.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and protocol to retreive the document from PMC API
-                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmcxmls')
+                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmcxmls', elsevier_api_key)
                 except:
                     pass
                 #if the error code is 429 stoping the process to give time to rest
@@ -383,7 +396,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             if retrieval_df.pdf.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and the protocol to request the docuemnt from PMC API
-                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmcpdfs')
+                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmcpdfs', elsevier_api_key)
                 except:
                     pass
                 #stop the process in case of 429 status code
@@ -443,7 +456,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             if retrieval_df.pmc_tgz.loc[index] != 1 and retrieval_df.pmcid.loc[index] != None:
                 try:
                     #creating the header and protocol to request the tgz from PMC
-                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmctgz')
+                    response_d, response = get_request(pmcid, http, base_url, headers, 'pmctgz', elsevier_api_key)
                 except:
                     pass
                 #stop the process in case of status code 429
@@ -524,7 +537,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
             if retrieval_df.doi.loc[index] != None:
                 try:
                     #creating the header and the protocol
-                    response_d, response = get_request(doi, http, base_url, headers, 'doiorg')
+                    response_d, response = get_request(doi, http, base_url, headers, 'doiorg', elsevier_api_key)
                 except:
                     pass
                 # check the response status
@@ -679,7 +692,7 @@ def retrieval(retrieval_df, http, base_url, headers, stage, keep_abstract, done 
                 if ((retrieval_df.html.loc[index] == 0) and (retrieval_df.xml.loc[index] == 0)) or (retrieval_df.pdf.loc[index]) == 0:
                     # send the request to pubmed using the base url and pmid
                     try:
-                        response_d, response = get_request(pmid, http, base_url, headers, 'pubmed')
+                        response_d, response = get_request(pmid, http, base_url, headers, 'pubmed', elsevier_api_key)
                     except:
                         pass
                     # check the resonse code

@@ -4,8 +4,11 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3.util import Retry
 from urllib3.exceptions import NewConnectionError
+import time
 
-def get_request(input_id, http, base_url, headers, stage):
+from cadmus.retrieval.HTTP_setup_elsevier import HTTP_setup_elsevier
+
+def get_request(input_id, http, base_url, headers, stage, elsevier_api_key, mail = ''):
     
      
     # for text retrieval its best to clear cookies before each request
@@ -16,27 +19,46 @@ def get_request(input_id, http, base_url, headers, stage):
     exception = None
     attempt = 1
     need_to_back_off = False
+    is_elsevier = False
     while attempt <3:
         # we're going to set up a try except system so that we deal with the most common errors
         try:
             # send the request to the different APIs website
             if stage == 'base' or stage == 'doiorg' or stage == 'pubmed':
-                r = http.get(url = f'{base_url}{input_id}', headers=headers, timeout = (20,120))
+                base_url = f'{base_url}{input_id}'
+                r = http.get(url = f'{base_url}', headers=headers, timeout = (20,120))
             elif stage == 'crossref':
-                r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
+                if 'api' in base_url and 'elsevier' in base_url:
+                    if elsevier_api_key != None:
+                        http, headers = HTTP_setup_elsevier(mail)
+                        previous = base_url
+                        base_url = f'{base_url.split("?")[0]}?APIKey={elsevier_api_key}&{base_url.split("?")[1]}'
+                        r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
+                        is_elsevier = True
+                        base_url = previous
+                        time.sleep(0.3)
+                    else:
+                        r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
+                else:
+                    r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
             elif stage == 'epmcxml':
-                r = http.get(f'{base_url}{input_id}/fullTextXML', headers=headers, timeout = (20,120))
+                base_url = f'{base_url}{input_id}/fullTextXML'
+                r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
             elif stage == 'epmcsupp':
-                r = http.get(f'{base_url}{input_id}/supplementaryFiles', headers=headers, timeout = (20,120), stream=True)
+                base_url = f'{base_url}{input_id}/supplementaryFiles'
+                r = http.get(f'{base_url}', headers=headers, timeout = (20,120), stream=True)
             elif stage == 'pmcxmls':
-                r = http.get(f'{base_url}{input_id}&metadataPrefix=pmc', headers=headers, timeout = (20,120))
+                base_url = f'{base_url}{input_id}&metadataPrefix=pmc'
+                r = http.get(f'{base_url}', headers=headers, timeout = (20,120))
             elif stage == 'pmcpdfs' or stage == 'pmctgz':
-                r = http.get(f'{base_url}{input_id}&format=', headers=headers, timeout = (20,120), stream=True)
+                base_url = f'{base_url}{input_id}&format='
+                r = http.get(f'{base_url}', headers=headers, timeout = (20,120), stream=True)
             else:
                 pass
             
             # check for 200 response and raise exception if not so.
-            r.raise_for_status()
+            if r.status_code != 200:
+                print(f'Error {r.status_code} for {base_url}')
         
         #now we have a set of multiple exceptions that might occur
         except HTTPError as error:
@@ -90,13 +112,21 @@ def get_request(input_id, http, base_url, headers, stage):
             else:
                 pass
             
-            # build the output dictionary and return
-            r_d.update({'status_code':status_code,
-                        'headers':headers,
-                        'content':content,
-                        'text':text,
-                        'url':r_url,
-                        'error':exception})
+            if is_elsevier == False:
+                # build the output dictionary and return
+                r_d.update({'status_code':status_code,
+                            'headers':headers,
+                            'content':content,
+                            'text':text,
+                            'url':r_url,
+                            'error':exception})
+            else:
+                r_d.update({'status_code':status_code,
+                            'headers':headers,
+                            'content':content,
+                            'text':text,
+                            'url':base_url,
+                            'error':exception})
         
         # now we close the response objects to keep the number of open files to a minimum
         if r != None:

@@ -4,7 +4,7 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 from urllib3.util.retry import Retry
 
-def HTTP_setup(email, click_through_api_key, stage): 
+def HTTP_setup(email, click_through_api_key, wiley_api_key, stage): 
     
     #each stage modifies the base url and parameters for that part of the process whilst the general set up and exceptions remain the same
     # set the headers as a mailto
@@ -16,7 +16,17 @@ def HTTP_setup(email, click_through_api_key, stage):
     elif stage == 'crossref':
         # crossref is used for downloading full texts from links provided by crossref.
         # this stage requires a clickthrough API key to be provided and there is no base URL
-        headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
+        if wiley_api_key != None:
+            headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
+                'Accept-Language': "en,en-US;q=0,5",
+                'Accept': "text/html,application/pdf,application/xhtml+xml,application/xml,text/plain,text/xml",
+                'mailto':email,
+                'Wiley-TDM-Client-Token': wiley_api_key,
+                'CR-Clickthrough-Client-Token': click_through_api_key,
+                'Accept-Encoding': 'gzip, deflate, compress',
+                'Accept-Charset': 'ascii, iso-8859-1;q=0.5, *;q=0.1'}
+        else:
+            headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
                 'Accept-Language': "en,en-US;q=0,5",
                 'Accept': "text/html,application/pdf,application/xhtml+xml,application/xml,text/plain,text/xml",
                 'mailto':email,
