@@ -136,6 +136,8 @@ The dataframe columns are:
   - Abstract (from PubMed metadata). 
 - mesh <class 'list'>
   -  MeSH (Medical Subject Headings) provided by Medline.
+- keywords <class 'list'>
+  - This field contains largely non-MeSH subject terms that describe the content of an article. Beginning in January 2013, author-supplied keywords.
 - authors <class 'list'>
 - journal <class 'str'>
 - pub_type <class 'list'>
@@ -271,6 +273,13 @@ Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Pe
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
 
 ## Version
+
+### Version 0.3.14
+-> Add the keyword field from the medline file to the result.
+
+-> Fixed data type, when reading the medline file, in case of add_mesh.
+
+-> Fixed code where 1 article was missing if using list of PMIDs as update.
 
 ### Version 0.3.13
 -> Since Crossref retired the API key feature to let Elsevier and Wiley identified the author of the publication request. wiley_api_key and elsevier_api_key optional parameters have been added as input parameters. These are not mandatory parameters but increase greatly the retrieval rate as they give access to Wiley and Elsevier publications respectively. 
