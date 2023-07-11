@@ -63,3 +63,4 @@ from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.post_retrieval.parsed_to_df import parsed_to_df
 from cadmus.retrieval.edirect import pipeline
 from cadmus.pre_retrieval.display_export_path import display_export_path
+from cadmus.pre_retrieval.add_keywords import add_keywords

@@ -37,6 +37,7 @@ from cadmus.post_retrieval.correct_date_format import correct_date_format
 from cadmus.post_retrieval.clean_up_dir import clean_up_dir
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
+from cadmus.pre_retrieval.add_keywords import add_keywords
 
 def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_api_key = None, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX'):
     # first bioscraping checks whether this is an update of a previous search or a new search.
@@ -57,6 +58,9 @@ def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_a
         if 'mesh' not in original_df.columns:
             print('Implementing changes to your previous result due to change in the library.')
             original_df = add_mesh_remove_preprint(original_df)
+        if 'keywords' not in original_df.columns:
+            print('Implementing changes to your previous result due to change in the library.')
+            original_df = add_keywords(original_df)
         if original_df.iloc[0].content_text == 0 or original_df.iloc[0].content_text == 1:
             pass
         else:

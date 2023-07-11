@@ -63,6 +63,7 @@ def creation_retrieved_df(medline_file_name):
         if abstract == None or abstract == '':
             abstract = record.get('OAB')
         mesh_terms = record.get('MH')
+        keywords = record.get('OT')
         authors = record.get('AU')
         journal_title = record.get('JT')
         pub_type = record.get('PT')
@@ -81,6 +82,7 @@ def creation_retrieved_df(medline_file_name):
                             'title': title,
                             'abstract': abstract,
                             'mesh': mesh_terms,
+                            'keywords': keywords,
                             'authors':authors,
                             'journal':journal_title,
                             'pub_type':pub_type,

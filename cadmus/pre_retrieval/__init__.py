@@ -8,3 +8,4 @@ from cadmus.pre_retrieval.check_for_retrieved_df import check_for_retrieved_df
 from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_preprint
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.pre_retrieval.display_export_path import display_export_path
+from cadmus.pre_retrieval.add_keywords import add_keywords

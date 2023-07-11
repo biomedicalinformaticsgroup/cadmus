@@ -52,13 +52,14 @@ def search_terms_to_medline(query_string, api_key):
                         d = f.read()
                     f.close()
             z.close()
-            d = str(str(d.decode('utf-8')) + str(search_results)).encode('utf-8')
+            d = str(str(d.decode('utf-8')) + '\n' + '\n' + str(search_results)).encode('utf-8')
             os.rename('./output/medline/txts/medline_output.txt.zip', './output/medline/txts/temp_medline_output.txt.zip')
             with zipfile.ZipFile("./output/medline/txts/medline_output.txt.zip", mode="a", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
                 zip_file.writestr("medline_output.txt", data=d)
                 zip_file.testzip()
             zip_file.close()
             os.remove('./output/medline/txts/temp_medline_output.txt.zip')
+            print('Medline Records retrieved and saved')
     else:
         #to avoid errors for large pmids list. We now chunk into smaller set of 9000. Finally we append every chunk in the medline text file.
         for i in range(len(query_string)):
@@ -76,7 +77,7 @@ def search_terms_to_medline(query_string, api_key):
                             d = f.read()
                         f.close()
                 z.close()
-                d = str(str(d.decode('utf-8')) + str(search_results)).encode('utf-8')
+                d = str(str(d.decode('utf-8')) + '\n' + '\n' + str(search_results)).encode('utf-8')
                 os.rename('./output/medline/txts/medline_output.txt.zip', './output/medline/txts/temp_medline_output.txt.zip')
                 with zipfile.ZipFile("./output/medline/txts/medline_output.txt.zip", mode="a", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
                     zip_file.writestr("medline_output.txt", data=d)
