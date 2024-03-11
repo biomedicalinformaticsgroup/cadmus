@@ -12,6 +12,8 @@ You need to git clone the project and install it.
 
 An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
+*In case you are running cadmus on a shared machine, you need to terminate all the tika instances present on the tmp directory if you are not the owner of the instances so cadmus can restart them for you.*
+
 **Recommended requirements:**
 
 An API key from Wiley, this key will allow you to get access to the OA and publications you or your institution have the right to access from Wiley. You can find more information [here](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining)
