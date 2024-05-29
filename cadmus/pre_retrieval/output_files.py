@@ -81,7 +81,7 @@ def output_files ():
         f.close()
         os.remove("./output/medline/install-edirect.sh")
         edirect_install_script = edirect_install_script.split('\n')
-        edirect_install_script = edirect_install_script[:93]
+        edirect_install_script = edirect_install_script[:97]
         with open('./output/medline/install-edirect.sh', 'w') as fp:
             for item in edirect_install_script:
                 if item != 'cd ~':
