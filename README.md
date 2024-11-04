@@ -224,9 +224,9 @@ The 'core' data and content text from the retrieved publications are stored here
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
 
  ## Extra resources
-You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
+You can find the Cadmus website at the following https://biomedicalinformaticsgroup.github.io/cadmus/
 
-You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started. 
+You can find a [Colab Notebook](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) to get you started. 
 
  <!--  Here is our library forthe Pubmed Central Open Access Corpus Generation
 
@@ -268,7 +268,7 @@ retrieved_df2 is here to keep the information forever, once the system is finish
 
 Q:How can I remove Cadmus?
 
-A: rm -rf cadmus
+A: 'pip uninstall cadmus' to remove from python and 'rm -rf cadmus' in bash to remove it from the directory.
 
 Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
 
@@ -278,6 +278,8 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 
 ### Version 0.3.15
 -> Add the parameters 'colab1' and 'colab2' to be able to run an example Notebook on Google Colab and bypass the restriction on runing the pipeline function on the bash system from the terminal.
+
+-> Fixing parsed_to_df function.
 
 ### Version 0.3.14
 -> Add the keyword field from the Medline file to the result.
