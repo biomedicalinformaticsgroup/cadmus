@@ -13,7 +13,7 @@ def parsed_to_df(path = './output/retrieved_parsed_files/content_text/'):
         files.append(command[i].split()[-1][:-4])
     content_text = []
     for i in range(len(files)):
-        with zipfile.ZipFile(f"{path}/{files[i]}.txt.zip", "r") as z:
+        with zipfile.ZipFile(f"{path}/{files[i]}.zip", "r") as z:
             for filename in z.namelist():
                 with z.open(filename) as f:
                     d = f.read()
