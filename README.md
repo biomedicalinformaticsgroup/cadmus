@@ -223,10 +223,10 @@ The 'core' data and content text from the retrieved publications are stored here
 ## Important - Please Read!
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
 
- <!-- ## Extra resources
+ ## Extra resources
 You can find the Cadmus website - https://biomedicalinformaticsgroup.github.io/cadmus/
 
-You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started. --> 
+You can find a [Colab Notebook](https://drive.google.com/file/d/1UoAuGTzAiRV_KyH372JcmFXddJggL-Ow/view?usp=sharing) to get you started. 
 
  <!--  Here is our library forthe Pubmed Central Open Access Corpus Generation
 
@@ -275,6 +275,9 @@ Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Pe
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
 
 ## Version
+
+### Version 0.3.15
+-> Add the parameters 'colab1' and 'colab2' to be able to run an example Notebook on Google Colab and bypass the restriction on runing the pipeline function on the bash system from the terminal.
 
 ### Version 0.3.14
 -> Add the keyword field from the Medline file to the result.
