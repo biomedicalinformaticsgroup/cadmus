@@ -39,7 +39,7 @@ from cadmus.pre_retrieval.add_mesh_remove_preprint import add_mesh_remove_prepri
 from cadmus.pre_retrieval.change_output_structure import change_output_structure
 from cadmus.pre_retrieval.add_keywords import add_keywords
 
-def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_api_key = None, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX'):
+def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_api_key = None, start = None, idx = None , full_search = None, keep_abstract = True, click_through_api_key = 'XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX', colab1 = False, colab2 = False):
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
@@ -137,13 +137,13 @@ def bioscraping(input_function, email, api_key, wiley_api_key = None, elsevier_a
                 # run the search if the input is a string
                 if type(input_function) == str:
                     # This is the NCBI e-search step (PubMed) when a query string is provided resulting in a Medline file being created
-                    search_terms_to_medline(input_function, api_key)
+                    search_terms_to_medline(input_function, api_key, colab1, colab2)
                 else:
                     if type(input_function) == list:
                         if 9000 < len(input_function):
                             print('Your list of PMIDs is greater than 9000, creating bins of 9000.')
                         chunks = [(',').join(input_function[x:x+9000]) for x in range(0, len(input_function), 9000)]
-                        search_terms_to_medline(chunks, api_key)
+                        search_terms_to_medline(chunks, api_key, colab1, colab2)
                 
                 # we have already saved the medline file, lets now make the retrieved df
                 medline_file_name = './output/medline/txts/medline_output.txt'
