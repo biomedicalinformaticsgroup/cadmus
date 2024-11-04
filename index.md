@@ -1,26 +1,28 @@
 ## Welcome to Cadmus
 
-Cadmus is an open-source system, developed in Python to generate biomedical text corpora from published literature. The difficulty of obtaining such datasets has been a major impediment to methodological developments in biomedical-NLP and has hindered the extraction of invaluable biomedical knowledge from the published literature. 
-
-The system collects the meta-data, retreives and parses the biomedical publications (open-access and non open-access publications where the user has permission to access the publication, usually through an institution) and finally merges the result into a single Pandas DataFrame in a Pickle format.
+This project aims to build an automated full-text retrieval system for the generation of large biomedical corpora from published literature for research purposes.
+Cadmus has been developed for use in non-commercial research. Use out with this remit is not recommended nor is the intended purpose.
 
 ## Requirements
 
-In order to run the code, you will need a few things:
+In order to run the code, you need a few things:
 
 You need to have Java 7+.
 
-To git clone the project to the directory you want to save your result.
+You need to git clone the project and install it.
 
-An API key from NCBI (you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
+An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs, you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
-An API key from Crossref (you can find more information [here](https://apps.crossref.org/clickthrough/researchers/#/) you will need to agree the following two licenses:
+*In case you are running cadmus on a shared machine, you need to terminate all the tika instances present on the tmp directory if you are not the owner of the instances so cadmus can restart them for you.*
 
-1. Wiley Text and Data Mining License v1.1
-2. Elsevier Text and Data Mining Service Agreement)
+**Recommended requirements:**
+
+An API key from Wiley, this key will allow you to get access to the OA and publications you or your institution have the right to access from Wiley. You can find more information [here](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining)
+
+An API key from Elsevier, this key will allow you to get access to the OA and publications you or your institution have the right to access from Elsevier. You can find more information [here](https://dev.elsevier.com/)
 
 ## Installation
-Cadmus has a number of dependencies on other Python packages, it is recommended to install in an isolated environment.
+Cadmus has a number of dependencies on other Python packages, it is recommended to install it in an isolated environment.
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
@@ -28,111 +30,113 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 ## Get started
 
-The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and use the same search term(s) as input for bioscraping.
+The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for cadmus `bioscraping`.
 
-In order to create your corpora you are going to use the function called 'bioscraping'. The function is taking the following required parameters:
+In order to create your corpora you are going to use the function called `bioscraping`. The function is taking the following required parameters:
 
-1. A PubMed query or a list of PubMed IDs
+1. A PubMed query string or a Python list of PubMed IDs
 2. An email address
 3. Your NCBI_API_KEY
-4. Your Crossref_API_KEY
    
 The function can also receive optional parameters.
 
-When running, on the top of the live output, you can see when your result was last saved in case of failure.
+1. wiley_api_key parameter allows Wiley to identify which publications you or your institution have the right to access. It will give you access to the OA publications that without the key you would not get access to. RECOMMENDED
+2. elsevier_api_key parameter allows Elsevier to identify which publications you or your institution have the right to access. It will give you access to the OA publications that without the key you would not get access to. RECOMMENDED
+3. The "start" parameter tells the function at which service we were before failure (e.g. crossref, doi, PubMed Central API. . .).
+4. The "idx" parameter tells the function what is the last saved row index (article).
 
+Start and idx are designed to use when restarting cadmus after a program failure. When Cadmus is running, there is a repeated output feed at the top of the live output.  This line will show you the stage and index that your output dataframe was last saved in case of failure for whatever reason. By using these optional parameters, the program will take off where it left off, saving you from starting the process from the beginning again.
 
-1. The start parameter tells the function at which service we were at before failure.
-2. The idx parameter tells the function what is the last saved processed row.
+5. "full_search", in case you want to check if a document became available since the last time you tried. "full_search" has three predefined values:
 
+    - The default value is 'None', the function only looks for the new articles since the last run.
+    - 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
+    - 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve at least one tagged version (i.e. html or xml) in combination with the pdf format.  
 
-Finally, in case you want to check if a document became available since the last time you tried. The function takes a last optional parameter called full_search. full_search has three predefined values:
+6. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the beginning of the document. If changes to 'False', our parsing is trying to identify the abstract from any format and starts to extract the text after it. We are offering the option of removing the abstract but we can not guarantee that our approach is the more reliable for doing so. In case you would like to apply your own parsing method for removing the abstract feel free to load any file saved during the retrieval available in the output folder: 
+```"output/formats/{format}s/{index}.{suffix}.zip"```.  
 
-1. The default Value None, the function only looks for the new articles since the last run.
-2. 'light', the function looks for the new articles since the last run and re-tried the row where we did not get any format.
-3. 'heavy', the function looks for the new articles since the last run and re-tried the row where it did not retrieve a tagged version (i.e. html or xml).
+You need to set the export path before every use so that cadmus is able to retrieve more than 10 000 records from NCBI. For that, we offer a function called `display_export_path`. You just need to call this function and copy past the result into your terminal before calling `bioscraping`. 
 
+```python
+from cadmus import display_export_path
+display_export_path()
+```
 
+The result should look like:
+```python
+export PATH=${PATH}:YOUR_WORKING_DIRECTORY/output/medline/edirect
+```
+
+After copying and pasting the above export into your terminal you can now run `bioscraping` with the following example:
+
+**Minimum requirements:**
 ```python
 from cadmus import bioscraping
 bioscraping(
-    INPUT,
-    EMAIL,
-    NCBI_APY_KEY,
-    CROSSREF_API_KEY
+    INPUT, #type str
+    EMAIL, #type str
+    NCBI_API_KEY #type str
+    )
+```
+**Minimum recommended requirements:**
+```python
+from cadmus import bioscraping
+bioscraping(
+    INPUT, #type str
+    EMAIL, #type str
+    NCBI_API_KEY, #type str
+    wiley_api_key = YOUR_WILEY_API_KEY, #type str
+    elsevier_api_key = YOUR_ELSEVIER_API_KEY #type str
     )
 ```
 
 ## Load the result
 
-The output from Cadmus is a Pickle object. In order to open the result use the following two lines of code.
+The output from cadmus is a directory with the content text of each retrieved publication saved as a zip file containing a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```. It also provides the metadata saved as a zip file containing a JSON file and a zip file containing a tsv file. In order to load the metadata you can use the following lines of code.
 
 ```python
-import pickle
-retrieved_df = pickle.load(open('./output/retrieved_df/retrieved_df2.p', 'rb'))
+import zipfile
+import json
+import pandas as pd
+with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
+    for filename in z.namelist():
+        with z.open(filename) as f:
+            data = f.read()
+            data = json.loads(data)
+
+
+f.close()
+z.close()
+metadata_retrieved_df = pd.read_json(data, orient='index')
+metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)
 ```
 
-## Important
+Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of full text from the available formats. XML, HTML, Plain text, and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger the function takes more time to run. 
 
-Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
+```python
+from cadmus import parsed_to_df
+retrieved_df = parsed_to_df(path = './output/retrieved_parsed_files/content_text/')
+```
+
+As default we assume the directory to the files is ```"./ouput/retrieved_parsed_files/content_text/``` please change the parameter 'path' otherwise.
+
+## Important - Please Read!
+
+Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
 
 ## Extra resources
 
-We are committed to add Colab Notebooks and resources here like examples on how to use Cadmus and its result. 
+You can find the code at [Cadmus GitHub](https://github.com/biomedicalinformaticsgroup/cadmus).
 
-**In the following months, new notebooks and resources will be added**
-
-You can find a [Colab Notebook](https://colab.research.google.com/drive/1n3SK3_3dUpnF4MdJLWQy7PSndIAE85hK?usp=sharing) to get you started.
+You can find a [Colab Notebook](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) to get you started. 
 
 ## Collaboration and feedback
 
-If you have any feedback, suggestion, bug, question or if you want to take part on developing Cadmus feel free to contact us by sending an email at <big.edinburgh@gmail.com>
+If you have any feedback, suggestions, bugs, questions or if you want to take part in developing Cadmus feel free to contact us by opening an issue on [Cadmus GitHub](https://github.com/biomedicalinformaticsgroup/cadmus/issues).
 
 ## People
 
-- Jamie Campbell 
-- T. Ian Simpson
-- David R FitzPatrick
+- Jamie Campbell
 - Antoine Lain
-
-Contact us using the following email <big.edinburgh@gmail.com>
-
-## FAQ
-
-Q: What influences the performance of Cadmus?
-
-A: There are two factors that influence the performance of Cadmus. The first one that highly influences the retrieval rate is one’s subscriptions to journals. The second one is the date range. Usually, Cadmus performs better on newer publications.
-
-Q:Tika failed three times in a row, I can not parse PDF format. What can I do ?
-
-A:You can go to the following [website](https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.24/), download 'tika-server-1.24.jar' and start it yourself.
-
-Q:On PubMed, my search query has more than 90 000 results. The system only retrieved 90 000 publication. Why ?
-
-A:When requesting the metadata, we set the limit to 90 000. If you update your result you will get new rows. If you believe that retrieving more than 90 000 publications is important please let us know [here](https://github.com/biomedicalinformaticsgroup/cadmus/issues).
-
-Q:I ran two times the same query, the number of potential publications changed. Why?
-
-A:If the number of potential publication changed by a lot please let us know [here](https://github.com/biomedicalinformaticsgroup/cadmus/issues), tell us about the query, the previous number and the new number.
-If you noticed a small difference, most likely the APIs the system is using were busy and your request did not receive an answer this time. Give it some time and try to run again the same query using the extra parameter full_search = 'light' to update your result by looking again at the rows where the system did not find a content.
-
-Q:I ran the same query as someone else and I got different result. Why?
-
-A:The system is taking advantage of subscriptions. Maybe you do not have the same subsriptions, you did not run the system on the correct IP address to get access to the subscription.
-
-Q:Can I redistribute the data?
-
-A:Published literature is subject to copyright and restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared.
-
-Q:What's the difference between retrieved_df and retrieved_df2?
-
-A:retrieved_df is a 'moving state' dataframe. Each time the system will run, it will store the information into retrieved_df to reduce to the row of interest.
-retrieved_df2 is here to keep the information forever, once the system finished, retrieved_df2 will collect the new line from retrieved_df to group them with previous run.
-
-Q:How can I remove Cadmus?
-
-A: rm -rf cadmus
-
-Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
-
-A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'.
+- T. Ian Simpson (https://homepages.inf.ed.ac.uk/tsimpson/)
