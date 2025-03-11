@@ -15,7 +15,12 @@ def get_attrs(tag):
         for val in vals:
             if type(val) == list:
                 flat_vals.extend([element.lower() for element in val])
+            elif type(val) == str:
+                flat_vals.append(val.lower())
             else:
-                flat_vals.append(str(val).lower())
+                try:
+                    flat_vals.append(val.lower())
+                except:
+                    pass
     
     return flat_vals
