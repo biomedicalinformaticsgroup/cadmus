@@ -16,6 +16,6 @@ def get_attrs(tag):
             if type(val) == list:
                 flat_vals.extend([element.lower() for element in val])
             else:
-                flat_vals.append(val.lower())
+                flat_vals.append(str(val).lower())
     
     return flat_vals
