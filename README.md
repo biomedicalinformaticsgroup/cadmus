@@ -28,6 +28,8 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 `pip install ./cadmus`
 
+`conda install -c conda-forge poppler`
+
 ## Get started
 
 The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for cadmus `bioscraping`.
@@ -218,6 +220,19 @@ The 'core' data and content text from the retrieved publications are stored here
       - total_count: number of new PMID candidates.
       - pmids: the list of PMIDs identified.
 ---
+
+## Methods Section Extraction
+The methods section extraction is a separate module that can be run after the retrieval of the publications. 
+To run the methods section extraction, you need to have the output directory from the retrieval step. The methods section extraction will create a new directory with the extracted methods sections.
+
+```python
+from cadmus import extract_methods
+extract_methods(
+    cadmus_base_dir="output",
+    output_base="output_methods",
+    logs_base="output_methods/logs"
+)
+```
 
 
 ## Important - Please Read!
