@@ -1,0 +1,3 @@
+from cadmus.extract_methods.extract_methods_from_cadmus import extract_methods
+
+
