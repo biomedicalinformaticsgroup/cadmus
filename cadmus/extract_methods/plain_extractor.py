@@ -249,8 +249,8 @@ def _extract_methods_from_txt(text: str, doc_id: str, output_json: str = None, l
                 # most common passives: are/were + participle
                 if re.match(
                     r'\s*(?:are|were)\s+(?:shown|presented|reported|provided|expressed|'
-                    r'described|listed|summarized|summarised|compared|indicated|'
-                    r'displayed|illustrated|obtained|analysed|analyzed)\b',
+                    r'described|listed|summarized|summarised|compared|indicated|given|'
+                    r'displayed|illustrated|obtained|observed|analysed|analyzed)\b',
                     after,
                 ):
                     continue
