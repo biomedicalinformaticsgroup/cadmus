@@ -15,6 +15,7 @@ def setup_logger(name: str, log_file: Path = None, level=logging.INFO) -> loggin
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)
+
     if not logger.handlers:
         # Console handler
         ch = logging.StreamHandler()
@@ -24,10 +25,13 @@ def setup_logger(name: str, log_file: Path = None, level=logging.INFO) -> loggin
         logger.addHandler(ch)
 
         if log_file:
+            log_file = Path(log_file)
+            log_file.parent.mkdir(parents=True, exist_ok=True)   # <-- ensure folder exists
             fh = logging.FileHandler(str(log_file))
             fh.setLevel(level)
             fh.setFormatter(formatter)
             logger.addHandler(fh)
+
     return logger
 
 
