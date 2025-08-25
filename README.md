@@ -28,6 +28,10 @@ Cadmus has a number of dependencies on other Python packages, it is recommended 
 
 `pip install ./cadmus`
 
+In addition, for the methods section extraction, you will need to install the following dependency:
+
+`conda install -c conda-forge poppler`
+
 ## Get started
 
 The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for cadmus `bioscraping`.
@@ -218,6 +222,28 @@ The 'core' data and content text from the retrieved publications are stored here
       - total_count: number of new PMID candidates.
       - pmids: the list of PMIDs identified.
 ---
+
+## Methods Section Extraction
+To run the methods section extraction, you need to have the output directory from the retrieval step. The methods section extraction will create a new directory with the extracted methods sections from each data type, as well as log files.
+
+```python
+from cadmus import extract_methods
+extract_methods(
+    cadmus_base_dir="output",
+    output_base="output_methods",
+    logs_base="output_methods/logs"
+)
+```
+
+This function will:
+1. Load the metadata from the `retrieved_df2` DataFrame.
+2. Filter to records that have at least one available format (XML, HTML, PDF, or Plain text).
+3. Optionally restrict to a single format via `select_format`, keeping only rows
+   where that format flag is 1 and all other format flags are 0.
+4. Iterate over each remaining PMID and dispatch it to the first format handler
+   (XML → HTML → PDF → Plain) whose `can_handle` method returns True.
+5. Collect success/failure counts and subtitle counts for each format and overall.
+6. Write per-format and overall summary statistics to log files.
 
 
 ## Important - Please Read!

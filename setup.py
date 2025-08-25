@@ -25,7 +25,10 @@ setuptools.setup(
 'python-dateutil',
 'lxml',
 'IPython',
-'fuzzywuzzy'
+'fuzzywuzzy',
+'papermage[dev,predictors,visualizers]',
+'ftfy',
+'pyarrow==20.0.0',
 ],
-    python_requires='>=3.6'
+    python_requires='>=3.10'
 )
