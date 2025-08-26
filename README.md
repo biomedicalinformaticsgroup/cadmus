@@ -245,6 +245,7 @@ This function will:
 5. Collect success/failure counts and subtitle counts for each format and overall.
 6. Write per-format and overall summary statistics to log files.
 
+This functionality was developed and contributed by Simona E. Doneva (donevasimona@gmail.com).
 
 ## Important - Please Read!
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
