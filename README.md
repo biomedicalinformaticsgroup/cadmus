@@ -20,7 +20,7 @@ Cadmus has been developed for use in non-commercial research. Use out with this 
 - [📝 Citing](#-citing)
 - [❓ FAQ](#-faq)
 - [👥 Code Contributors](#-code-contributors)
-- [📦 Version](#-version)
+- [📦 Version History](#-version-history)
 
 ---
 
@@ -285,7 +285,7 @@ A: You can go to the following [website](https://repo1.maven.org/maven2/org/apac
 Q: I ran the same query twice, and the number of potential publications changed. Why?
 
 A: If the number of potential publications changed a lot, please let us know [here](https://github.com/biomedicalinformaticsgroup/cadmus/issues), tell us about the query, the previous number, and the new number.
-If you noticed a small difference, most likely the APIs the system is using were busy, and your request did not receive an answer this time. Give it some time and try to run again the same query using the extra parameter full_search = 'light' to update your result by looking again at the rows where the system did not find content.
+If you noticed a small difference, most likely the APIs the system is using were busy, and your request did not receive an answer this time. Give it some time and try to run the same query again using the extra parameter full_search = 'light' to update your result by looking again at the rows where the system did not find content.
 
 Q: I ran the same query as someone else, and I got a different retrieval result. Why?
 
@@ -337,7 +337,7 @@ A: It seems that you are on a shared computer, you need to identify who the owne
 
 ---
 
-## 📦 Version
+## 📦 Version History
 
 ### Version 0.3.15
 -> Add the parameters 'colab1' and 'colab2' to be able to run an example Notebook on Google Colab and bypass the restriction on running the pipeline function on the bash system from the terminal.
@@ -392,6 +392,6 @@ A: It seems that you are on a shared computer, you need to identify who the owne
 
 -> Return of the esearch_results files. The files are saved under the format YYYY_MM_DD_HH_MM_SS.json. They contain a dictionary with the date the query was run, the query, the number of PMIDs cadmus will look for, and the list of the newly identified PMIDs.
 
--> Update the clean up function to remove unnecessary files.
+-> Update the cleanup function to remove unnecessary files.
 
 ---
