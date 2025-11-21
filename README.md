@@ -1,8 +1,18 @@
-# Cadmus [![DOI](https://zenodo.org/badge/364367629.svg)](https://zenodo.org/badge/latestdoi/364367629)
+[![DOI](https://zenodo.org/badge/364367629.svg)](https://zenodo.org/badge/latestdoi/364367629)
+[![PARADIGM](https://img.shields.io/badge/used_by:_%F0%9F%A7%AC_PARADIGM-ADD8E6)](https://paradigmgenomics.org/)
+[![CoDiet](https://img.shields.io/badge/used_by:_%F0%9F%8D%8E_CoDiet-5AA764)](https://www.codiet.eu)
+
+# ✍️📜 Cadmus
 This project aims to build an automated full-text retrieval system for the generation of large biomedical corpora from published literature for research purposes.
 Cadmus has been developed for use in non-commercial research. Use out with this remit is not recommended nor is the intended purpose.
 
-## Requirements
+---
+
+## 📚 Table of Contents
+
+---
+
+## 📋 Requirements
 
 In order to run the code, you need a few things:
 
@@ -20,15 +30,18 @@ An API key from Wiley, this key will allow you to get access to the OA and publi
 
 An API key from Elsevier, this key will allow you to get access to the OA and publications you or your institution have the right to access from Elsevier. You can find more information [here](https://dev.elsevier.com/)
 
+---
 
-## Installation
+## ⚙️ Installation
 Cadmus has a number of dependencies on other Python packages, it is recommended to install it in an isolated environment.
 
 `git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
 
 `pip install ./cadmus`
 
-## Get started
+---
+
+## 🚀 Get started
 
 The format we are using for the search term(s) is the same as the one for [PubMed](https://pubmed.ncbi.nlm.nih.gov/). You can first try your search term(s) on PubMed and then use the same search term(s) as input for cadmus `bioscraping`.
 
@@ -91,7 +104,9 @@ bioscraping(
     )
 ```
 
-## Load the result
+---
+
+## 🔬 Load the result
 
 The output from cadmus is a directory with the content text of each retrieved publication saved as a zip file containing a txt file, you can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```. It also provides the metadata saved as a zip file containing a JSON file and a zip file containing a tsv file. In order to load the metadata you can use the following lines of code.
 
@@ -122,7 +137,8 @@ retrieved_df = parsed_to_df(path = './output/retrieved_parsed_files/content_text
 As default we assume the directory to the files is ```"./ouput/retrieved_parsed_files/content_text/``` please change the parameter 'path' otherwise.
 
 ---
-## Output details
+
+## 🔎 Output details
 
 **retrieved_df**
 
@@ -188,9 +204,10 @@ The 'core' data and content text from the retrieved publications are stored here
 - **retrieved_parsed_files**
     - In this directory, you can find 5 sub-directories: content_text, pdfs, htmls, xmls, txts. Each format sub-directories contains the content of the files saved as a zip containing a txt file. 
     - The content_text sub-directory, ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```, contains the "best" representation of full text from the available formats. XML, HTML, Plain text, and PDF in that order of cleanliness. It is the place where the output is saved.
+
 ---
 
-## Other Outputs
+## 🗂️ Other Outputs
 - **Medline Record Dictionaries**
     - These are stored as zip files containing a JSON file for every row index in the dataframe. 
     - Medline dictionaries can be found at ```./output/medline/json/{index}.json.zip```. 
@@ -217,13 +234,15 @@ The 'core' data and content text from the retrieved publications are stored here
       - search_term: the search terms or PMIDs you entered for that run.
       - total_count: number of new PMID candidates.
       - pmids: the list of PMIDs identified.
+
 ---
 
-
-## Important - Please Read!
+## ⚠️ Important - Please Read!
  Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
 
- ## Extra resources
+---
+
+ ## 🌍 Extra resources
 You can find the Cadmus website at the following https://biomedicalinformaticsgroup.github.io/cadmus/
 
 You can find a [Colab Notebook](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) to get you started. 
@@ -232,13 +251,17 @@ You can find a [Colab Notebook](https://colab.research.google.com/drive/1-ACwvyW
 
 Here is our library for the Pubmed Abstract Corpus Generation --> 
 
-## Citing
+---
 
-Please indicate which version of cadmus you used.
+## 📝 Citing
+
+If you find this repository useful, please consider giving a star ⭐ and citation 📝:
 
 Jamie Campbell, Antoine Lain, & Ian Simpson. (2021). biomedicalinformaticsgroup/cadmus: First Release of Cadmus (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.5618052
 
-## FAQ
+---
+
+## ❓ FAQ
 
 Q: What influences the performance of Cadmus?
 
@@ -274,7 +297,36 @@ Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Pe
 
 A: It seems that you are on a shared computer, you need to identify who is the owner of tika.log, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
 
-## Version
+---
+
+## 👥 Code Contributors
+
+<p align="center">
+  <kbd>
+    <a href="https://github.com/jamcam11">
+      <img src="https://drive.google.com/uc?id=1XUSKj3LC2fRdNksUbDjAyUCwG6xcFjck" width="90" height="90" style="border-radius:50%;">
+    </a><br>
+    👉 <strong><a href="https://github.com/jamcam11" style="text-decoration:none; color:inherit;">Jamie</a></strong>
+  </kbd>
+  &nbsp;&nbsp;
+  <kbd>
+    <a href="https://github.com/Antoinelfr">
+      <img src="https://drive.google.com/uc?id=1FH6XRJuam6eMuCzwWXBAIdDacIw8PFiu" width="90" height="90" style="border-radius:50%;">
+    </a><br>
+    👉 <strong><a href="https://github.com/Antoinelfr" style="text-decoration:none; color:inherit;">Antoine</a></strong>
+  </kbd>
+  &nbsp;&nbsp;
+  <kbd>
+    <a href="https://github.com/tisimpson">
+      <img src="https://drive.google.com/uc?id=17RNcUtafryCq8sbUhaDLiRwo_KpMCAfh" width="90" height="90" style="border-radius:50%;">
+    </a><br>
+    👉 <strong><a href="https://github.com/tisimpson" style="text-decoration:none; color:inherit;">Ian</a></strong>
+  </kbd>
+</p>
+
+---
+
+## 📦 Version
 
 ### Version 0.3.15
 -> Add the parameters 'colab1' and 'colab2' to be able to run an example Notebook on Google Colab and bypass the restriction on runing the pipeline function on the bash system from the terminal.
@@ -330,3 +382,5 @@ A: It seems that you are on a shared computer, you need to identify who is the o
 -> Return of the esearch_results files. The files are saved under the format YYYY_MM_DD_HH_MM_SS.json. They contain a dictionary with the date the query was run, the query, the number of PMIDs cadmus will look for, and the list of the newly identified PMIDs.
 
 -> Update the clean up function to remove unnecessary files.
+
+---
