@@ -9,7 +9,9 @@ from cadmus.retrieval.HTTP_setup_elsevier import HTTP_setup_elsevier
 from cadmus.retrieval.get_request import get_request
 from cadmus.retrieval.get_tdm_links import get_tdm_links
 from cadmus.pre_retrieval.key_fields import key_fields
-from cadmus.pre_retrieval.get_crossref_links_and_licenses import get_crossref_links_and_licenses
+from cadmus.pre_retrieval.get_crossref_links_and_licenses import (
+    get_crossref_links_and_licenses,
+)
 from cadmus.parsing.doctype import doctype
 from cadmus.parsing.clean_soup import clean_soup
 from cadmus.parsing.xml_body_p_parse import xml_body_p_parse

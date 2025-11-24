@@ -3,10 +3,10 @@ def get_attrs(tag):
     # each tag can have a value attached to it but these can be hard to evaluate due to multiple levels
     # a flattened list of tag values is our target
     flat_vals = []
-        
+
     # lets get the dictionary of attributes for each div_tag, if there are none then {} is returned
     attrs = tag.attrs
-    # avoid none type error 
+    # avoid none type error
     if tag.attrs:
         # now the values for each item in the dictionary
         vals = attrs.values()
@@ -22,5 +22,5 @@ def get_attrs(tag):
                     flat_vals.append(val.lower())
                 except:
                     pass
-    
+
     return flat_vals
