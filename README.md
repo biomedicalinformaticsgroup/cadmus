@@ -9,30 +9,18 @@ Cadmus has been developed for use in non-commercial research. Use out with this 
 ---
 
 ## 📚 Table of Contents
-- [✍️📜 Cadmus](#️-cadmus)
-  - [📚 Table of Contents](#-table-of-contents)
-  - [📋 Requirements](#-requirements)
-  - [⚙️ Installation](#️-installation)
-  - [🚀 Get started](#-get-started)
-  - [🔬 Load the result](#-load-the-result)
-  - [🔎 Output details](#-output-details)
-  - [🗂️ Other Outputs](#️-other-outputs)
-  - [🌍 Extra resources](#-extra-resources)
-  - [⚠️ Important - Please Read!](#️-important---please-read)
-  - [📝 Citing](#-citing)
-  - [❓ FAQ](#-faq)
-  - [👥 Code Contributors](#-code-contributors)
-  - [📦 Version History](#-version-history)
-    - [Version 0.3.16](#version-0316)
-    - [Version 0.3.15](#version-0315)
-    - [Version 0.3.14](#version-0314)
-    - [Version 0.3.13](#version-0313)
-    - [Version 0.3.12](#version-0312)
-    - [Version 0.3.11](#version-0311)
-    - [Version 0.3.10](#version-0310)
-    - [Version 0.3.9](#version-039)
-    - [Version 0.3.8](#version-038)
-    - [Version 0.3.7](#version-037)
+- [📋 Requirements](#-requirements)
+- [⚙️ Installation](#%EF%B8%8F-installation)
+- [🚀 Get started](#-get-started)
+- [🔬 Load the result](#-load-the-result)
+- [🔎 Output details](#-output-details)
+- [🗂️ Other Outputs](#%EF%B8%8F-other-outputs)
+- [🌍 Extra resources](#-extra-resources)
+- [⚠️ Important - Please Read!](#%EF%B8%8F-important---please-read)
+- [📝 Citing](#-citing)
+- [❓ FAQ](#-faq)
+- [👥 Code Contributors](#-code-contributors)
+- [📦 Version History](#-version-history)
 
 ---
 
@@ -253,7 +241,7 @@ The 'core' data and content text from the retrieved publications are stored in `
 
 | Type | Resource |
 |:-----:|:---:|
-| Get started! | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]() [![Open in GitHub](https://img.shields.io/badge/GitHub-Open_in_GitHub-181717?logo=github)]() |
+| Get started! | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) [![Open in GitHub](https://img.shields.io/badge/GitHub-Open_in_GitHub-181717?logo=github)](https://github.com/omicsNLP/example_notebooks/blob/main/cadmus/Cadmus_Notebook_example_Colab_V3_16.ipynb) |
 | Our cadmus Methods Extraction | [![Open in GitHub](https://img.shields.io/badge/GitHub-cadmus_methods_extraction-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/cadmus_methods_extraction) |
 | Our UMLS annotation pipeline | [![Open in GitHub](https://img.shields.io/badge/GitHub-ParallelPyMetaMap-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/ParallelPyMetaMap) |
 | Our PubMed abstract collection | [![Open in GitHub](https://img.shields.io/badge/GitHub-pm_abs_extr-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/pm_abs_extr) |
