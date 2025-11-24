@@ -9,18 +9,30 @@ Cadmus has been developed for use in non-commercial research. Use out with this 
 ---
 
 ## 📚 Table of Contents
-- [📋 Requirements](#-requirements)
-- [⚙️ Installation](#%EF%B8%8F-installation)
-- [🚀 Get started](#-get-started)
-- [🔬 Load the result](#-load-the-result)
-- [🔎 Output details](#-output-details)
-- [🗂️ Other Outputs](#%EF%B8%8F-other-outputs)
-- [🌍 Extra resources](#-extra-resources)
-- [⚠️ Important - Please Read!](#%EF%B8%8F-important---please-read)
-- [📝 Citing](#-citing)
-- [❓ FAQ](#-faq)
-- [👥 Code Contributors](#-code-contributors)
-- [📦 Version History](#-version-history)
+- [✍️📜 Cadmus](#️-cadmus)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [📋 Requirements](#-requirements)
+  - [⚙️ Installation](#️-installation)
+  - [🚀 Get started](#-get-started)
+  - [🔬 Load the result](#-load-the-result)
+  - [🔎 Output details](#-output-details)
+  - [🗂️ Other Outputs](#️-other-outputs)
+  - [🌍 Extra resources](#-extra-resources)
+  - [⚠️ Important - Please Read!](#️-important---please-read)
+  - [📝 Citing](#-citing)
+  - [❓ FAQ](#-faq)
+  - [👥 Code Contributors](#-code-contributors)
+  - [📦 Version History](#-version-history)
+    - [Version 0.3.16](#version-0316)
+    - [Version 0.3.15](#version-0315)
+    - [Version 0.3.14](#version-0314)
+    - [Version 0.3.13](#version-0313)
+    - [Version 0.3.12](#version-0312)
+    - [Version 0.3.11](#version-0311)
+    - [Version 0.3.10](#version-0310)
+    - [Version 0.3.9](#version-039)
+    - [Version 0.3.8](#version-038)
+    - [Version 0.3.7](#version-037)
 
 ---
 
@@ -47,9 +59,10 @@ An API key from Elsevier, this key will allow you to get access to the OA and pu
 ## ⚙️ Installation
 Cadmus has a number of dependencies on other Python packages; it is recommended to install it in an isolated environment.
 
-`git clone https://github.com/biomedicalinformaticsgroup/cadmus.git`
-
-`pip install ./cadmus`
+```bash
+git clone https://github.com/biomedicalinformaticsgroup/cadmus.git
+pip install ./cadmus
+```
 
 ---
 
@@ -81,19 +94,7 @@ Start and idx are designed to be used when restarting cadmus after a program fai
 6. The "keep_abstract" parameter has the default value 'True' and can be changed to 'False'. When set to 'True', our parsing will load any format from the beginning of the document. If changes to 'False', our parsing is trying to identify the abstract from any format and starts to extract the text after it. We are offering the option of removing the abstract, but we can not guarantee that our approach is more reliable for doing so. In case you would like to apply your own parsing method for removing the abstract, feel free to load any file saved during the retrieval available in the output folder: 
 ```"output/formats/{format}s/{index}.{suffix}.zip"```.  
 
-You need to set the export path before every use so that cadmus can retrieve more than 10,000 records from NCBI. For that, we offer a function called `display_export_path`. You just need to call this function and copy-paste the result into your terminal before calling `bioscraping`. 
-
-```python
-from cadmus import display_export_path
-display_export_path()
-```
-
-The result should look like:
-```python
-export PATH=${PATH}:YOUR_WORKING_DIRECTORY/output/medline/edirect
-```
-
-After copying and pasting the above export into your terminal, you can now run `bioscraping` with the following example:
+You can now run `bioscraping` with the following example:
 
 **Minimum requirements:**
 ```python
@@ -248,19 +249,22 @@ The 'core' data and content text from the retrieved publications are stored in `
 
 ---
 
- ## 🌍 Extra resources
-You can find the Cadmus website at the following https://biomedicalinformaticsgroup.github.io/cadmus/
+## 🌍 Extra resources
 
-You can find a [Colab Notebook](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) to get you started. 
+| Type | Resource |
+|:-----:|:---:|
+| Get started! | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]() [![Open in GitHub](https://img.shields.io/badge/GitHub-Open_in_GitHub-181717?logo=github)]() |
+| Our cadmus Methods Extraction | [![Open in GitHub](https://img.shields.io/badge/GitHub-cadmus_methods_extraction-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/cadmus_methods_extraction) |
+| Our UMLS annotation pipeline | [![Open in GitHub](https://img.shields.io/badge/GitHub-ParallelPyMetaMap-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/ParallelPyMetaMap) |
+| Our PubMed abstract collection | [![Open in GitHub](https://img.shields.io/badge/GitHub-pm_abs_extr-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/pm_abs_extr) |
+| Our OA PMC full-text collection | [![Open in GitHub](https://img.shields.io/badge/GitHub-oa_pmc_extr-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/oa_pmc_extr) |
 
- <!--  Here is our library for the PubMed Central Open Access Corpus Generation
-
-Here is our library for the PubMed Abstract Corpus Generation --> 
+</div>
 
 ---
 
 ## ⚠️ Important - Please Read!
- Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
+Published literature can be subject to copyright with restrictions on redistribution. Users need to be mindful of the data storage requirements and how the derived products are presented and shared. Many publishers provide guidance on the use of content for redistribution and use in research.
 
 ---
 
@@ -338,6 +342,17 @@ A: It seems that you are on a shared computer, you need to identify who the owne
 ---
 
 ## 📦 Version History
+
+### Version 0.3.16
+-> Corrected typos across the README and in-code comments.
+
+-> Removed `from cadmus import display_export_path`, now added directly to the environment.
+
+-> Improved code structure and formatting for better readability and maintainability.
+
+-> Enhanced and reorganised the README for clarity.
+
+-> Fixed issues related to the pip build process. 
 
 ### Version 0.3.15
 -> Add the parameters 'colab1' and 'colab2' to be able to run an example Notebook on Google Colab and bypass the restriction on running the pipeline function on the bash system from the terminal.

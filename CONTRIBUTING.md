@@ -36,7 +36,7 @@ If you are proposing a feature:
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
 * Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+  are welcome =)
 
 ## Get Started!
 
@@ -59,5 +59,4 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Code of Conduct
 
-Please note that the `cadmus` project is released with a 
-Code of Conduct. By contributing to this project you agree to abide by its terms.
+Please note that the `cadmus` project is released with a Code of Conduct. By contributing to this project you agree to abide by its terms.
