@@ -1,3 +1,4 @@
+[![DOI:10.1101/2021.01.08.425887](http://img.shields.io/badge/DOI-10.1101/2025.08.29.671515-BE2536.svg)](https://doi.org/10.64898/2026.05.16.725623)
 [![DOI](https://zenodo.org/badge/364367629.svg)](https://zenodo.org/badge/latestdoi/364367629)
 [![PARADIGM](https://img.shields.io/badge/used_by:_%F0%9F%A7%AC_PARADIGM-ADD8E6)](https://paradigmgenomics.org/)
 [![CoDiet](https://img.shields.io/badge/used_by:_%F0%9F%8D%8E_CoDiet-5AA764)](https://www.codiet.eu)
@@ -241,6 +242,7 @@ The 'core' data and content text from the retrieved publications are stored in `
 
 | Type | Resource |
 |:-----:|:---:|
+| Paper | [![DOI:10.1101/2021.01.08.425887](http://img.shields.io/badge/DOI-10.1101.2025.08.29.671515-BE2536.svg)](https://doi.org/10.64898/2026.05.16.725623) |
 | Get started! | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1-ACwvyWLihroeV1lJcL7S1VyCiCIA4Ja?usp=sharing) [![Open in GitHub](https://img.shields.io/badge/GitHub-Open_in_GitHub-181717?logo=github)](https://github.com/omicsNLP/example_notebooks/blob/main/cadmus/Cadmus_Notebook_example_Colab_V3_16.ipynb) |
 | Our cadmus Methods Extraction | [![Open in GitHub](https://img.shields.io/badge/GitHub-cadmus_methods_extraction-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/cadmus_methods_extraction) |
 | Our UMLS annotation pipeline | [![Open in GitHub](https://img.shields.io/badge/GitHub-ParallelPyMetaMap-181717?logo=github)](https://github.com/biomedicalinformaticsgroup/ParallelPyMetaMap) |
@@ -260,7 +262,19 @@ Published literature can be subject to copyright with restrictions on redistribu
 
 If you find this repository useful, please consider giving a star ⭐ and citation 📝:
 
-Jamie Campbell, Antoine Lain, & Ian Simpson. (2021). biomedicalinformaticsgroup/cadmus: First Release of Cadmus (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.5618052
+```bibtex
+@article {Campbell2026.05.16.725623,
+	author = {Campbell, Jamie and Lain, Antoine D and Simpson, T Ian},
+	title = {cadmus: a robust pipeline for scalable retrieval of full-text biomedical literature},
+	elocation-id = {2026.05.16.725623},
+	year = {2026},
+	doi = {10.64898/2026.05.16.725623},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2026/05/19/2026.05.16.725623},
+	eprint = {https://www.biorxiv.org/content/early/2026/05/19/2026.05.16.725623.full.pdf},
+	journal = {bioRxiv}
+}
+```
 
 ---
 
