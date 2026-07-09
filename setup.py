@@ -18,7 +18,7 @@ setuptools.setup(
         "numpy",
         "requests==2.26.0",
         "bs4",
-        "tika==1.24",
+        "pymupdf",
         "urllib3",
         "wget",
         "biopython",

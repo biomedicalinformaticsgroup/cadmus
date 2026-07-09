@@ -59,8 +59,8 @@ def add_mesh_remove_preprint(df):
 
     df_mesh = df_mesh.drop_duplicates(subset=["pmid"])
     for index, row in df_mesh.iterrows():
-        if df_mesh.mesh.loc[index] == []:
-            df_mesh.loc[index, "mesh"] = None
+        if df_mesh.at[index, "mesh"] == []:
+            df_mesh.at[index, "mesh"] = None
 
     df = df.reset_index().merge(df_mesh, on="pmid").set_index("index")
     df = df[

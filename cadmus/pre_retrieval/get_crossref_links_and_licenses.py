@@ -40,7 +40,13 @@ def get_crossref_links_and_licenses(
                 zip_file.writestr(f"{index}.json", data=json_object)
                 zip_file.testzip()
             zip_file.close()
-            retrieved_df.loc[index, "crossref"] = 1
+            retrieved_df.at[index, "crossref"] = 1
+            try:
+                # persist per-row change if storage available
+                if "storage" in globals() and storage is not None:
+                    storage.upsert_article_row(retrieved_df.iloc[index].to_dict())
+            except Exception:
+                pass
 
             message = response_json["message"]
 
@@ -51,14 +57,24 @@ def get_crossref_links_and_licenses(
             links = get_tdm_links(link_list)
             if links is not None:
                 # set the tdm links into the retrieved_df fulltext links dict
-                full_text_links_dict = retrieved_df.loc[index, "full_text_links"]
+                full_text_links_dict = retrieved_df.at[index, "full_text_links"]
                 full_text_links_dict.update({"cr_tdm": links})
                 retrieved_df.at[index, "full_text_links"] = full_text_links_dict
+                try:
+                    if "storage" in globals() and storage is not None:
+                        storage.upsert_article_row(retrieved_df.iloc[index].to_dict())
+                except Exception:
+                    pass
             else:
                 print("crossref record found but no TDM links supplied")
                 pass
             # set the licenses into the retrieved_df as well
             retrieved_df.at[index, "licenses"] = licenses
+            try:
+                if "storage" in globals() and storage is not None:
+                    storage.upsert_article_row(retrieved_df.iloc[index].to_dict())
+            except Exception:
+                pass
 
         else:
             # when the response is not 200, then the record is not known in crossref.

@@ -58,8 +58,8 @@ def add_keywords(df):
 
     df_keywords = df_keywords.drop_duplicates(subset=["pmid"])
     for index, row in df_keywords.iterrows():
-        if df_keywords.keywords.loc[index] == []:
-            df_keywords.loc[index, "keywords"] = None
+        if df_keywords.at[index, "keywords"] == []:
+            df_keywords.at[index, "keywords"] = None
 
     df = df.reset_index().merge(df_keywords, on="pmid").set_index("index")
     df = df[

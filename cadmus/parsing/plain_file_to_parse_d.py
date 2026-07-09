@@ -4,10 +4,11 @@ from cadmus.parsing.get_abstract_txt import get_abstract_txt
 from cadmus.evaluation.abstract_similarity_score import abstract_similarity_score
 from cadmus.evaluation.body_unique_score import body_unique_score
 import os
+import pandas as pd
 import zipfile
 
 
-def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstract):
+def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abstract, storage=None, article_id=None):
     parse_d = {}
     with zipfile.ZipFile(f"./output/formats/txts/{index}.txt.zip", "r") as z:
         for filename in z.namelist():
@@ -16,13 +17,27 @@ def plain_file_to_parse_d(retrieval_df, index, path_document, ftp_link, keep_abs
                 p_text = p_text.decode("UTF-8")
             f.close()
     z.close()
-    # check for abstract in retrieved_df
-    if (
-        retrieval_df.loc[index, "abstract"] != ""
-        and retrieval_df.loc[index, "abstract"] != None
-        and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
-    ):
-        ab = retrieval_df.loc[index, "abstract"]
+    # check for abstract in storage (preferred) or retrieved_df
+    ab = ""
+    if storage is not None and article_id is not None:
+        try:
+            art_p = storage._table_path("articles")
+            if os.path.exists(art_p) and os.path.getsize(art_p) > 0:
+                articles = pd.read_parquet(art_p)
+                row = articles[articles["article_id"] == article_id]
+                if not row.empty and "abstract" in row.columns:
+                    val = row.iloc[0]["abstract"]
+                    if val is not None and val != "":
+                        ab = val
+        except Exception:
+            ab = ""
+    if ab == "":
+        if (
+            retrieval_df.loc[index, "abstract"] != ""
+            and retrieval_df.loc[index, "abstract"] != None
+            and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
+        ):
+            ab = retrieval_df.loc[index, "abstract"]
     else:
         # try parse the abstract in case not provided by PubMed
         ab = get_abstract_txt(p_text)

@@ -1,0 +1,8 @@
+duckdb
+pandas
+beautifulsoup4
+requests
+lxml
+pymupdf
+fuzzywuzzy
+python-Levenshtein

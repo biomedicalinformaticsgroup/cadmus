@@ -1,0 +1,13 @@
+pandas
+numpy
+requests==2.26.0
+bs4
+pymupdf
+urllib3
+wget
+biopython
+python-dateutil
+lxml
+IPython
+fuzzywuzzy
+python-Levenshtein

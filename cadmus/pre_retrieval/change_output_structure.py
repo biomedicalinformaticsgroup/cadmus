@@ -8,7 +8,7 @@ import os
 import glob
 
 
-def change_output_structure(df):
+def change_output_structure(df, storage=None):
     output_files()
     for index, row in df.iterrows():
         if (
@@ -17,7 +17,12 @@ def change_output_structure(df):
             or row["content_text"] != row["content_text"]
             or row["content_text"][:4] == " ABS:"
         ):
-            df.loc[index, "content_text"] = int(0)
+            df.at[index, "content_text"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
         else:
             with zipfile.ZipFile(
                 f"./output/retrieved_parsed_files/content_text/{index}.txt.zip",
@@ -28,7 +33,12 @@ def change_output_structure(df):
                 zip_file.writestr("{index}.txt", data=row["content_text"])
                 zip_file.testzip()
             zip_file.close()
-            df.loc[index, "content_text"] = int(1)
+            df.at[index, "content_text"] = int(1)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
 
         if "wc" in row["html_parse_d"].keys():
             with zipfile.ZipFile(
@@ -56,9 +66,19 @@ def change_output_structure(df):
                     "ab_sim_score": row["html_parse_d"]["ab_sim_score"],
                 }
             )
-            df.loc[index, "html_parse_d"].update(parse_d)
+            df.at[index, "html_parse_d"].update(parse_d)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
         else:
-            df.loc[index, "html"] = int(0)
+            df.at[index, "html"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
 
         if "wc" in row["xml_parse_d"].keys():
             with zipfile.ZipFile(
@@ -86,9 +106,19 @@ def change_output_structure(df):
                     "ab_sim_score": row["xml_parse_d"]["ab_sim_score"],
                 }
             )
-            df.loc[index, "xml_parse_d"].update(parse_d)
+            df.at[index, "xml_parse_d"].update(parse_d)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
         else:
-            df.loc[index, "xml"] = int(0)
+            df.at[index, "xml"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
 
         if "wc" in row["pdf_parse_d"].keys():
             with zipfile.ZipFile(
@@ -118,9 +148,19 @@ def change_output_structure(df):
                     "ab_sim_score": row["pdf_parse_d"]["ab_sim_score"],
                 }
             )
-            df.loc[index, "pdf_parse_d"].update(parse_d)
+            df.at[index, "pdf_parse_d"].update(parse_d)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
         else:
-            df.loc[index, "pdf"] = int(0)
+            df.at[index, "pdf"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
 
         if "wc" in row["plain_parse_d"].keys():
             with zipfile.ZipFile(
@@ -148,9 +188,19 @@ def change_output_structure(df):
                     "ab_sim_score": row["plain_parse_d"]["ab_sim_score"],
                 }
             )
-            df.loc[index, "plain_parse_d"].update(parse_d)
+            df.at[index, "plain_parse_d"].update(parse_d)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
         else:
-            df.loc[index, "plain"] = int(0)
+            df.at[index, "plain"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(df.iloc[index].to_dict())
+                except Exception:
+                    pass
 
     df.pub_date = df.pub_date.astype(str)
     result = df.to_json(orient="index")

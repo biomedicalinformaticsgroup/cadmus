@@ -7,7 +7,7 @@ warnings.filterwarnings("ignore")
 # We then parse out each link from the linkout section.
 
 
-def pubmed_linkout_parse(index, retrieval_df, response):
+def pubmed_linkout_parse(index, retrieval_df, response, storage=None):
 
     # the main output is the link list parsed out of the hmtl
     link_list = []
@@ -59,8 +59,13 @@ def pubmed_linkout_parse(index, retrieval_df, response):
             link_list[i] = link_list[i].split()[0]
 
     # now lets add the link list to our dictionary of full text links for the appropriate article.
-    full_text_link_d = retrieval_df.loc[index, "full_text_links"]
+    full_text_link_d = retrieval_df.at[index, "full_text_links"]
     full_text_link_d.update({"pubmed_links": link_list})
     retrieval_df.at[index, "full_text_links"] = full_text_link_d
+    if storage is not None:
+        try:
+            storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+        except Exception:
+            pass
 
     return retrieval_df

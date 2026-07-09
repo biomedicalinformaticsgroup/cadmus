@@ -33,6 +33,7 @@ def parse_link_retrieval(
     wiley_api_key,
     elsevier_api_key,
     done=None,
+    storage=None,
 ):
     counter = 0
     stage = "retrieved2"
@@ -124,16 +125,19 @@ def parse_link_retrieval(
 
                     # now we look for the format and check if it is already retrieved
                     # execute if we have a set format
-                    if "pdf" in format_type and retrieval_df.pdf.loc[index] != 1:
+                    if "pdf" in format_type and retrieval_df.at[index, "pdf"] != 1:
                         with open(f"./output/formats/pdfs/{index}.pdf", "wb") as file:
                             file.write(response_d["content"])
                         try:
+                            article_id = retrieval_df.at[index, "article_id"] if "article_id" in retrieval_df.columns else str(index)
                             pdf_d, p_text = pdf_file_to_parse_d(
                                 retrieval_df,
                                 index,
                                 f"./output/formats/pdfs/{index}.pdf",
                                 link,
                                 keep_abstract,
+                                storage=storage,
+                                article_id=article_id,
                             )
                             if (
                                 pdf_d["Content_type"] == "pdf"
@@ -153,8 +157,15 @@ def parse_link_retrieval(
                                     arcname=f"{index}.pdf",
                                 )
                                 os.remove(f"./output/formats/pdfs/{index}.pdf")
-                                retrieval_df.loc[index, "pdf"] = 1
-                                retrieval_df.loc[index, "pdf_parse_d"].update(pdf_d)
+                                retrieval_df.at[index, "pdf"] = 1
+                                retrieval_df.at[index, "pdf_parse_d"].update(pdf_d)
+                                try:
+                                    if storage is not None:
+                                        storage.upsert_article_row(
+                                            retrieval_df.iloc[index].to_dict()
+                                        )
+                                except Exception:
+                                    pass
                                 with zipfile.ZipFile(
                                     f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip",
                                     mode="w",
@@ -173,10 +184,11 @@ def parse_link_retrieval(
                         else:
                             pass
 
-                    elif "xml" in format_type and retrieval_df.xml.loc[index] != 1:
+                    elif "xml" in format_type and retrieval_df.at[index, "xml"] != 1:
                         # perform xml parsing and FP detection
+                        article_id = retrieval_df.at[index, "article_id"] if "article_id" in retrieval_df.columns else str(index)
                         xml_d, p_text = xml_response_to_parse_d(
-                            retrieval_df, index, response, keep_abstract
+                            retrieval_df, index, response, keep_abstract, storage=storage, article_id=article_id
                         )
                         xml_d = evaluation_funct(xml_d)
                         # now we have the xml_d we can decide if it is a TP, FP or AB
@@ -203,8 +215,13 @@ def parse_link_retrieval(
                                 )
                                 zip_file.testzip()
                             zip_file.close()
-                            retrieval_df.loc[index, "xml"] = 1
-                            retrieval_df.loc[index, "xml_parse_d"].update(xml_d)
+                            retrieval_df.at[index, "xml"] = 1
+                            retrieval_df.at[index, "xml_parse_d"].update(xml_d)
+                            try:
+                                if storage is not None:
+                                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                            except Exception:
+                                pass
                             with zipfile.ZipFile(
                                 f"./output/retrieved_parsed_files/xmls/{index}.txt.zip",
                                 mode="w",
@@ -219,22 +236,32 @@ def parse_link_retrieval(
                         if "wc" in row["xml_parse_d"].keys():
                             pass
                         else:
-                            retrieval_df.loc[index, "xml"] = int(0)
+                            retrieval_df.at[index, "xml"] = int(0)
+                            if storage is not None:
+                                try:
+                                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                                except Exception:
+                                    pass
 
-                    elif "html" in format_type and retrieval_df.html.loc[index] != 1:
+                    elif "html" in format_type and retrieval_df.at[index, "html"] != 1:
 
                         # this may be a new html doc and thus should be parsed for more links (like pdf etc)
                         if row["full_text_links"].get("html_parse") == []:
                             # all the htmls should be checked for links regardless of whether they are FT or ABd
                             html_links = complete_html_link_parser(response)
                             if len(html_links) != 0:
-                                full_text_link_dict = retrieval_df.loc[
-                                    index, "full_text_links"
-                                ]
+                                full_text_link_dict = retrieval_df.at[
+                                        index, "full_text_links"
+                                    ]
                                 full_text_link_dict.update({"html_parse": html_links})
                                 retrieval_df.at[index, "full_text_links"] = (
                                     full_text_link_dict
                                 )
+                                try:
+                                    if storage is not None:
+                                        storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                                except Exception:
+                                    pass
                                 link_list.extend(
                                     [
                                         link
@@ -244,8 +271,9 @@ def parse_link_retrieval(
                                 )
 
                         # perform html parsing and FP detection
+                        article_id = retrieval_df.at[index, "article_id"] if "article_id" in retrieval_df.columns else str(index)
                         html_d, p_text = html_response_to_parse_d(
-                            retrieval_df, index, response, keep_abstract
+                            retrieval_df, index, response, keep_abstract, storage=storage, article_id=article_id
                         )
                         html_d = evaluation_funct(html_d)
                         # now we have the html_d we can decide if it is a TP, FP or AB
@@ -273,8 +301,8 @@ def parse_link_retrieval(
                                 )
                                 zip_file.testzip()
                             zip_file.close()
-                            retrieval_df.loc[index, "html"] = 1
-                            retrieval_df.loc[index, "html_parse_d"].update(html_d)
+                            retrieval_df.at[index, "html"] = 1
+                            retrieval_df.at[index, "html_parse_d"].update(html_d)
                             html = 1
                             with zipfile.ZipFile(
                                 f"./output/retrieved_parsed_files/htmls/{index}.txt.zip",
@@ -288,9 +316,14 @@ def parse_link_retrieval(
                         if "wc" in row["html_parse_d"].keys():
                             pass
                         else:
-                            retrieval_df.loc[index, "html"] = int(0)
+                            retrieval_df.at[index, "html"] = int(0)
+                            try:
+                                if storage is not None:
+                                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                            except Exception:
+                                pass
 
-                    elif "plain" in format_type and retrieval_df.plain.loc[index] != 1:
+                    elif "plain" in format_type and retrieval_df.at[index, "plain"] != 1:
                         with zipfile.ZipFile(
                             f"./output/formats/txts/{index}.txt.zip",
                             mode="w",
@@ -305,12 +338,15 @@ def parse_link_retrieval(
                             )
                             zip_file.testzip()
                         zip_file.close()
+                        article_id = retrieval_df.at[index, "article_id"] if "article_id" in retrieval_df.columns else str(index)
                         plain_d, p_text = plain_file_to_parse_d(
                             retrieval_df,
                             index,
                             f"./output/formats/txts/{index}.txt",
                             link,
                             keep_abstract,
+                            storage=storage,
+                            article_id=article_id,
                         )
                         if (
                             plain_d["wc"] != 0
@@ -322,8 +358,13 @@ def parse_link_retrieval(
                             )
                             and 100 < plain_d["wc"]
                         ):
-                            retrieval_df.loc[index, "plain_parse_d"].update(plain_d)
-                            retrieval_df.loc[index, "plain"] = 1
+                            retrieval_df.at[index, "plain_parse_d"].update(plain_d)
+                            retrieval_df.at[index, "plain"] = 1
+                            try:
+                                if storage is not None:
+                                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                            except Exception:
+                                pass
                             with zipfile.ZipFile(
                                 f"./output/retrieved_parsed_files/txts/{index}.txt.zip",
                                 mode="w",
@@ -336,7 +377,14 @@ def parse_link_retrieval(
                         if "wc" in row["plain_parse_d"].keys():
                             pass
                         else:
-                            retrieval_df.loc[index, "plain"] = int(0)
+                            retrieval_df.at[index, "plain"] = int(0)
+                            try:
+                                if storage is not None:
+                                    storage.upsert_article_row(
+                                        retrieval_df.iloc[index].to_dict()
+                                    )
+                            except Exception:
+                                pass
 
                     else:
                         # unknown format found

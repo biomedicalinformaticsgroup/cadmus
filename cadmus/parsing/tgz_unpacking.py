@@ -16,7 +16,7 @@ import time
 import zipfile
 
 
-def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
+def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract, storage=None):
 
     condition = False
     start = time.time()
@@ -106,8 +106,16 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 arcname=f"{index}.pdf",
                             )
                             os.remove(to_file)
+                            # update retrieval_df and persist per-row via storage
                             retrieval_df.loc[index, "pdf"] = 1
                             retrieval_df.loc[index, "pdf_parse_d"].update(pdf_d)
+                            if storage is not None:
+                                try:
+                                    # convert row to dict and upsert single article row
+                                    row = retrieval_df.loc[index].to_dict()
+                                    storage.upsert_article_row(row, project_id=None)
+                                except Exception:
+                                    pass
                             with zipfile.ZipFile(
                                 f"./output/retrieved_parsed_files/pdfs/{index}.txt.zip",
                                 mode="w",
@@ -224,8 +232,15 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                     arcname=f"{index}.xml",
                                 )
                                 # then record success on the retrieved_df
+                                # update retrieval_df and persist per-row via storage
                                 retrieval_df.loc[index, "xml"] = 1
                                 retrieval_df.loc[index, "xml_parse_d"] = parse_d
+                                if storage is not None:
+                                    try:
+                                        row = retrieval_df.loc[index].to_dict()
+                                        storage.upsert_article_row(row, project_id=None)
+                                    except Exception:
+                                        pass
                                 with zipfile.ZipFile(
                                     f"./output/retrieved_parsed_files/xmls/{index}.txt.zip",
                                     mode="w",
@@ -244,6 +259,12 @@ def tgz_unpacking(index, retrieval_df, tgz_path, ftp_link, keep_abstract):
                                 pass
                             else:
                                 retrieval_df.loc[index, "xml"] = int(0)
+                                if storage is not None:
+                                    try:
+                                        row = retrieval_df.loc[index].to_dict()
+                                        storage.upsert_article_row(row, project_id=None)
+                                    except Exception:
+                                        pass
 
                     else:
                         # no need to spend more time in the tgz the function could not identify the file we are looking for

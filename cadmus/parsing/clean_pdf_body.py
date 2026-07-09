@@ -63,7 +63,7 @@ def clean_pdf_body(p_text):
         result = re.findall(regex, p_text)
         for i in range(len(result)):
             p_text = p_text.replace("[" + result[i] + "]", "")
-        # remove the word if 7 words in a row are less than 4 characters. A reason for that was the result of tika when parsing a table
+        # remove the word if 7 words in a row are less than 4 characters. Historically this happened when table text was parsed from PDFs
         p_text = p_text.split()
         list_to_remove = []
         for i in range(len(p_text) - 7):

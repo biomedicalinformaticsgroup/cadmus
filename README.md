@@ -29,13 +29,13 @@ Cadmus has been developed for use in non-commercial research. Use out with this 
 
 In order to run the code, you need a few things:
 
-You need to have Java 7+.
+You need to have Java 7+ only if you are running older versions that required Tika; current Cadmus uses PyMuPDF for local PDF parsing.
 
 You need to git clone the project and install it.
 
 An API key from NCBI (this is used to search PubMed for articles using a search string or list of PubMed IDs; you can find more information [here](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)).
 
-*In case you are running cadmus on a shared machine, you need to terminate all the Tika instances present in the tmp directory if you are not the owner of the instances, so cadmus can restart them for you.*
+*Cadmus uses PyMuPDF (`pymupdf`) for local PDF parsing. No external Tika server is required.*
 
 **Recommended requirements:**
 
@@ -284,9 +284,10 @@ Q: What influences the performance of Cadmus?
 
 A: There are two factors that influence the performance of Cadmus. The first one that highly influences the retrieval rate is one’s subscriptions to journals. The second one is the date range. Usually, Cadmus performs better on newer publications. This reflects the increased use of text mining formats and document web indexing to help with finding a given document.
 
-Q: Tika failed three times in a row. I can not parse the PDF format. What can I do?
 
-A: You can go to the following [website](https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.24/), download 'tika-server-1.24.jar' and start it yourself.
+Q: PDF parsing fails. What can I do?
+
+A: Cadmus uses PyMuPDF for PDF parsing. Ensure `pymupdf` is installed in your environment (e.g. `pip install pymupdf` or `conda install -c conda-forge pymupdf`). If parsing still fails, check the PDF for corruption or try extracting pages with an external tool.
 
 Q: I ran the same query twice, and the number of potential publications changed. Why?
 
@@ -310,9 +311,10 @@ Q: How can I remove Cadmus?
 
 A: 'pip uninstall cadmus' to remove from Python and 'rm -rf cadmus' in bash to remove it from the directory.
 
-Q: I got the following error or a similar one: 'PermissionError: \[Errno\] 13 Permission denied: '/tmp/tika.log'', What can I do?
 
-A: It seems that you are on a shared computer, you need to identify who the owner of tika.log is, using ls -l on the directory printed with your error. Once you know, ask one to change the permission so that you can read, write and execute tika.log as well. One way to do that is by using the command 'chmod'. You should also 'chmod' the following '/tmp/tika-server.log'
+Q: I got a permission error related to PDF parsing logs. What can I do?
+
+A: Ensure the user running Cadmus has write permission to the temp/log directories. Fix permissions with `chmod` or run Cadmus under an account that can write to `/tmp` or the configured log path.
 
 ---
 

@@ -13,20 +13,10 @@ import glob
 
 import numpy as np
 import pandas as pd
-import tika
 import wget
 from dateutil import parser
 import subprocess
 import json
-
-os.environ["TIKA_SERVER_JAR"] = (
-    "https://repo1.maven.org/maven2/org/apache/tika/tika-server/"
-    + tika.__version__
-    + "/tika-server-"
-    + tika.__version__
-    + ".jar"
-)
-from tika import parser
 
 from cadmus.retrieval.search_terms_to_medline import search_terms_to_medline
 from cadmus.pre_retrieval.creation_retrieved_df import creation_retrieved_df
@@ -65,10 +55,17 @@ def bioscraping(
     click_through_api_key="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX",
     colab1=False,
     colab2=False,
+    storage=None,
 ):
     # first bioscraping checks whether this is an update of a previous search or a new search.
     # create all the output directories if they do not already exist
     update = check_for_retrieved_df()
+    # make a local wrapper so all internal calls to `retrieval` receive the `storage` argument
+    _orig_retrieval = retrieval
+    def retrieval(*a, **kw):
+        if "storage" not in kw:
+            kw["storage"] = storage
+        return _orig_retrieval(*a, **kw)
     if update:
         print(
             "There is already a Retrieved Dataframe, we shall add new results to this existing dataframe, excluding duplicates."
@@ -1506,6 +1503,7 @@ def bioscraping(
                 keep_abstract,
                 wiley_api_key,
                 elsevier_api_key,
+                storage=storage,
             )
         elif start == "retrieved2" and idx == None:
             # restart from this step
@@ -1516,6 +1514,7 @@ def bioscraping(
                 keep_abstract,
                 wiley_api_key,
                 elsevier_api_key,
+                storage=storage,
             )
             start = None
         elif start == "retrieved2_only":
@@ -1554,6 +1553,7 @@ def bioscraping(
                         wiley_api_key,
                         elsevier_api_key,
                         done=done,
+                        storage=storage,
                     )
                     retrieved_df2 = pd.concat(
                         [done, finish],
@@ -1570,6 +1570,7 @@ def bioscraping(
                         keep_abstract,
                         wiley_api_key,
                         elsevier_api_key,
+                        storage=storage,
                     )
 
             else:
@@ -1613,6 +1614,7 @@ def bioscraping(
                     keep_abstract,
                     wiley_api_key,
                     elsevier_api_key,
+                    storage=storage,
                 )
                 start = None
                 idx = None

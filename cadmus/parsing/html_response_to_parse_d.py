@@ -7,20 +7,36 @@ from cadmus.retrieval.redirect_check import redirect_check
 from cadmus.parsing.clean_html import clean_html
 import bs4
 from bs4 import BeautifulSoup
+import os
+import pandas as pd
 
 
-def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
+def html_response_to_parse_d(retrieval_df, index, response, keep_abstract, storage=None, article_id=None):
     parse_d = {}
     # read the file in as a soup object
     abstract = ""
     soup = BeautifulSoup(response.text, "html")
+    # prefer abstract from storage when available
+    if storage is not None and article_id is not None:
+        try:
+            art_p = storage._table_path("articles")
+            if os.path.exists(art_p) and os.path.getsize(art_p) > 0:
+                articles = pd.read_parquet(art_p)
+                row = articles[articles["article_id"] == article_id]
+                if not row.empty and "abstract" in row.columns:
+                    val = row.iloc[0]["abstract"]
+                    if val is not None and val != "":
+                        abstract = val
+        except Exception:
+            abstract = ""
 
-    if (
-        retrieval_df.loc[index, "abstract"] != ""
-        and retrieval_df.loc[index, "abstract"] != None
-        and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
-    ):
-        abstract = retrieval_df.loc[index, "abstract"]
+    if abstract == "":
+        if (
+            retrieval_df.loc[index, "abstract"] != ""
+            and retrieval_df.loc[index, "abstract"] != None
+            and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
+        ):
+            abstract = retrieval_df.loc[index, "abstract"]
 
     # our requests strategy has a major issue with java script redirection.
     # This means a lot of pages are redirection pages and need to be ignored.
@@ -38,10 +54,7 @@ def html_response_to_parse_d(retrieval_df, index, response, keep_abstract):
         soup = clean_soup(soup)
 
         if (
-            retrieval_df.loc[index, "abstract"] == ""
-            or retrieval_df.loc[index, "abstract"] == None
-            or retrieval_df.loc[index, "abstract"]
-            != retrieval_df.loc[index, "abstract"]
+            abstract == "" or abstract is None or abstract != abstract
         ):
             # parse abstract using function above
             abstract = html_get_ab(soup)

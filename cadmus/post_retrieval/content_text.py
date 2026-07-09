@@ -3,11 +3,16 @@ import numpy as np
 import shutil
 
 
-def content_text(retrieval_df):
+def content_text(retrieval_df, storage=None):
     # this function is to determine among all the formats retrieved what is the best format available
     # from experience and quality of parsing we prefer teh following order xml html plain pdf
     for index, row in retrieval_df.iterrows():
-        retrieval_df.loc[index, "content_text"] = int(0)
+        retrieval_df.at[index, "content_text"] = int(0)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                except Exception:
+                    pass
         # creating the variable we used to make our decision
         html_wc = None
         xml_wc = None
@@ -48,7 +53,12 @@ def content_text(retrieval_df):
                         f"./output/retrieved_parsed_files/{formats[i]}/{index}.txt.zip",
                         f"./output/retrieved_parsed_files/content_text/{index}.txt.zip",
                     )
-                    retrieval_df.loc[index, "content_text"] = int(1)
+                    retrieval_df.at[index, "content_text"] = int(1)
+                    if storage is not None:
+                        try:
+                            storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                        except Exception:
+                            pass
         # if we have more than one option, then we want to compute the average of the WC across all formats
         numerator = 0
         denominator = 0
@@ -90,5 +100,10 @@ def content_text(retrieval_df):
                 f"./output/retrieved_parsed_files/{best_text}/{index}.txt.zip",
                 f"./output/retrieved_parsed_files/content_text/{index}.txt.zip",
             )
-            retrieval_df.loc[index, "content_text"] = int(1)
+            retrieval_df.at[index, "content_text"] = int(1)
+            if storage is not None:
+                try:
+                    storage.upsert_article_row(retrieval_df.iloc[index].to_dict())
+                except Exception:
+                    pass
     return retrieval_df

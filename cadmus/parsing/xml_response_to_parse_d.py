@@ -6,25 +6,43 @@ from cadmus.evaluation.body_unique_score import body_unique_score
 from cadmus.parsing.clean_xml import clean_xml
 from bs4 import BeautifulSoup
 import warnings
+import os
+import pandas as pd
 
 warnings.filterwarnings("ignore")
 
 
-def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract):
+def xml_response_to_parse_d(retrieval_df, index, xml_response, keep_abstract, storage=None, article_id=None):
     parse_d = {}
     soup = BeautifulSoup(xml_response.text, features="lxml")
     # remove unwanted tags
     soup = xml_clean_soup(soup)
     # check for abstract in retrieved_df
-    if (
-        retrieval_df.loc[index, "abstract"] != ""
-        and retrieval_df.loc[index, "abstract"] != None
-        and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
-    ):
-        ab = retrieval_df.loc[index, "abstract"]
-    else:
-        # try parse the abstract since not provided by PubMed
-        ab = get_ab(soup)
+    # prefer storage-stored abstract when available
+    ab = ""
+    if storage is not None and article_id is not None:
+        try:
+            art_p = storage._table_path("articles")
+            if os.path.exists(art_p) and os.path.getsize(art_p) > 0:
+                articles = pd.read_parquet(art_p)
+                row = articles[articles["article_id"] == article_id]
+                if not row.empty and "abstract" in row.columns:
+                    val = row.iloc[0]["abstract"]
+                    if val is not None and val != "":
+                        ab = val
+        except Exception:
+            ab = ""
+
+    if ab == "":
+        if (
+            retrieval_df.loc[index, "abstract"] != ""
+            and retrieval_df.loc[index, "abstract"] != None
+            and retrieval_df.loc[index, "abstract"] == retrieval_df.loc[index, "abstract"]
+        ):
+            ab = retrieval_df.loc[index, "abstract"]
+        else:
+            # try parse the abstract since not provided by PubMed
+            ab = get_ab(soup)
     # try parse the text
     p_text = xml_body_p_parse(soup, ab, keep_abstract)
     p_text = clean_xml(p_text)

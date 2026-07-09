@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: cadmus
+Version: 0.3.16
+Summary: This projects is to build full text retrieval system setup for generation of large biomedical corpora from published literature.
+Author: Jamie Campbell, Ian Simpson, Antoine Lain
+Author-email: Jamie.campbell@igmm.ed.ac.uk, Ian.Simpson@ed.ac.uk, Antoine.Lain@ed.ac.uk
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3.6
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: LINUX/MACOS
+Requires-Python: >=3.6
+License-File: LICENSE
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: requests==2.26.0
+Requires-Dist: bs4
+Requires-Dist: pymupdf
+Requires-Dist: urllib3
+Requires-Dist: wget
+Requires-Dist: biopython
+Requires-Dist: python-dateutil
+Requires-Dist: lxml
+Requires-Dist: IPython
+Requires-Dist: fuzzywuzzy
+Requires-Dist: python-Levenshtein
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

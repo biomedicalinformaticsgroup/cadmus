@@ -5,10 +5,10 @@ import os.path
 import zipfile
 
 
-def correct_date_format(retrieval_df):
+def correct_date_format(retrieval_df, storage=None):
     for index, row in retrieval_df.iterrows():
         # trying to find if the current date follow the format yyyy-mm-dd
-        date = retrieval_df.loc[index, "pub_date"]
+        date = retrieval_df.at[index, "pub_date"]
         date = str(date)
         regex = re.compile("^[\d]{4}-[\d]{2}-[\d]{2}$")
         result_date = re.findall(regex, date)
@@ -135,7 +135,12 @@ def correct_date_format(retrieval_df):
                                 )
                             )
                         # changing the date to the new format we found
-                        retrieval_df.loc[index, "pub_date"] = new_date
+                        retrieval_df.at[index, "pub_date"] = new_date
+                        if storage is not None:
+                            try:
+                                storage.upsert_article_row(retrieval_df.loc[index].to_dict())
+                            except Exception:
+                                pass
                     else:
                         pass
                 else:
@@ -248,7 +253,12 @@ def correct_date_format(retrieval_df):
                                     )[0][2]
                                 )
                             )
-                        retrieval_df.loc[index, "pub_date"] = new_date
+                        retrieval_df.at[index, "pub_date"] = new_date
+                        if storage is not None:
+                            try:
+                                storage.upsert_article_row(retrieval_df.loc[index].to_dict())
+                            except Exception:
+                                pass
                     else:
                         pass
                 else:
