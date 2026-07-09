@@ -7,6 +7,8 @@
 This project aims to build an automated full-text retrieval system for the generation of large biomedical corpora from published literature for research purposes.
 Cadmus has been developed for use in non-commercial research. Use out with this remit is not recommended, nor is the intended purpose.
 
+> **Development status:** This repository is under active development. The `cadmus2` branch contains ongoing changes (storage adapter, DuckDB/Parquet support, PyMuPDF parsing). This code is experimental and not yet a stable, fully working release — expect breaking changes and missing features. Use at your own risk.
+
 ---
 
 ## 📚 Table of Contents
