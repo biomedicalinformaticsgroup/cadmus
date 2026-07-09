@@ -10,18 +10,30 @@ Cadmus has been developed for use in non-commercial research. Use out with this 
 ---
 
 ## 📚 Table of Contents
-- [📋 Requirements](#-requirements)
-- [⚙️ Installation](#%EF%B8%8F-installation)
-- [🚀 Get started](#-get-started)
-- [🔬 Load the result](#-load-the-result)
-- [🔎 Output details](#-output-details)
-- [🗂️ Other Outputs](#%EF%B8%8F-other-outputs)
-- [🌍 Extra resources](#-extra-resources)
-- [⚠️ Important - Please Read!](#%EF%B8%8F-important---please-read)
-- [📝 Citing](#-citing)
-- [❓ FAQ](#-faq)
-- [👥 Code Contributors](#-code-contributors)
-- [📦 Version History](#-version-history)
+- [✍️📜 Cadmus](#️-cadmus)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [📋 Requirements](#-requirements)
+  - [⚙️ Installation](#️-installation)
+  - [🚀 Get started](#-get-started)
+  - [🔬 Storage and loading results](#-storage-and-loading-results)
+  - [🔎 Output details](#-output-details)
+  - [🗂️ Other Outputs](#️-other-outputs)
+  - [🌍 Extra resources](#-extra-resources)
+  - [⚠️ Important - Please Read!](#️-important---please-read)
+  - [📝 Citing](#-citing)
+  - [❓ FAQ](#-faq)
+  - [👥 Code Contributors](#-code-contributors)
+  - [📦 Version History](#-version-history)
+    - [Version 0.3.16](#version-0316)
+    - [Version 0.3.15](#version-0315)
+    - [Version 0.3.14](#version-0314)
+    - [Version 0.3.13](#version-0313)
+    - [Version 0.3.12](#version-0312)
+    - [Version 0.3.11](#version-0311)
+    - [Version 0.3.10](#version-0310)
+    - [Version 0.3.9](#version-039)
+    - [Version 0.3.8](#version-038)
+    - [Version 0.3.7](#version-037)
 
 ---
 
@@ -42,15 +54,47 @@ An API key from NCBI (this is used to search PubMed for articles using a search 
 An API key from Wiley, this key will allow you to get access to the OA and publications you or your institution has the right to access from Wiley. You can find more information [here](https://onlinelibrary.wiley.com/library-info/resources/text-and-datamining)
 
 An API key from Elsevier, this key will allow you to get access to the OA and publications you or your institution has the right to access from Elsevier. You can find more information [here](https://dev.elsevier.com/)
+Cadmus now stores data as Parquet files and uses DuckDB for efficient querying and MERGE-based upserts. For best results on macOS we recommend a conda-based Python environment.
+
+Minimum runtime requirements:
+- Python 3.8+ (3.11 tested)
+- `pymupdf` (PyMuPDF) for local PDF parsing
+- `duckdb` (recommended via conda)
+- `pyarrow` for Parquet I/O
+
+You will also need an NCBI API key to query PubMed (see https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/).
+
+Optional but recommended API keys for higher retrieval rates:
+- Wiley API key
+- Elsevier API key (Elsevier/Scopus)
+
+Note: Cadmus no longer requires Java or a Tika server — PDF parsing is performed with PyMuPDF.
 
 ---
 
 ## ⚙️ Installation
-Cadmus has a number of dependencies on other Python packages; it is recommended to install it in an isolated environment.
+We recommend creating an isolated conda environment (particularly on macOS where DuckDB wheels are simplest via conda).
+
+Using conda (recommended):
 
 ```bash
 git clone https://github.com/biomedicalinformaticsgroup/cadmus.git
-pip install ./cadmus
+cd cadmus
+conda create -n cadmus python=3.11 -y
+conda activate cadmus
+# install duckdb and other binary deps via conda
+conda install -c conda-forge duckdb pyarrow -y
+pip install -r requirements.txt
+pip install -e .
+```
+
+Or using pip inside an existing environment:
+
+```bash
+git clone https://github.com/biomedicalinformaticsgroup/cadmus.git
+cd cadmus
+pip install -r requirements.txt
+pip install -e .
 ```
 
 ---
@@ -108,35 +152,20 @@ bioscraping(
 
 ---
 
-## 🔬 Load the result
+## 🔬 Storage and loading results
 
-The output from cadmus is a directory with the content text of each retrieved publication saved as a zip file containing a txt file. You can find the files here: ```"./ouput/retrieved_parsed_files/content_text/*.txt.zip"```. It also provides the metadata saved as a zip file containing a JSON file and a zip file containing a TSV file. In order to load the metadata, you can use the following lines of code.
+Cadmus persists metadata and parsed outputs into Parquet tables under `./storage/parquet/` and exposes DuckDB for queries and upserts. Core tables include: `articles`, `projects`, `file_artifacts`, `parsed_texts`, and `full_text_links`.
 
-```python
-import zipfile
-import json
-import pandas as pd
-with zipfile.ZipFile("./output/retrieved_df/retrieved_df2.json.zip", "r") as z:
-    for filename in z.namelist():
-        with z.open(filename) as f:
-            data = f.read()
-            data = json.loads(data)
-
-
-f.close()
-z.close()
-metadata_retrieved_df = pd.read_json(data, orient='index')
-metadata_retrieved_df.pmid = metadata_retrieved_df.pmid.astype(str)
-```
-
-Here is a helper function you can call to generate a DataFrame with the same index as the one used for the metadata and the content text. The content text is the "best" representation of the full text from the available formats. XML, HTML, Plain text, and PDF in that order of cleanliness. It is advised to keep the result somewhere else than in the output directory, as the DataFrame gets bigger, the function takes more time to run. 
+Quick example — use the `Storage` adapter to read the `articles` table:
 
 ```python
-from cadmus import parsed_to_df
-retrieved_df = parsed_to_df(path = './output/retrieved_parsed_files/content_text/')
+from cadmus.storage import Storage
+s = Storage(root='./storage', duckdb_path='./storage/cadmus.duckdb')
+s.init_tables()
+df = s.query("SELECT * FROM articles LIMIT 10")
 ```
 
-By default, we assume the directory to the files is ```"./ouput/retrieved_parsed_files/content_text/``` please change the parameter 'path' otherwise.
+You can still access the raw parsed files under `./output/formats/{format}s/` (zipped text files), but using the `Storage` adapter and DuckDB is the recommended workflow for deduplication and efficient queries.
 
 ---
 
