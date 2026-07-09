@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual envs
+venv/
+env/
+.venv/
+
+# Conda installer and caches
+Miniconda3-*.sh
+Miniconda3-latest-*.sh
+Miniconda3-*.sh
+
+# Conda env folders
+Miniconda3*/
+conda-meta/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Storage and local data
+/storage/
+
+# IDE
+.vscode/
+
+# Requirements
+*.lock
